@@ -16,14 +16,23 @@
 #include <unistd.h>
 #endif
 
+
+#define BUFFSIZE 2000
+#define MAX_LINE_LENGTH 400
+#define FILE_NAME_LENGTH 200
+
+
 /* Function prototypes */
 int main_fa2fq(int, char**);
 int fa2fq(int, char**);
 int main_pair(int, char**);
 int pair(int, char**);
+int main_convert(int, char**);
+int convert(int, char**);
 void INThandler(int);
 int main_usage(void);
 int fa2fq_usage(void);
 int pair_usage(void);
+int convert_usage(void);
 
 #endif
