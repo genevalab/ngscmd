@@ -1,83 +1,116 @@
 #include "ngsutils.h"
 
+
 int main(int argc, char **argv)
 {
 	if (argc < 2)
 		return main_usage();
 	if (strcmp(argv[1], "fa2fq") == 0)
-		return fa2fq(argc-2, argv+2);
+		return main_fa2fq(argc-2, argv+2);
 	else if (strcmp(argv[1], "pair") == 0)
-		return pair(argc-2, argv+2);
+		return main_pair(argc-2, argv+2);
 	else
 	{
-		fprintf(stderr, "Error: unrecognized command: %s\n", argv[1]);
+		fprintf(stderr, "Error: %s function is unrecognized\n", argv[1]);
 		main_usage();
 		return 1;
 	}
+}
 
+int main_pair(int argc, char **argv)
+{
+	if (!argv[0])
+		return pair_usage();
+	else
+		pair(argc, argv);
 	return 0;
 }
 
 int pair(int argc, char **argv)
 {
-	if (!argv[0])
-		return pair_usage();
-	else
-		do_pair(argc, argv);
 	return 0;
 }
 
-int do_pair(int argc, char **argv)
+int main_fa2fq(int argc, char **argv)
 {
+	if (!argv[0])
+		return fa2fq_usage();
+	else
+		fa2fq(argc, argv);
 	return 0;
 }
 
 int fa2fq(int argc, char **argv)
 {
-	if (!argv[0])
-		return fa2fq_usage();
-	else
-		do_fa2fq(argc, argv);
-	return 0;
-}
-
-int do_fa2fq(int argc, char **argv)
-{
 	unsigned int i;
-	char *seqFile = NULL;
-	char *qualFile = NULL;
+	char seqFile[200];
+	char qualFile[200];
+	char outFile[200];
 	char **seqLine;
 	char **qualLine;
-	FILE *seq;
-	FILE *qual;
-	FILE *fq;
+	gzFile seq;
+	gzFile qual;
+	gzFile fq;
 
-	/* Get input file names */
-	seqFile = argv[0];
-	qualFile = argv[1];
-
-	/* Open sequence file */
-	if ((seq = fopen(seqFile, "r")) == NULL)
+   /* Read command line options */
+	while (argc > 0)
 	{
-		if (errno == ENOENT)
+		if (strcmp(*argv, "-o") == 0)
 		{
-			fputs("Cannot find sequence file\n", stderr);
+			--argc;
+			++argv;
+			strcpy(outFile, *argv);
+			strcat(outFile, ".gz");
+		}
+		else
+			break;
+		--argc;
+		++argv;
+	}
+
+	/* Read input file names */
+	if (argc == 0)
+	{
+		fa2fq_usage();
+		return 1;
+	}
+	else
+	{
+		strcpy(seqFile, *argv);
+		--argc;
+		++argv;
+		if (argc == 0)
+		{
+			fa2fq_usage();
 			return 1;
 		}
+		else
+			strcpy(qualFile, *argv);
+	}
+
+	/* Open sequence file */
+	if ((seq = gzopen(seqFile, "rb")) == NULL)
+	{
+		fputs("Cannot find sequence file\n", stderr);
+		strerror(errno);
+		return 1;
 	}
 
 	/* Open the quality file */
-	if ((qual = fopen(qualFile, "r")) == NULL)
+	if ((qual = gzopen(qualFile, "rb")) == NULL)
 	{
-		if (errno == ENOENT)
-		{
 			fputs("Cannot find quality file\n", stderr);
+			strerror(errno);
 			return 1;
-		}
 	}
 
 	/* Output stream is STDOUT */
-	fq = stdout;
+	if ((fq = gzopen("output.gz", "wb")) == NULL)
+	{
+		fputs("Error opening output stream\n", stderr);
+		strerror(errno);
+		return 1;
+	}
 
 	/* Set up interrupt trap */
 	signal(SIGINT, INThandler);
@@ -104,30 +137,30 @@ int do_fa2fq(int argc, char **argv)
 		/* Fill up the buffer */
 		while (buffCount < BUFFSIZE)
 		{
-			if (fgets(line, MAX_LINE_LENGTH, seq) == NULL)
+			if (gzgets(seq, line, MAX_LINE_LENGTH) == Z_NULL)
 				break;
 			else
 				strncpy(seqLine[buffCount], &line[0], MAX_LINE_LENGTH);
-			if (fgets(line, MAX_LINE_LENGTH, qual) == NULL)
+			if (gzgets(qual, line, MAX_LINE_LENGTH) == Z_NULL)
 				break;
 			else
 				strncpy(qualLine[buffCount], &line[0], MAX_LINE_LENGTH);
 			++buffCount;
 		}
 
-		/* Dump buffer to stdout */
+		/* Dump buffer to output stream */
 		for (i=0; i < buffCount; ++i)
 		{
 			if (i%2)
 			{
-				fputs(seqLine[i], fq);
-				fputs("+\n", fq);
-				fputs(qualLine[i], fq);
+				gzputs(fq, seqLine[i]);
+				gzputs(fq, "+\n");
+				gzputs(fq, qualLine[i]);
 			}
 			else
 			{
-				fputc('@', fq);
-				fputs(seqLine[i]+1, fq);
+				gzputc(fq, '@');
+				gzputs(fq, seqLine[i]+1);
 			}
 		}
 
@@ -137,10 +170,10 @@ int do_fa2fq(int argc, char **argv)
 	}
 
 	/* Close sequence input stream */
-	fclose(seq);
+	gzclose(seq);
 
 	/* Close quality input stream */
-	fclose(qual);
+	gzclose(qual);
 
 	/* Take out the garbage */
 	for (i=0; i < BUFFSIZE; ++i)
