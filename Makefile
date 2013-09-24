@@ -1,6 +1,6 @@
 CC = gcc
 PROG = NGSutils
-SRC = ngsutils.c
+SRC = ngsutils.c getopt.c
 CFLAGS = -Wall -ansi -g
 LIBFLAGS = -lz
 OBJS = $(SRC:%.c=%.o)

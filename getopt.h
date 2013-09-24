@@ -1,3 +1,4 @@
+#ifdef _MSVC_VER
 #ifndef __GETOPT_H__
 /**
  * DISCLAIMER
@@ -91,3 +92,4 @@ extern int getopt_long_only(int nargc, char * const *nargv, const char *options,
 #endif
 
 #endif /* !defined(__UNISTD_H_SOURCED__) && !defined(__GETOPT_LONG_H__) */
+#endif
