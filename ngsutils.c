@@ -1,14 +1,17 @@
 #include "ngsutils.h"
 
+#define BUFFSIZE 2000
+#define MAX_LINE_LENGTH 400
+#define FILE_NAME_LENGTH 200
 
 int main(int argc, char **argv)
 {
 	if (argc < 2)
 		return main_usage();
 	if (strcmp(argv[1], "fa2fq") == 0)
-		return main_fa2fq(argc-2, argv+2);
+		return main_fa2fq(argc-1, argv+1);
 	else if (strcmp(argv[1], "pair") == 0)
-		return main_pair(argc-2, argv+2);
+		return main_pair(argc-1, argv+1);
 	else
 	{
 		fprintf(stderr, "Error: %s function is unrecognized\n", argv[1]);
@@ -43,9 +46,9 @@ int main_fa2fq(int argc, char **argv)
 int fa2fq(int argc, char **argv)
 {
 	unsigned int i;
-	char seqFile[200];
-	char qualFile[200];
-	char outFile[200];
+	char seqFile[FILE_NAME_LENGTH];
+	char qualFile[FILE_NAME_LENGTH];
+	char outFile[FILE_NAME_LENGTH];
 	char **seqLine;
 	char **qualLine;
 	gzFile seq;
@@ -53,40 +56,49 @@ int fa2fq(int argc, char **argv)
 	gzFile fq;
 
    /* Read command line options */
-	while (argc > 0)
+	int c;
+	opterr = 0;
+	while ((c = getopt(argc, argv, "o:")) != -1)
 	{
-		if (strcmp(*argv, "-o") == 0)
+		switch(c)
 		{
-			--argc;
-			++argv;
-			strcpy(outFile, *argv);
-			strcat(outFile, ".gz");
+			case 'o':
+				strcpy(outFile, optarg);
+				strcat(outFile, ".gz");
+				break;
+			case '?':
+				if (optopt == 'o')
+					fprintf(stderr, "Option -%c requires an argument.\n", optopt);
+				else if (isprint(optopt))
+					fprintf(stderr, "Unknown option: -%c.\n", optopt);
+				else
+					fprintf(stderr, "Unknown option character '\\x%x'.\n", optopt);
+				return 1;
+			default:
+				fa2fq_usage();
+				return 1;
 		}
-		else
-			break;
-		--argc;
-		++argv;
 	}
-
-	/* Read input file names */
-	if (argc == 0)
+	if (argv[optind])
+		strcpy(seqFile, argv[optind]);
+	else
 	{
+		fprintf(stderr, "\nNeed fasta sequence file name\n");
 		fa2fq_usage();
 		return 1;
 	}
+	if (argv[optind+1])
+		strcpy(qualFile, argv[optind+1]);
 	else
 	{
-		strcpy(seqFile, *argv);
-		--argc;
-		++argv;
-		if (argc == 0)
-		{
-			fa2fq_usage();
-			return 1;
-		}
-		else
-			strcpy(qualFile, *argv);
+		fprintf(stderr, "\nNeed fasta quality file name\n");
+		fa2fq_usage();
+		return 1;
 	}
+
+	printf("seqFile:  %s\n", seqFile);
+	printf("qualFile: %s\n", qualFile);
+	printf("outFile:  %s\n", outFile);
 
 	/* Open sequence file */
 	if ((seq = gzopen(seqFile, "rb")) == NULL)
@@ -116,15 +128,15 @@ int fa2fq(int argc, char **argv)
 	signal(SIGINT, INThandler);
 
 	/* Allocate memory for buffer */
-	seqLine = (char**)malloc(BUFFSIZE * sizeof(char*));
+	seqLine = (char**)malloc(BUFFSIZE*sizeof(char*));
 	assert(seqLine);
-	qualLine = (char**)malloc(BUFFSIZE * sizeof(char*));
+	qualLine = (char**)malloc(BUFFSIZE*sizeof(char*));
 	assert(qualLine);
 	for (i=0; i < BUFFSIZE; ++i)
 	{
-		seqLine[i] = (char*)malloc(MAX_LINE_LENGTH * sizeof(char));
+		seqLine[i] = (char*)malloc(MAX_LINE_LENGTH*sizeof(char));
 		assert(seqLine[i]);
-		qualLine[i] = (char*)malloc(MAX_LINE_LENGTH * sizeof(char));
+		qualLine[i] = (char*)malloc(MAX_LINE_LENGTH*sizeof(char));
 		assert(qualLine[i]);
 	}
 
