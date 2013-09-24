@@ -96,10 +96,6 @@ int fa2fq(int argc, char **argv)
 		return 1;
 	}
 
-	printf("seqFile:  %s\n", seqFile);
-	printf("qualFile: %s\n", qualFile);
-	printf("outFile:  %s\n", outFile);
-
 	/* Open sequence file */
 	if ((seq = gzopen(seqFile, "rb")) == NULL)
 	{

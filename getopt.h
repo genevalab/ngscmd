@@ -1,4 +1,4 @@
-#ifdef _MSVC_VER
+#ifdef _MSC_VER
 #ifndef __GETOPT_H__
 /**
  * DISCLAIMER
