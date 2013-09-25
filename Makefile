@@ -8,10 +8,10 @@ OBJS = $(SRC:%.c=%.o)
 all : $(PROG)
 
 %.o : %.c
-	$(CXX) $(CFLAGS) -o $@ -c $<
+	$(CC) $(CFLAGS) -o $@ -c $<
 
 $(PROG) : $(OBJS)
-	$(LD) -o $@ $(OBJS) $(LIBFLAGS)
+	$(CC) -o $@ $(OBJS) $(LIBFLAGS)
 
 .PHONY : clean
 

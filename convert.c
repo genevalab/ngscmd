@@ -3,6 +3,10 @@
 #define CONVERT_REV 0x1
 #define CONVERT_NUM 0x2
 
+extern char* optarg;
+extern int optind, opterr, optopt;
+extern int getopt (int, char *const *, const char*);
+
 int main_convert(int argc, char **argv)
 {
 	if (!argv[0])
@@ -102,7 +106,7 @@ int convert(int argc, char **argv)
 		/* Dump buffer to output stream */
 		for (i=0; i < buffCount; ++i)
 		{
-			if (i%4 == 2)
+			if (i%4 == 3)
 			{
 				size_t j;
 				if (convert_flag & CONVERT_REV)

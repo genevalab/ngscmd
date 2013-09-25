@@ -1,5 +1,9 @@
 #include "ngsutils.h"
 
+extern char *optarg;
+extern int optind, opterr, optopt;
+extern int getopt (int, char *const *, const char*);
+
 int main_fa2fq(int argc, char **argv)
 {
 	if (!argv[0])
