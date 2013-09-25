@@ -42,14 +42,14 @@ int sort(int argc, char **argv)
 	/* Open sequence input file */
 	if ((seq = gzopen(p->seqFile, "rb")) == NULL)
 	{
-		fputs("Error opening the input fastq sequence file.\n", stderr);
+		fputs("\n\nError: cannot open the input fastq sequence file.\n\n", stderr);
 		exit(EXIT_FAILURE);
 	}
 
 	/* Open sequence output file */
 	if ((out = gzopen(p->outFile, "wb")) == NULL)
 	{
-		fputs("Error opening the output fastq sequence file.\n", stderr);
+		fputs("\n\nError: cannot open the output fastq sequence file.\n\n", stderr);
 		exit(EXIT_FAILURE);
 	}
 
@@ -115,7 +115,7 @@ sort_p* sort_read_params(int argc, char **argv)
 	p = (sort_p*)malloc(sizeof(sort_p));
 	if (p == NULL)
 	{
-		fputs("Error allocating memory for sort user parameter data structure.\n", stderr);
+		fputs("\n\nError: memory allocation failure for sort user parameter data structure.\n\n", stderr);
 		exit (EXIT_FAILURE);
 	}
 
@@ -133,11 +133,11 @@ sort_p* sort_read_params(int argc, char **argv)
 				break;
 			case '?':
 				if (optopt == 'o')
-					fprintf(stderr, "Option -%c requires an argument.\n", optopt);
+					fprintf(stderr, "\n\nError: the option -%c requires an argument.\n\n", optopt);
 				else if (isprint(optopt))
-					fprintf(stderr, "Unknown option: -%c.\n", optopt);
+					fprintf(stderr, "\n\nError: unknown option \"-%c\".\n\n", optopt);
 				else
-					fprintf(stderr, "Unknown option character '\\x%x'.\n", optopt);
+					fprintf(stderr, "\n\nError: unknown option character '\\x%x'.\n\n", optopt);
 				exit(EXIT_FAILURE);
 			default:
 				sort_usage();
@@ -150,7 +150,7 @@ sort_p* sort_read_params(int argc, char **argv)
 		strcpy(p->seqFile, argv[optind]);
 	else
 	{
-		fputs("\nError: need input fastq sequence file name.\n", stderr);
+		fputs("\n\nError: need the input fastq sequence file name as a mandatory argument.\n", stderr);
 		sort_usage();
 		exit(EXIT_FAILURE);
 	}

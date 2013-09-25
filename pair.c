@@ -122,11 +122,11 @@ pair_p* pair_read_params(int argc, char **argv)
 				break;
 			case '?':
 				if (optopt == 'o')
-					fprintf(stderr, "\n\nError: the option -%c requires an argument.\n", optopt);
+					fprintf(stderr, "\n\nError: the option -%c requires an argument.\n\n", optopt);
 				else if (isprint(optopt))
-					fprintf(stderr, "\n\nError: unknown option \"-%c\".\n", optopt);
+					fprintf(stderr, "\n\nError: unknown option \"-%c\".\n\n", optopt);
 				else
-					fprintf(stderr, "\n\nError: unknown option character '\\x%x'.\n", optopt);
+					fprintf(stderr, "\n\nError: unknown option character '\\x%x'.\n\n", optopt);
 				exit(EXIT_FAILURE);
 			default:
 				pair_usage();
