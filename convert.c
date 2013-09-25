@@ -1,7 +1,12 @@
+/* File: convert.c
+ * Description: Functions to transform Phred scaled quality scores in fastq files
+ * Author: Daniel Garrigan
+ */
 #include "ngsutils.h"
 
 #define CONVERT_REV 0x1
 #define CONVERT_NUM 0x2
+#define CONVERT_ASCII 0x4
 
 int main_convert(int argc, char **argv)
 {
@@ -24,7 +29,7 @@ int convert(int argc, char **argv)
 
    /* Read command line options */
 	opterr = 0;
-	while ((c = getopt(argc, argv, "sio:")) != -1)
+	while ((c = getopt(argc, argv, "snao:")) != -1)
 	{
 		switch(c)
 		{
@@ -32,8 +37,11 @@ int convert(int argc, char **argv)
 				strcpy(outFile, optarg);
 				strcat(outFile, ".gz");
 				break;
-			case 'i':
+			case 'a':
 				convert_flag |= CONVERT_NUM;
+				break;
+			case 'n':
+				convert_flag |= CONVERT_ASCII;
 				break;
 			case 's':
 				convert_flag |= CONVERT_REV;
@@ -179,12 +187,12 @@ int convert(int argc, char **argv)
 
 int convert_usage(void)
 {
-	fputc(0x0a, stderr);
-	fputs("Usage: ngsutils convert [options] <fastq file>\n\n", stderr);
+	fputs("\nUsage: ngsutils convert [options] <fastq file>\n\n", stderr);
 	fputs("Options:        -o         prefix string for name of fastq output file\n", stderr);
 	fputs("                -s         convert from 33-126 scale to 64-126 scale\n", stderr);
 	fputs("                           default: 64-126 to 33-126 scale\n", stderr);
-	fputs("                -i         convert from numerical to ascii\n", stderr);
+	fputs("                -a         convert from numerical scores to ASCII\n", stderr);
+	fputs("                -n         convert from ASCII scores to numerical\n", stderr);
 	fputc(0x0a, stderr);
 	return 0;
 }

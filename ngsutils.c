@@ -1,3 +1,7 @@
+/* File: ngsutils.c
+ * Description: Main entry point for the NGSutils program
+ * Author: Daniel Garrigan
+ */
 #include "ngsutils.h"
 
 #define VERSION 0.1
@@ -12,6 +16,10 @@ int main(int argc, char **argv)
 		return main_pair(argc-1, argv+1);
 	else if (strcmp(argv[1], "convert") == 0)
 		return main_convert(argc-1, argv+1);
+	else if (strcmp(argv[1], "clean") == 0)
+		return main_clean(argc-1, argv+1);
+	else if (strcmp(argv[1], "bypos") == 0)
+		return main_bypos(argc-1, argv+1);
 	else
 	{
 		fprintf(stderr, "Error: %s function is unrecognized\n", argv[1]);
@@ -30,10 +38,12 @@ void INThandler(int sig)
 int main_usage(void)
 {
 	fputc(0x0a, stderr);
-	fputs("Usage: ngsutils [function] [options] <infile> ...\n\n", stderr);
-	fputs("Functions:       fa2fq      merge fasta and quality file to fastq format\n", stderr);
+	fputs("Usage: ngsutils <function> [options] <infile> ...\n\n", stderr);
+	fputs("Functions:       fa2fq      convert between fasta/quality files and fastq format\n", stderr);
 	fputs("                 pair       aligned mated pairs in two fastq files\n", stderr);
-	fputs("                 convert    convert quality scores\n", stderr);
+	fputs("                 convert    convert Phred scaled quality scores\n", stderr);
+	fputs("                 clean      perform a variety of cleaning procedures for reads\n", stderr);
+	fputs("                 bypos      show average quality by sequence position\n", stderr);
 	fputc(0x0a, stderr);
 	return 0;
 }

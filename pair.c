@@ -1,5 +1,8 @@
+/* File: pair.c
+ * Description: Functions to align reads in two paired fastq files
+ * Author: Daniel Garrigan
+ */
 #include "ngsutils.h"
-
 
 int main_pair(int argc, char **argv)
 {
@@ -18,8 +21,7 @@ int pair(int argc, char **argv)
 
 int pair_usage(void)
 {
-	fputc(0x0a, stderr);
-	fputs("Usage: ngsutils pair [options] <fastq_mate1> <fastq_mate2>\n\n", stderr);
+	fputs("\nUsage: ngsutils pair [options] <fastq_mate1> <fastq_mate2>\n\n", stderr);
 	fputs("Options:        -o         prefix string for naming the output files\n", stderr);
 	fputc(0x0a, stderr);
 	return 0;

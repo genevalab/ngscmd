@@ -1,4 +1,10 @@
+/* File: fa2sq.c
+ * Description: Functions convert between fasta/quality files and fastq file
+ * Author: Daniel Garrigan
+ */
 #include "ngsutils.h"
+
+#define FATOFQ_REV 0x1
 
 int main_fa2fq(int argc, char **argv)
 {
@@ -12,6 +18,7 @@ int main_fa2fq(int argc, char **argv)
 int fa2fq(int argc, char **argv)
 {
 	int i, c;
+	int fa2fq_flag = 0;
 	char seqFile[FILE_NAME_LENGTH];
 	char qualFile[FILE_NAME_LENGTH];
 	char outFile[FILE_NAME_LENGTH];
@@ -23,13 +30,16 @@ int fa2fq(int argc, char **argv)
 
    /* Read command line options */
 	opterr = 0;
-	while ((c = getopt(argc, argv, "o:")) != -1)
+	while ((c = getopt(argc, argv, "ro:")) != -1)
 	{
 		switch(c)
 		{
 			case 'o':
 				strcpy(outFile, optarg);
 				strcat(outFile, ".gz");
+				break;
+			case 'r':
+				fa2fq_flag |= FATOFQ_REV;
 				break;
 			case '?':
 				if (optopt == 'o')
@@ -160,9 +170,9 @@ int fa2fq(int argc, char **argv)
 
 int fa2fq_usage(void)
 {
-	fputc(0x0a, stderr);
-	fputs("Usage: ngsutils fa2fq [options] <fasta file> <quality file>\n\n", stderr);
-	fputs("Options:        -o         prefix string for name of fastq output file\n", stderr);
+	fputs("\nUsage: ngsutils fa2fq [options] <fasta/q input file> [quality file]\n\n", stderr);
+	fputs("Options:        -o         prefix string for name of fastq/fasta/quality output files\n", stderr);
+	fputs("                -r         split fastq file into separate fasta and quality files\n", stderr);
 	fputc(0x0a, stderr);
 	return 0;
 }
