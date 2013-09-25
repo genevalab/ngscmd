@@ -47,21 +47,21 @@ int fa2fq(int argc, char **argv)
 	/* Open sequence file */
 	if ((seq = gzopen(p->seqFile, "rb")) == NULL)
 	{
-		fputs("Error opening the input fasta sequence file.\n", stderr);
+		fputs("\n\nError: cannot open the input fasta sequence file.\n\n", stderr);
 		exit(EXIT_FAILURE);
 	}
 
 	/* Open the quality file */
 	if ((qual = gzopen(p->qualFile, "rb")) == NULL)
 	{
-			fputs("Error opening the input fasta quality file.\n", stderr);
+			fputs("\n\nError: cannot open the input fasta quality file.\n\n", stderr);
 			exit(EXIT_FAILURE);
 	}
 
 	/* Open fastq output stream */
 	if ((out = gzopen(p->outFile, "wb")) == NULL)
 	{
-		fputs("Error opening the output fastq sequence file.\n", stderr);
+		fputs("\n\nError: cannot open the output fastq sequence file.\n", stderr);
 		exit(EXIT_FAILURE);
 	}
 
@@ -156,7 +156,7 @@ fa2fq_p* fa2fq_read_params(int argc, char **argv)
 	p = (fa2fq_p*)malloc(sizeof(fa2fq_p));
 	if (p == NULL)
 	{
-		fputs("Error allocating memory for fa2fq user parameter data structure.\n", stderr);
+		fputs("\n\nError: memory allocation failure for fa2fq user parameter data structure.\n\n", stderr);
 		exit (EXIT_FAILURE);
 	}
 
@@ -177,11 +177,11 @@ fa2fq_p* fa2fq_read_params(int argc, char **argv)
 				break;
 			case '?':
 				if (optopt == 'o')
-					fprintf(stderr, "Option -%c requires an argument.\n", optopt);
+					fprintf(stderr, "\n\nError: the option -%c requires an argument.\n", optopt);
 				else if (isprint(optopt))
-					fprintf(stderr, "Unknown option: -%c.\n", optopt);
+					fprintf(stderr, "\n\nError: unknown option \"-%c\".\n", optopt);
 				else
-					fprintf(stderr, "Unknown option character '\\x%x'.\n", optopt);
+					fprintf(stderr, "\n\nError: unknown option character '\\x%x'.\n", optopt);
 				exit(EXIT_FAILURE);
 			default:
 				fa2fq_usage();
@@ -192,7 +192,7 @@ fa2fq_p* fa2fq_read_params(int argc, char **argv)
 		strcpy(p->seqFile, argv[optind]);
 	else
 	{
-		fputs("\nError: need input fasta sequence file name.\n", stderr);
+		fputs("\nError: need the input fasta sequence file name as a mandatory argument.\n", stderr);
 		fa2fq_usage();
 		exit(EXIT_FAILURE);
 	}
@@ -200,7 +200,7 @@ fa2fq_p* fa2fq_read_params(int argc, char **argv)
 		strcpy(p->qualFile, argv[optind+1]);
 	else
 	{
-		fputs("\nError: need the fasta quality file name.\n", stderr);
+		fputs("\nError: need the fasta quality file name as a mandatory argument.\n", stderr);
 		fa2fq_usage();
 		exit(EXIT_FAILURE);
 	}

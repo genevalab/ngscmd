@@ -43,7 +43,7 @@ int bypos(int argc, char **argv)
 	/* Open sequence file */
 	if ((seq = gzopen(p->seqFile, "rb")) == NULL)
 	{
-		fputs("Error opening the input fastq sequence file.\n", stderr);
+		fputs("\n\nError: cannot open the input fastq sequence file.\n\n", stderr);
 		exit(EXIT_FAILURE);
 	}
 
@@ -135,7 +135,7 @@ bypos_p* bypos_read_params(int argc, char **argv)
 	p = (bypos_p*)malloc(sizeof(bypos_p));
 	if (p == NULL)
 	{
-		fputs("Error allocating memory for bypos user parameter data structure.\n", stderr);
+		fputs("\n\nError: memory allocation failure for bypos user parameter data structure.\n\n", stderr);
 		exit (EXIT_FAILURE);
 	}
 
@@ -152,11 +152,11 @@ bypos_p* bypos_read_params(int argc, char **argv)
 				exit(EXIT_SUCCESS);
 			case '?':
 				if (optopt == 'o')
-					fprintf(stderr, "Option -%c requires an argument.\n", optopt);
+					fprintf(stderr, "\n\nError: the option -%c requires an argument.\n", optopt);
 				else if (isprint(optopt))
-					fprintf(stderr, "Unknown option: -%c.\n", optopt);
+					fprintf(stderr, "\n\nError: unknown option \"-%c\".\n", optopt);
 				else
-					fprintf(stderr, "Unknown option character '\\x%x'.\n", optopt);
+					fprintf(stderr, "\n\nError: unknown option character '\\x%x'.\n", optopt);
 				exit(EXIT_FAILURE);
 			default:
 				bypos_usage();
@@ -169,7 +169,7 @@ bypos_p* bypos_read_params(int argc, char **argv)
 		strcpy(p->seqFile, argv[optind]);
 	else
 	{
-		fputs("\nError: need input fastq sequence file name.\n", stderr);
+		fputs("\nError: need the input fastq sequence file name as mandatory argument.\n", stderr);
 		bypos_usage();
 		exit(EXIT_FAILURE);
 	}

@@ -44,28 +44,28 @@ int pair(int argc, char **argv)
 	/* Open sequence file 1 */
 	if ((seq1 = gzopen(p->seqFile1, "rb")) == NULL)
 	{
-		fputs("Error opening the first input fastq sequence file.\n", stderr);
+		fputs("\n\nError: cannot open the first input fastq sequence file.\n\n", stderr);
 		exit(EXIT_FAILURE);
 	}
 
 	/* Open sequence file 2 */
 	if ((seq2 = gzopen(p->seqFile2, "rb")) == NULL)
 	{
-			fputs("Error opening the second input fastq sequence file.\n", stderr);
+			fputs("\n\nError: cannot open the second input fastq sequence file.\n\n", stderr);
 			exit(EXIT_FAILURE);
 	}
 
 	/* Open the first fastq output stream */
 	if ((out1 = gzopen(p->outFile1, "wb")) == NULL)
 	{
-		fputs("Error opening the output stream for the first fastq sequence file.\n", stderr);
+		fputs("\n\nError: cannot open the output stream for the first fastq sequence file.\n\n", stderr);
 		exit(EXIT_FAILURE);
 	}
 
 	/* Open the second fastq output stream */
 	if ((out2 = gzopen(p->outFile2, "wb")) == NULL)
 	{
-		fputs("Error opening the output stream for the second fastq sequence file.\n", stderr);
+		fputs("\n\nError: cannot open the output stream for the second fastq sequence file.\n\n", stderr);
 		exit(EXIT_FAILURE);
 	}
 
@@ -102,7 +102,7 @@ pair_p* pair_read_params(int argc, char **argv)
 	p = (pair_p*)malloc(sizeof(pair_p));
 	if (p == NULL)
 	{
-		fputs("Error allocating memory for pair user parameter data structure.\n", stderr);
+		fputs("\n\nError: memory allocation failure for pair user parameter data structure.\n", stderr);
 		exit (EXIT_FAILURE);
 	}
 
@@ -122,11 +122,11 @@ pair_p* pair_read_params(int argc, char **argv)
 				break;
 			case '?':
 				if (optopt == 'o')
-					fprintf(stderr, "Option -%c requires an argument.\n", optopt);
+					fprintf(stderr, "\n\nError: the option -%c requires an argument.\n", optopt);
 				else if (isprint(optopt))
-					fprintf(stderr, "Unknown option: -%c.\n", optopt);
+					fprintf(stderr, "\n\nError: unknown option \"-%c\".\n", optopt);
 				else
-					fprintf(stderr, "Unknown option character '\\x%x'.\n", optopt);
+					fprintf(stderr, "\n\nError: unknown option character '\\x%x'.\n", optopt);
 				exit(EXIT_FAILURE);
 			default:
 				pair_usage();
@@ -137,7 +137,7 @@ pair_p* pair_read_params(int argc, char **argv)
 		strcpy(p->seqFile1, argv[optind]);
 	else
 	{
-		fputs("\nError: need input fastq sequence file name.\n", stderr);
+		fputs("\n\nError: need the input fastq sequence file name as a mandatory argument.\n\n", stderr);
 		pair_usage();
 		exit(EXIT_FAILURE);
 	}
@@ -145,7 +145,7 @@ pair_p* pair_read_params(int argc, char **argv)
 		strcpy(p->seqFile2, argv[optind+1]);
 	else
 	{
-		fputs("\nError: need the name of the second fastq sequence file.\n", stderr);
+		fputs("\n\nError: need the name of the second input fastq sequence file as a mandatory argument.\n\n", stderr);
 		pair_usage();
 		exit(EXIT_FAILURE);
 	}

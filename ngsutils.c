@@ -28,7 +28,7 @@ int main(int argc, char **argv)
 		return main_sort(argc-1, argv+1);
 	else
 	{
-		fprintf(stderr, "Error: %s function is unrecognized\n", argv[1]);
+		fprintf(stderr, "\n\nError: the function \"%s\" is not recognized\n", argv[1]);
 		main_usage();
 		return 1;
 	}
@@ -38,21 +38,19 @@ int main(int argc, char **argv)
 void INThandler(int sig)
 {
 	signal(sig, SIG_IGN);
-	fputs("\nCtl-C caught, exiting program\n", stderr);
+	fputs("\nCtl-C caught... exiting program\n", stderr);
 	exit(EXIT_SUCCESS);
 }
 
 /* Print usage message for the NGSutils program */
 int main_usage(void)
 {
-	fputc(0x0a, stderr);
-	fputs("Usage: NGSutils <function> [options] <infile> ...\n\n", stderr);
+	fputs("\nUsage: NGSutils <function> [options] <infile> ...\n\n", stderr);
 	fputs("Functions:       fa2fq      convert between fasta/quality files and fastq format\n", stderr);
 	fputs("                 pair       aligned mated pairs in two fastq files\n", stderr);
 	fputs("                 convert    convert Phred scaled quality scores\n", stderr);
 	fputs("                 clean      perform a variety of cleaning procedures for reads\n", stderr);
 	fputs("                 bypos      show average quality by sequence position\n", stderr);
-	fputs("                 sort       lexical sort of reads by identifier string\n", stderr);
-	fputc(0x0a, stderr);
+	fputs("                 sort       lexical sort of reads by identifier string\n\n", stderr);
 	return 0;
 }

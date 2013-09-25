@@ -41,14 +41,14 @@ int clean(int argc, char **argv)
 	/* Open sequence input file */
 	if ((seq = gzopen(p->seqFile, "rb")) == NULL)
 	{
-		fputs("Error opening the input fastq sequence file.\n", stderr);
+		fputs("\n\nError: cannot open the input fastq sequence file.\n\n", stderr);
 		exit(EXIT_FAILURE);
 	}
 
 	/* Open sequence output file */
 	if ((out = gzopen(p->outFile, "wb")) == NULL)
 	{
-		fputs("Error opening the output fastq sequence file.\n", stderr);
+		fputs("\n\nError: cannot open the output fastq sequence file.\n", stderr);
 		exit(EXIT_FAILURE);
 	}
 
@@ -114,7 +114,7 @@ clean_p* clean_read_params(int argc, char **argv)
 	p = (clean_p*)malloc(sizeof(clean_p));
 	if (p == NULL)
 	{
-		fputs("Error allocating memory for clean user parameter data structure.\n", stderr);
+		fputs("\n\nError: memory allocation failure for clean user parameter data structure.\n\n", stderr);
 		exit (EXIT_FAILURE);
 	}
 
@@ -132,11 +132,11 @@ clean_p* clean_read_params(int argc, char **argv)
 				break;
 			case '?':
 				if (optopt == 'o')
-					fprintf(stderr, "Option -%c requires an argument.\n", optopt);
+					fprintf(stderr, "\n\nError: the option -%c requires an argument.\n", optopt);
 				else if (isprint(optopt))
-					fprintf(stderr, "Unknown option: -%c.\n", optopt);
+					fprintf(stderr, "\n\nError: unknown option \"-%c\".\n", optopt);
 				else
-					fprintf(stderr, "Unknown option character '\\x%x'.\n", optopt);
+					fprintf(stderr, "\n\nError: unknown option character '\\x%x'.\n", optopt);
 				exit(EXIT_FAILURE);
 			default:
 				clean_usage();
@@ -149,7 +149,7 @@ clean_p* clean_read_params(int argc, char **argv)
 		strcpy(p->seqFile, argv[optind]);
 	else
 	{
-		fputs("\nError: need input fastq sequence file name.\n", stderr);
+		fputs("\nError: need the input fastq sequence file name as mandatory argument.\n", stderr);
 		clean_usage();
 		exit(EXIT_FAILURE);
 	}

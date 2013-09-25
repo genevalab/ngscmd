@@ -46,14 +46,14 @@ int convert(int argc, char **argv)
 	/* Open sequence file */
 	if ((seq = gzopen(p->seqFile, "rb")) == NULL)
 	{
-		fputs("Error opening the input fastq sequence file.\n", stderr);
+		fputs("\n\nError: cannot open the input fastq sequence file.\n\n", stderr);
 		exit(EXIT_FAILURE);
 	}
 
 	/* Open output fastq stream */
 	if ((out = gzopen(p->outFile, "wb")) == NULL)
 	{
-		fputs("Error opening the output fastq sequence file.\n", stderr);
+		fputs("\n\nError: cannot open the output fastq sequence file.\n\n", stderr);
 		exit(EXIT_FAILURE);
 	}
 
@@ -96,7 +96,7 @@ int convert(int argc, char **argv)
 						int score = seqLine[i][j]+0x1f;
 						if (score > SCHAR_MAX)
 						{
-							fputs("Error: original Phred scores are not in standard Sanger format.\n", stderr);
+							fputs("\n\nError: the original Phred scores are not in standard Sanger format.\n\n", stderr);
 							exit(EXIT_FAILURE);
 						}
 						else
@@ -130,7 +130,7 @@ int convert(int argc, char **argv)
 						int score = seqLine[i][j]-0x1f;
 						if ((score > SCHAR_MAX) || (score < 33))
 						{
-							fputs("Error: original Phred scores are not in Illumina format.\n", stderr);
+							fputs("\n\nError: the original Phred scores are not in Illumina format.\n\n", stderr);
 							exit(EXIT_FAILURE);
 						}
 						else
@@ -191,7 +191,7 @@ convert_p* convert_read_params(int argc, char **argv)
 	p = (convert_p*)malloc(sizeof(convert_p));
 	if (p == NULL)
 	{
-		fputs("Error allocating memory for convert user parameter data structure.\n", stderr);
+		fputs("\n\nError: memory allocation failure for convert user parameter data structure.\n", stderr);
 		exit (EXIT_FAILURE);
 	}
 
@@ -218,11 +218,11 @@ convert_p* convert_read_params(int argc, char **argv)
 				break;
 			case '?':
 				if (optopt == 'o')
-					fprintf(stderr, "Option -%c requires an argument.\n", optopt);
+					fprintf(stderr, "\n\nError: the option -%c requires an argument.\n", optopt);
 				else if (isprint(optopt))
-					fprintf(stderr, "Unknown option: -%c.\n", optopt);
+					fprintf(stderr, "\n\nError: unknown option \"-%c\".\n", optopt);
 				else
-					fprintf(stderr, "Unknown option character '\\x%x'.\n", optopt);
+					fprintf(stderr, "\n\nError: unknown option character '\\x%x'.\n", optopt);
 				exit(EXIT_FAILURE);
 			default:
 				convert_usage();
@@ -235,7 +235,7 @@ convert_p* convert_read_params(int argc, char **argv)
 		strcpy(p->seqFile, argv[optind]);
 	else
 	{
-		fputs("\nError: need input fastq sequence file name.\n", stderr);
+		fputs("\nError: need the input fastq sequence file name as mandatory argument.\n", stderr);
 		convert_usage();
 		exit(EXIT_FAILURE);
 	}
