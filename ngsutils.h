@@ -21,6 +21,9 @@
 #define MAX_LINE_LENGTH 400
 #define FILE_NAME_LENGTH 200
 
+/* Globally scoped variables */
+extern char *optarg;
+extern int optind, opterr, optopt;
 
 /* Function prototypes */
 int main_fa2fq(int, char**);
@@ -34,5 +37,6 @@ int main_usage(void);
 int fa2fq_usage(void);
 int pair_usage(void);
 int convert_usage(void);
+int getopt (int, char *const *, const char*);
 
 #endif
