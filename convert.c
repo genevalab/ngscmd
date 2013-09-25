@@ -187,7 +187,7 @@ int convert(int argc, char **argv)
 
 int convert_usage(void)
 {
-	fputs("\nUsage: ngsutils convert [options] <fastq file>\n\n", stderr);
+	fputs("\nUsage: NGSutils convert [options] <fastq file>\n\n", stderr);
 	fputs("Options:        -o         prefix string for name of fastq output file\n", stderr);
 	fputs("                -s         convert from 33-126 scale to 64-126 scale\n", stderr);
 	fputs("                           default: 64-126 to 33-126 scale\n", stderr);

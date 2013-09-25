@@ -170,7 +170,7 @@ int fa2fq(int argc, char **argv)
 
 int fa2fq_usage(void)
 {
-	fputs("\nUsage: ngsutils fa2fq [options] <fasta/q input file> [quality file]\n\n", stderr);
+	fputs("\nUsage: NGSutils fa2fq [options] <fasta/q input file> [quality file]\n\n", stderr);
 	fputs("Options:        -o         prefix string for name of fastq/fasta/quality output files\n", stderr);
 	fputs("                -r         split fastq file into separate fasta and quality files\n", stderr);
 	fputc(0x0a, stderr);

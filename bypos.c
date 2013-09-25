@@ -21,7 +21,7 @@ int bypos(int argc, char **argv)
 
 int bypos_usage(void)
 {
-	fputs("\nUsage: ngsutils bypos <fastq file>\n\n", stderr);
+	fputs("\nUsage: NGSutils bypos <fastq file>\n\n", stderr);
 	fputs("Note: bypos writes all output to STDOUT\n\n", stderr);
 	return 0;
 }

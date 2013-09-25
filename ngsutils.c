@@ -20,6 +20,8 @@ int main(int argc, char **argv)
 		return main_clean(argc-1, argv+1);
 	else if (strcmp(argv[1], "bypos") == 0)
 		return main_bypos(argc-1, argv+1);
+	else if (strcmp(argv[1], "sort") == 0)
+		return main_sort(argc-1, argv+1);
 	else
 	{
 		fprintf(stderr, "Error: %s function is unrecognized\n", argv[1]);
@@ -38,12 +40,13 @@ void INThandler(int sig)
 int main_usage(void)
 {
 	fputc(0x0a, stderr);
-	fputs("Usage: ngsutils <function> [options] <infile> ...\n\n", stderr);
+	fputs("Usage: NGSutils <function> [options] <infile> ...\n\n", stderr);
 	fputs("Functions:       fa2fq      convert between fasta/quality files and fastq format\n", stderr);
 	fputs("                 pair       aligned mated pairs in two fastq files\n", stderr);
 	fputs("                 convert    convert Phred scaled quality scores\n", stderr);
 	fputs("                 clean      perform a variety of cleaning procedures for reads\n", stderr);
 	fputs("                 bypos      show average quality by sequence position\n", stderr);
+	fputs("                 sort       lexical sort of reads by identifier string\n", stderr);
 	fputc(0x0a, stderr);
 	return 0;
 }

@@ -35,11 +35,13 @@ int main_convert(int, char**);
 int main_pair(int, char**);
 int main_clean(int, char**);
 int main_bypos(int, char**);
+int main_sort(int, char**);
 int fa2fq(int, char**);
 int pair(int, char**);
 int convert(int, char**);
 int clean(int, char**);
 int bypos(int, char**);
+int sort(int, char**);
 int getopt (int, char *const *, const char*);
 void INThandler(int);
 int main_usage(void);
@@ -48,5 +50,6 @@ int pair_usage(void);
 int convert_usage(void);
 int clean_usage(void);
 int bypos_usage(void);
+int sort_usage(void);
 
 #endif

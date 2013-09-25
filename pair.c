@@ -21,7 +21,7 @@ int pair(int argc, char **argv)
 
 int pair_usage(void)
 {
-	fputs("\nUsage: ngsutils pair [options] <fastq_mate1> <fastq_mate2>\n\n", stderr);
+	fputs("\nUsage: NGSutils pair [options] <fastq_mate1> <fastq_mate2>\n\n", stderr);
 	fputs("Options:        -o         prefix string for naming the output files\n", stderr);
 	fputc(0x0a, stderr);
 	return 0;
