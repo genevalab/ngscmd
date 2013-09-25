@@ -107,16 +107,10 @@ int fa2fq(int argc, char **argv)
 		while (buffCount < BUFFSIZE)
 		{
 			if (gzgets(seq, seqLine[buffCount], MAX_LINE_LENGTH) == Z_NULL)
-			{
-				fputs("Error reading from fastq sequence file.\n", stderr);
-				exit(EXIT_FAILURE);
-			}
+				break;
 
 			if (gzgets(qual, qualLine[buffCount], MAX_LINE_LENGTH) == Z_NULL)
-			{
-				fputs("Error reading from fasta quality file.\n", stderr);
-				exit(EXIT_FAILURE);
-			}
+				break;
 
 			++buffCount;
 		}

@@ -1,6 +1,6 @@
 #include "ngsutils.h"
 
-#define CONVERT_STD 0x1
+#define CONVERT_REV 0x1
 #define CONVERT_NUM 0x2
 
 int main_convert(int argc, char **argv)
@@ -36,7 +36,7 @@ int convert(int argc, char **argv)
 				convert_flag |= CONVERT_NUM;
 				break;
 			case 's':
-				convert_flag |= CONVERT_STD;
+				convert_flag |= CONVERT_REV;
 				break;
 			case '?':
 				if (optopt == 'o')
@@ -95,11 +95,7 @@ int convert(int argc, char **argv)
 		while (buffCount < BUFFSIZE)
 		{
 			if (gzgets(fastq_in, seqLine[buffCount], MAX_LINE_LENGTH) == Z_NULL)
-			{
-				fputs("Error reading from fastq sequence file.\n", stderr);
-				exit (EXIT_FAILURE);
-			}
-
+				break;
 			++buffCount;
 		}
 
@@ -109,25 +105,52 @@ int convert(int argc, char **argv)
 			if (i%4 == 2)
 			{
 				size_t j;
-				if (convert_flag & CONVERT_STD)
+				if (convert_flag & CONVERT_REV)
 				{
+					/* Only do Sanger to Illumina conversion */
+					for (j=0; j < strlen(seqLine[i])-1; ++j)
+						gzputc(fastq_out, seqLine[i][j] + 0x1f);
+					gzputc(fastq_out, 0x0a);
 					if (convert_flag & CONVERT_NUM)
 					{
-						/* TODO: Do both numerical and sanger conversion here */ ;
-					}
-					else
-					{
-						/* Only do Illumina to Sanger conversion */
-						for (j=0; j < strlen(seqLine[i])-1; ++j)
-							gzputc(fastq_out, seqLine[i][j] - 0x1f);
+						/* Do both numerical and Sanger to Illumina conversion here */
+						const char delim = 0x20;
+						char *tok;
+						int score;
+						tok = strtok(seqLine[i], &delim);
+						score = atoi(tok);
+						gzputc(fastq_out, score);
+						while(tok != NULL)
+						{
+							tok = strtok(NULL, &delim);
+							score = atoi(tok);
+							gzputc(fastq_out, score + 0x1f);
+						}
 						gzputc(fastq_out, 0x0a);
 					}
 				}
 				else
 				{
+					/* Only do Illumina to Sanger conversion */
+					for (j=0; j < strlen(seqLine[i])-1; ++j)
+						gzputc(fastq_out, seqLine[i][j] - 0x1f);
+					gzputc(fastq_out, 0x0a);
 					if (convert_flag & CONVERT_NUM)
 					{
-						/* TODO: numerical only conversion here */
+						/* Do both numerical and Illumina to Sanger conversion here */
+						const char delim = 0x20;
+						char *tok;
+						int score;
+						tok = strtok(seqLine[i], &delim);
+						score = atoi(tok);
+						gzputc(fastq_out, score);
+						while(tok != NULL)
+						{
+							tok = strtok(NULL, &delim);
+							score = atoi(tok);
+							gzputc(fastq_out, score - 0x1f);
+						}
+						gzputc(fastq_out, 0x0a);
 					}
 				}
 			}
@@ -159,7 +182,8 @@ int convert_usage(void)
 	fputc(0x0a, stderr);
 	fputs("Usage: ngsutils convert [options] <fastq file>\n\n", stderr);
 	fputs("Options:        -o         prefix string for name of fastq output file\n", stderr);
-	fputs("                -s         convert from 64-126 scale to 33-126 scale\n", stderr);
+	fputs("                -s         convert from 33-126 scale to 64-126 scale\n", stderr);
+	fputs("                           default: 64-126 to 33-126 scale\n", stderr);
 	fputs("                -i         convert from numerical to ascii\n", stderr);
 	fputc(0x0a, stderr);
 	return 0;
