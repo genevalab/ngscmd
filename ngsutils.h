@@ -39,6 +39,7 @@ extern int main_pair(int, char**);
 extern int main_clean(int, char**);
 extern int main_bypos(int, char**);
 extern int main_sort(int, char**);
+extern int main_revcom(int, char**);
 extern int getopt (int, char *const *, const char*);
 extern void INThandler(int);
 

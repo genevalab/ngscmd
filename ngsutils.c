@@ -57,6 +57,9 @@ int main(int argc, char **argv)
 	else if (strcmp(argv[1], "sort") == 0)
 		return main_sort(argc-1, argv+1);
 
+	else if (strcmp(argv[1], "revcom") == 0)
+		return main_revcom(argc-1, argv+1);
+
 	else
 	{
 		fprintf(stderr, "\n\nError: the function \"%s\" is not recognized\n", argv[1]);
@@ -94,6 +97,7 @@ int main_usage(void)
 	fputs("                 convert    convert Phred scaled quality scores\n", stderr);
 	fputs("                 clean      perform a variety of cleaning procedures for reads\n", stderr);
 	fputs("                 bypos      show average quality by sequence position\n", stderr);
-	fputs("                 sort       lexical sort of reads by identifier string\n\n", stderr);
+	fputs("                 sort       lexical sort of reads by identifier string\n", stderr);
+	fputs("                 revcom     reverse complement bases in fastq file\n\n", stderr);
 	return 0;
 }

@@ -1,9 +1,9 @@
 /*************************************************************************
  *
- * File: sort.c
+ * File: revcom.c
  *
- * Description: Functions to perform lexical sort of reads by identifier 
- *              string
+ * Description: Functions to reverse complement all sequences in a 
+ *              fastq file
  *
  * Author: Daniel Garrigan
  *
@@ -18,12 +18,12 @@
  *
  ***************************************************************************/
 
-typedef struct _sort_params
+typedef struct _revcom_params
 {
 	int flag;
 	char seqFile[FILENAME_MAX];
 	char outFile[FILENAME_MAX];
-} sort_p;
+} revcom_p;
 
 
 /***************************************************************************
@@ -32,44 +32,48 @@ typedef struct _sort_params
  *
  **************************************************************************/
 
-int sort(int, char**);
+int revcom(int, char**);
 
-sort_p* sort_read_params(int, char**);
+revcom_p* revcom_read_params(int, char**);
 
-int sort_usage(void);
+char *trim(char*);
+
+char *reverse(char*);
+
+int revcom_usage(void);
 
 
 /***************************************************************************
- * Function: main_sort()
+ * Function: main_revcom()
  *
- * Description: entry point for the sort function
+ * Description: entry point for the revcom function
  ***************************************************************************/
 
-int main_sort(int argc, char **argv)
+int main_revcom(int argc, char **argv)
 {
 	if (!argv[0])
-		return sort_usage();
+		return revcom_usage();
 	else
-		return sort(argc, argv);
+		return revcom(argc, argv);
 }
 
 
 /***************************************************************************
- * Function: sort()
+ * Function: revcom()
  *
- * Description: main sort function
+ * Description: main revcom function
  ***************************************************************************/
 
-int sort(int argc, char **argv)
+int revcom(int argc, char **argv)
 {
 	int i=0;
 	char **seqLine;
-	sort_p *p=NULL;
+	revcom_p *p=NULL;
 	gzFile seq;
 	gzFile out;
 
 	/* Read and store user-supplied parameters */
-	p = sort_read_params(argc, argv);
+	p = revcom_read_params(argc, argv);
 
 	/* Open sequence input file */
 	if ((seq = gzopen(p->seqFile, "rb")) == NULL)
@@ -114,10 +118,37 @@ int sort(int argc, char **argv)
 			++buffCount;
 		}
 
-		/* Tally scores along each position in the sequence */
+		/* Reverse complement bases and reverse quality scores */
 		for (i=0; i<buffCount; ++i)
 		{
-			/* TODO: Add code to sort the sequences here */
+			int j = i%4;
+			if ((j == 1) || (j == 3))
+			{
+				char *rev = trim(seqLine[i]);
+				rev = reverse(rev);
+				if (j == 1)
+				{
+					size_t k;
+					for (k=0; k < strlen(rev); ++k)
+					{
+						if (rev[k] == 'A')
+							gzputc(out, 'T');
+						else if (rev[k] == 'C')
+							gzputc(out, 'G');
+						else if (rev[k] == 'G')
+							gzputc(out, 'C');
+						else if (rev[k] == 'T')
+							gzputc(out, 'A');
+						else
+							gzputc(out, rev[k]);
+					}
+				}
+				else
+					gzputs(out, rev);
+				gzputc(out, 0x0a);
+			}
+			else
+				gzputs(out, seqLine[i]);
 		}
 
 		/* If we are at the end of the file */
@@ -140,24 +171,52 @@ int sort(int argc, char **argv)
 	return 0;
 }
 
+char *trim(char *s)
+{
+	char *ptr;
+	if (!s)
+		return NULL;
+	if (!*s)
+		return s;
+	for (ptr = s + strlen(s) - 1; (ptr >= s) && isspace(*ptr); --ptr);
+	ptr[1] = '\0';
+	return s;
+}
+
+char *reverse(char *str)
+{
+	char *p1, *p2;
+
+	if (! str || ! *str)
+		return str;
+	for (p1=str, p2=str+strlen(str)-1; p2 > p1; ++p1, --p2)
+	{
+		*p1 ^= *p2;
+		*p2 ^= *p1;
+		*p1 ^= *p2;
+	}
+
+	return str;
+}
+
 
 /***************************************************************************
- * Function: sort_read_params()
+ * Function: revcom_read_params()
  *
- * Description: read user-supplied command line parameters for the sort 
+ * Description: read user-supplied command line parameters for the revcom 
  *              function
  ***************************************************************************/
 
-sort_p* sort_read_params(int argc, char **argv)
+revcom_p* revcom_read_params(int argc, char **argv)
 {
 	int c=0;
-	sort_p *p=NULL;
+	revcom_p *p=NULL;
 
 	/* Allocate memory for parameter data structure */
-	p = (sort_p*)malloc(sizeof(sort_p));
+	p = (revcom_p*)malloc(sizeof(revcom_p));
 	if (p == NULL)
 	{
-		fputs("\n\nError: memory allocation failure for sort user parameter data structure.\n\n", stderr);
+		fputs("\n\nError: memory allocation failure for revcom user parameter data structure.\n\n", stderr);
 		exit (EXIT_FAILURE);
 	}
 
@@ -183,7 +242,7 @@ sort_p* sort_read_params(int argc, char **argv)
 					fprintf(stderr, "\n\nError: unknown option character '\\x%x'.\n\n", optopt);
 				exit(EXIT_FAILURE);
 			default:
-				sort_usage();
+				revcom_usage();
 				exit(EXIT_FAILURE);
 		}
 	}
@@ -195,7 +254,7 @@ sort_p* sort_read_params(int argc, char **argv)
 	else
 	{
 		fputs("\n\nError: need the input fastq sequence file name as a mandatory argument.\n", stderr);
-		sort_usage();
+		revcom_usage();
 		exit(EXIT_FAILURE);
 	}
 	
@@ -204,14 +263,14 @@ sort_p* sort_read_params(int argc, char **argv)
 
 
 /***************************************************************************
- * Function: sort_usage()
+ * Function: revcom_usage()
  *
- * Description: prints a usage message for the sort function
+ * Description: prints a usage message for the revcom function
  ***************************************************************************/
 
-int sort_usage(void)
+int revcom_usage(void)
 {
-	fputs("\nUsage: NGSutils sort [options] <fastq file>\n\n", stderr);
+	fputs("\nUsage: NGSutils revcom [options] <fastq file>\n\n", stderr);
 	fputs("Options:        -o         prefix string for name of fastq output file\n\n", stderr);
 	return 0;
 }
