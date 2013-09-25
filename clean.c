@@ -5,6 +5,10 @@
 
 #include "ngsutils.h"
 
+/* Function prototypes */
+int clean(int, char**);
+int clean_usage(void);
+
 int main_clean(int argc, char **argv)
 {
 	if (!argv[0])
@@ -14,11 +18,13 @@ int main_clean(int argc, char **argv)
 	return 0;
 }
 
+/* Main clean function */
 int clean(int argc, char **argv)
 {
 	return 0;
 }
 
+/* Print usage message for the clean function */
 int clean_usage(void)
 {
 	fputs("\nUsage: NGSutils clean [options] <fastq file>\n\n", stderr);

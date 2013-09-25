@@ -20,7 +20,7 @@
 #include <unistd.h>
 #endif
 
-/* Definitions */
+/* Globally scoped definitions */
 #define BUFFSIZE 2000
 #define MAX_LINE_LENGTH 400
 #define FILE_NAME_LENGTH 200
@@ -30,26 +30,13 @@ extern char *optarg;
 extern int optind, opterr, optopt;
 
 /* Function prototypes */
-int main_fa2fq(int, char**);
-int main_convert(int, char**);
-int main_pair(int, char**);
-int main_clean(int, char**);
-int main_bypos(int, char**);
-int main_sort(int, char**);
-int fa2fq(int, char**);
-int pair(int, char**);
-int convert(int, char**);
-int clean(int, char**);
-int bypos(int, char**);
-int sort(int, char**);
-int getopt (int, char *const *, const char*);
-void INThandler(int);
-int main_usage(void);
-int fa2fq_usage(void);
-int pair_usage(void);
-int convert_usage(void);
-int clean_usage(void);
-int bypos_usage(void);
-int sort_usage(void);
+extern int main_fa2fq(int, char**);
+extern int main_convert(int, char**);
+extern int main_pair(int, char**);
+extern int main_clean(int, char**);
+extern int main_bypos(int, char**);
+extern int main_sort(int, char**);
+extern int getopt (int, char *const *, const char*);
+extern void INThandler(int);
 
 #endif

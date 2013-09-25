@@ -6,6 +6,10 @@
 
 #define VERSION 0.1
 
+/* Function prototypes */
+int main_usage(void);
+
+/* Entry point for the NGSutils program */
 int main(int argc, char **argv)
 {
 	if (argc < 2)
@@ -30,6 +34,7 @@ int main(int argc, char **argv)
 	}
 }
 
+/* Handle an interrupt signal */
 void INThandler(int sig)
 {
 	signal(sig, SIG_IGN);
@@ -37,6 +42,7 @@ void INThandler(int sig)
 	exit(EXIT_SUCCESS);
 }
 
+/* Print usage message for the NGSutils program */
 int main_usage(void)
 {
 	fputc(0x0a, stderr);
