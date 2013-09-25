@@ -12,8 +12,8 @@
 typedef struct _convert_params
 {
 	int flag;
-	char seqFile[FILE_NAME_LENGTH];
-	char outFile[FILE_NAME_LENGTH];
+	char seqFile[FILENAME_MAX];
+	char outFile[FILENAME_MAX];
 } convert_p;
 
 /* Function prototypes */
@@ -37,23 +37,23 @@ int convert(int argc, char **argv)
 	int i;
 	char **seqLine;
 	convert_p *p;
-	gzFile fastq_in;
-	gzFile fastq_out;
+	gzFile seq;
+	gzFile out;
 
 	/* Read and store user-supplied parameters */
 	p = convert_read_params(argc, argv);
 
 	/* Open sequence file */
-	if ((fastq_in = gzopen(p->seqFile, "rb")) == NULL)
+	if ((seq = gzopen(p->seqFile, "rb")) == NULL)
 	{
-		fputs("Error opening the fastq sequence file.\n", stderr);
+		fputs("Error opening the input fastq sequence file.\n", stderr);
 		exit(EXIT_FAILURE);
 	}
 
 	/* Open output fastq stream */
-	if ((fastq_out = gzopen(p->outFile, "wb")) == NULL)
+	if ((out = gzopen(p->outFile, "wb")) == NULL)
 	{
-		fputs("Error opening the output stream.\n", stderr);
+		fputs("Error opening the output fastq sequence file.\n", stderr);
 		exit(EXIT_FAILURE);
 	}
 
@@ -77,7 +77,7 @@ int convert(int argc, char **argv)
 		/* Fill up the buffer */
 		while (buffCount < BUFFSIZE)
 		{
-			if (gzgets(fastq_in, seqLine[buffCount], MAX_LINE_LENGTH) == Z_NULL)
+			if (gzgets(seq, seqLine[buffCount], MAX_LINE_LENGTH) == Z_NULL)
 				break;
 			++buffCount;
 		}
@@ -100,9 +100,9 @@ int convert(int argc, char **argv)
 							exit(EXIT_FAILURE);
 						}
 						else
-							gzputc(fastq_out, score);
+							gzputc(out, score);
 					}
-					gzputc(fastq_out, 0x0a);
+					gzputc(out, 0x0a);
 
 					if (p->flag & CONVERT_NUM)
 					{
@@ -112,14 +112,14 @@ int convert(int argc, char **argv)
 						int score;
 						tok = strtok(seqLine[i], &delim);
 						score = atoi(tok);
-						gzputc(fastq_out, score);
+						gzputc(out, score);
 						while (tok != NULL)
 						{
 							tok = strtok(NULL, &delim);
 							score = atoi(tok);
-							gzputc(fastq_out, score + 0x1f);
+							gzputc(out, score + 0x1f);
 						}
-						gzputc(fastq_out, 0x0a);
+						gzputc(out, 0x0a);
 					}
 				}
 				else
@@ -134,9 +134,9 @@ int convert(int argc, char **argv)
 							exit(EXIT_FAILURE);
 						}
 						else
-							gzputc(fastq_out, seqLine[i][j] - 0x1f);
+							gzputc(out, seqLine[i][j] - 0x1f);
 					}
-					gzputc(fastq_out, 0x0a);
+					gzputc(out, 0x0a);
 
 					if (p->flag & CONVERT_NUM)
 					{
@@ -146,19 +146,19 @@ int convert(int argc, char **argv)
 						int score;
 						tok = strtok(seqLine[i], &delim);
 						score = atoi(tok);
-						gzputc(fastq_out, score);
+						gzputc(out, score);
 						while (tok != NULL)
 						{
 							tok = strtok(NULL, &delim);
 							score = atoi(tok);
-							gzputc(fastq_out, score - 0x1f);
+							gzputc(out, score - 0x1f);
 						}
-						gzputc(fastq_out, 0x0a);
+						gzputc(out, 0x0a);
 					}
 				}
 			}
 			else
-				gzputs(fastq_out, seqLine[i]);
+				gzputs(out, seqLine[i]);
 		}
 
 		/* If we are at the end of the file */
@@ -167,10 +167,10 @@ int convert(int argc, char **argv)
 	}
 
 	/* Close fastq input sequence file stream */
-	gzclose(fastq_in);
+	gzclose(seq);
 
 	/* Close fastq output sequence file stream */
-	gzclose(fastq_out);
+	gzclose(out);
 
 	/* Take out the garbage */
 	for (i=0; i < BUFFSIZE; ++i)

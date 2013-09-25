@@ -24,7 +24,6 @@
 /* Globally scoped definitions */
 #define BUFFSIZE 2000
 #define MAX_LINE_LENGTH 400
-#define FILE_NAME_LENGTH 200
 
 /* Globally scoped variables */
 extern char *optarg;

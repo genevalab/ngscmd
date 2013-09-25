@@ -10,9 +10,9 @@
 typedef struct _fa2fq_params
 {
 	int flag;
-	char seqFile[FILE_NAME_LENGTH];
-	char qualFile[FILE_NAME_LENGTH];
-	char outFile[FILE_NAME_LENGTH];
+	char seqFile[FILENAME_MAX];
+	char qualFile[FILENAME_MAX];
+	char outFile[FILENAME_MAX];
 } fa2fq_p;
 
 /* Function prototypes */
@@ -39,7 +39,7 @@ int fa2fq(int argc, char **argv)
 	fa2fq_p *p;
 	gzFile seq;
 	gzFile qual;
-	gzFile fastq_out;
+	gzFile out;
 
 	/* Read and store user-supplied parameters */
 	p = fa2fq_read_params(argc, argv);
@@ -47,21 +47,21 @@ int fa2fq(int argc, char **argv)
 	/* Open sequence file */
 	if ((seq = gzopen(p->seqFile, "rb")) == NULL)
 	{
-		fputs("Error opening the fasta sequence file.\n", stderr);
+		fputs("Error opening the input fasta sequence file.\n", stderr);
 		exit(EXIT_FAILURE);
 	}
 
 	/* Open the quality file */
 	if ((qual = gzopen(p->qualFile, "rb")) == NULL)
 	{
-			fputs("Error opening the fasta quality file.\n", stderr);
+			fputs("Error opening the input fasta quality file.\n", stderr);
 			exit(EXIT_FAILURE);
 	}
 
 	/* Open fastq output stream */
-	if ((fastq_out = gzopen(p->outFile, "wb")) == NULL)
+	if ((out = gzopen(p->outFile, "wb")) == NULL)
 	{
-		fputs("Error opening the fastq output stream.\n", stderr);
+		fputs("Error opening the output fastq sequence file.\n", stderr);
 		exit(EXIT_FAILURE);
 	}
 
@@ -107,15 +107,15 @@ int fa2fq(int argc, char **argv)
 		{
 			if (i%2)
 			{
-				gzputs(fastq_out, seqLine[i]);
-				gzputc(fastq_out, 0x2b);
-				gzputc(fastq_out, 0xa);
-				gzputs(fastq_out, qualLine[i]);
+				gzputs(out, seqLine[i]);
+				gzputc(out, 0x2b);
+				gzputc(out, 0xa);
+				gzputs(out, qualLine[i]);
 			}
 			else
 			{
-				gzputc(fastq_out, 0x40);
-				gzputs(fastq_out, seqLine[i]+1);
+				gzputc(out, 0x40);
+				gzputs(out, seqLine[i]+1);
 			}
 		}
 
@@ -131,7 +131,7 @@ int fa2fq(int argc, char **argv)
 	gzclose(qual);
 
 	/* Close the output stream */
-	gzclose(fastq_out);
+	gzclose(out);
 
 	/* Take out the garbage */
 	for (i=0; i < BUFFSIZE; ++i)

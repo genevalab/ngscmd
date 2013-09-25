@@ -8,7 +8,7 @@
 typedef struct _bypos_params
 {
 	int flag;
-	char seqFile[FILE_NAME_LENGTH];
+	char seqFile[FILENAME_MAX];
 } bypos_p;
 
 /* Function prototypes */
@@ -29,12 +29,12 @@ int main_bypos(int argc, char **argv)
 /* Main bypos function */
 int bypos(int argc, char **argv)
 {
-	int i;
-	int max_pos = 0;
-	unsigned long long int *score_sum;
-	unsigned long long int *num_bases;
+	int i=0;
+	int max_pos=0;
+	unsigned long long int *score_sum=NULL;
+	unsigned long long int *num_bases=NULL;
 	char **seqLine;
-	bypos_p *p;
+	bypos_p *p=NULL;
 	gzFile seq;
 
 	/* Read and store user-supplied parameters */
@@ -43,7 +43,7 @@ int bypos(int argc, char **argv)
 	/* Open sequence file */
 	if ((seq = gzopen(p->seqFile, "rb")) == NULL)
 	{
-		fputs("Error opening the fastq sequence file.\n", stderr);
+		fputs("Error opening the input fastq sequence file.\n", stderr);
 		exit(EXIT_FAILURE);
 	}
 
@@ -53,7 +53,7 @@ int bypos(int argc, char **argv)
 	/* Allocate memory for buffer */
 	seqLine = (char**)malloc(BUFFSIZE*sizeof(char*));
 	assert(seqLine);
-	for (i=0; i < BUFFSIZE; ++i)
+	for (i=0; i<BUFFSIZE; ++i)
 	{
 		seqLine[i] = (char*)malloc(MAX_LINE_LENGTH*sizeof(char));
 		assert(seqLine[i]);
@@ -67,14 +67,14 @@ int bypos(int argc, char **argv)
 	num_bases = (unsigned long long int*)calloc(MAX_LINE_LENGTH, sizeof(unsigned long long int));
 	assert(num_bases);
 
-	/* Read through both files */
+	/* Read through input sequence file */
 	while (1)
 	{
 		/* Initialize counter for the number of lines in the buffer */
-		int buffCount = 0;
+		int buffCount=0;
 
 		/* Fill up the buffer */
-		while (buffCount < BUFFSIZE)
+		while (buffCount<BUFFSIZE)
 		{
 			/* Get line from sequence file */
 			if (gzgets(seq, seqLine[buffCount], MAX_LINE_LENGTH) == Z_NULL)
@@ -85,15 +85,14 @@ int bypos(int argc, char **argv)
 		}
 
 		/* Tally scores along each position in the sequence */
-		for (i=0; i < buffCount; ++i)
+		for (i=0; i<buffCount; ++i)
 		{
 			if (i%4 == 3)
 			{
 				size_t j;
 				int k = (int)(strlen(seqLine[i]) - 1);
-				if (k > max_pos)
-					max_pos = (int)k;
-				for (j=0; j < strlen(seqLine[i])-1; ++j)
+				max_pos = k > max_pos ? k : max_pos;
+				for (j=0; j<strlen(seqLine[i])-1; ++j)
 				{
 					score_sum[j] += (unsigned long long int)(seqLine[i][j]-33);
 					++num_bases[j];
@@ -102,7 +101,7 @@ int bypos(int argc, char **argv)
 		}
 
 		/* If we are at the end of the file */
-		if (buffCount < BUFFSIZE)
+		if (buffCount<BUFFSIZE)
 			break;
 	}
 
@@ -111,16 +110,12 @@ int bypos(int argc, char **argv)
 
 	/* Print results to STDOUT */
 	puts("Position  \tNo. Bases   \tAvg. Score");
-	for (i=0; i < max_pos; ++i)
-	{
-		if (num_bases[i] > 0)
+	for (i=0; i<max_pos; ++i)
+		if (num_bases[i]>0)
 			printf("%-10d\t%-12llu\t%-12.7lf\n", i+1, num_bases[i], (double)score_sum[i]/num_bases[i]);
-		else
-			printf("%-10d\tN/A         \tN/A\n", i+1);
-	}
 
 	/* Take out the garbage */
-	for (i=0; i < BUFFSIZE; ++i)
+	for (i=0; i<BUFFSIZE; ++i)
 		free(seqLine[i]);
 	free(seqLine);
 	free(num_bases);
@@ -133,8 +128,8 @@ int bypos(int argc, char **argv)
 /* Read user-supplied command line parameters for the bypos function */
 bypos_p* bypos_read_params(int argc, char **argv)
 {
-	int c;
-	bypos_p *p;
+	int c=0;
+	bypos_p *p=NULL;
 
 	/* Allocate memory for parameter data structure */
 	p = (bypos_p*)malloc(sizeof(bypos_p));
@@ -144,8 +139,8 @@ bypos_p* bypos_read_params(int argc, char **argv)
 		exit (EXIT_FAILURE);
 	}
 
-	opterr = 0;
-	p->flag = 0;
+	opterr=0;
+	p->flag=0;
 
    /* Read command line options */
 	while ((c = getopt(argc, argv, "h")) != -1)

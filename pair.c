@@ -8,10 +8,10 @@
 typedef struct _pair_params
 {
 	int flag;
-	char seqFile1[FILE_NAME_LENGTH];
-	char seqFile2[FILE_NAME_LENGTH];
-	char outFile1[FILE_NAME_LENGTH];
-	char outFile2[FILE_NAME_LENGTH];
+	char seqFile1[FILENAME_MAX];
+	char seqFile2[FILENAME_MAX];
+	char outFile1[FILENAME_MAX];
+	char outFile2[FILENAME_MAX];
 } pair_p;
 
 /* Function prototypes */
