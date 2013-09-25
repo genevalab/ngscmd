@@ -63,7 +63,7 @@ int convert(int argc, char **argv)
 	/* Allocate memory for buffer */
 	seqLine = (char**)malloc(BUFFSIZE*sizeof(char*));
 	assert(seqLine);
-	for (i=0; i < BUFFSIZE; ++i)
+	for (i=0; i<BUFFSIZE; ++i)
 	{
 		seqLine[i] = (char*)malloc(MAX_LINE_LENGTH*sizeof(char));
 		assert(seqLine[i]);
@@ -75,7 +75,7 @@ int convert(int argc, char **argv)
 		int buffCount = 0;
 
 		/* Fill up the buffer */
-		while (buffCount < BUFFSIZE)
+		while (buffCount<BUFFSIZE)
 		{
 			if (gzgets(seq, seqLine[buffCount], MAX_LINE_LENGTH) == Z_NULL)
 				break;
@@ -83,7 +83,7 @@ int convert(int argc, char **argv)
 		}
 
 		/* Dump buffer to output stream */
-		for (i=0; i < buffCount; ++i)
+		for (i=0; i<buffCount; ++i)
 		{
 			if (i%4 == 3)
 			{
@@ -91,9 +91,9 @@ int convert(int argc, char **argv)
 				if (p->flag & CONVERT_REV)
 				{
 					/* Only do Sanger to Illumina conversion */
-					for (j=0; j < strlen(seqLine[i])-1; ++j)
+					for (j=0; j<strlen(seqLine[i])-1; ++j)
 					{
-						int score = seqLine[i][j] + 0x1f;
+						int score = seqLine[i][j]+0x1f;
 						if (score > SCHAR_MAX)
 						{
 							fputs("Error: original Phred scores are not in standard Sanger format.\n", stderr);
@@ -117,7 +117,7 @@ int convert(int argc, char **argv)
 						{
 							tok = strtok(NULL, &delim);
 							score = atoi(tok);
-							gzputc(out, score + 0x1f);
+							gzputc(out, score+0x1f);
 						}
 						gzputc(out, 0x0a);
 					}
@@ -125,9 +125,9 @@ int convert(int argc, char **argv)
 				else
 				{
 					/* Only do Illumina to Sanger conversion */
-					for (j=0; j < strlen(seqLine[i])-1; ++j)
+					for (j=0; j<strlen(seqLine[i])-1; ++j)
 					{
-						int score = seqLine[i][j] - 0x1f;
+						int score = seqLine[i][j]-0x1f;
 						if ((score > SCHAR_MAX) || (score < 33))
 						{
 							fputs("Error: original Phred scores are not in Illumina format.\n", stderr);
@@ -173,7 +173,7 @@ int convert(int argc, char **argv)
 	gzclose(out);
 
 	/* Take out the garbage */
-	for (i=0; i < BUFFSIZE; ++i)
+	for (i=0; i<BUFFSIZE; ++i)
 		free(seqLine[i]);
 	free(seqLine);
 	free(p);

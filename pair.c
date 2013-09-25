@@ -69,6 +69,8 @@ int pair(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 
+	/* TODO: Implement merging algorithm here */
+
 	/* Set up interrupt trap */
 	signal(SIGINT, INThandler);
 

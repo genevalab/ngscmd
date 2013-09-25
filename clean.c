@@ -104,6 +104,7 @@ int clean(int argc, char **argv)
 	return 0;
 }
 
+/* Read user-supplied command line parameters for the clean function */
 clean_p* clean_read_params(int argc, char **argv)
 {
 	int c=0;
