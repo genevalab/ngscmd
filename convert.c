@@ -92,8 +92,18 @@ int convert(int argc, char **argv)
 				{
 					/* Only do Sanger to Illumina conversion */
 					for (j=0; j < strlen(seqLine[i])-1; ++j)
-						gzputc(fastq_out, seqLine[i][j] + 0x1f);
+					{
+						int score = seqLine[i][j] + 0x1f;
+						if (score > SCHAR_MAX)
+						{
+							fputs("Error: original Phred scores are not in standard Sanger format.\n", stderr);
+							exit(EXIT_FAILURE);
+						}
+						else
+							gzputc(fastq_out, score);
+					}
 					gzputc(fastq_out, 0x0a);
+
 					if (p->flag & CONVERT_NUM)
 					{
 						/* Do both numerical and Sanger to Illumina conversion here */
@@ -116,8 +126,18 @@ int convert(int argc, char **argv)
 				{
 					/* Only do Illumina to Sanger conversion */
 					for (j=0; j < strlen(seqLine[i])-1; ++j)
-						gzputc(fastq_out, seqLine[i][j] - 0x1f);
+					{
+						int score = seqLine[i][j] - 0x1f;
+						if ((score > SCHAR_MAX) || (score < 33))
+						{
+							fputs("Error: original Phred scores are not in Illumina format.\n", stderr);
+							exit(EXIT_FAILURE);
+						}
+						else
+							gzputc(fastq_out, seqLine[i][j] - 0x1f);
+					}
 					gzputc(fastq_out, 0x0a);
+
 					if (p->flag & CONVERT_NUM)
 					{
 						/* Do both numerical and Illumina to Sanger conversion here */

@@ -13,6 +13,7 @@
 #include <assert.h>
 #include <malloc.h>
 #include <ctype.h>
+#include <limits.h>
 #include <zlib.h>
 #ifdef _MSC_VER
 #include "getopt.h"
