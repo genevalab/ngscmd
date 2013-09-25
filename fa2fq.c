@@ -11,7 +11,7 @@ int main_fa2fq(int argc, char **argv)
 
 int fa2fq(int argc, char **argv)
 {
-	unsigned int i;
+	int i, c;
 	char seqFile[FILE_NAME_LENGTH];
 	char qualFile[FILE_NAME_LENGTH];
 	char outFile[FILE_NAME_LENGTH];
@@ -22,7 +22,6 @@ int fa2fq(int argc, char **argv)
 	gzFile fastq_out;
 
    /* Read command line options */
-	int c;
 	opterr = 0;
 	while ((c = getopt(argc, argv, "o:")) != -1)
 	{
@@ -49,7 +48,7 @@ int fa2fq(int argc, char **argv)
 		strcpy(seqFile, argv[optind]);
 	else
 	{
-		fputs("\nNeed input fasta sequence file name\n", stderr);
+		fputs("\nError: need input fasta sequence file name.\n", stderr);
 		fa2fq_usage();
 		exit(EXIT_FAILURE);
 	}
@@ -57,7 +56,7 @@ int fa2fq(int argc, char **argv)
 		strcpy(qualFile, argv[optind+1]);
 	else
 	{
-		fputs("\nNeed fasta quality file name\n", stderr);
+		fputs("\nError: need the fasta quality file name.\n", stderr);
 		fa2fq_usage();
 		exit(EXIT_FAILURE);
 	}
@@ -65,21 +64,21 @@ int fa2fq(int argc, char **argv)
 	/* Open sequence file */
 	if ((seq = gzopen(seqFile, "rb")) == NULL)
 	{
-		fputs("Error opening the fasta sequence file\n", stderr);
+		fputs("Error opening the fasta sequence file.\n", stderr);
 		exit(EXIT_FAILURE);
 	}
 
 	/* Open the quality file */
 	if ((qual = gzopen(qualFile, "rb")) == NULL)
 	{
-			fputs("Error opening the quality file.\n", stderr);
+			fputs("Error opening the fasta quality file.\n", stderr);
 			exit(EXIT_FAILURE);
 	}
 
 	/* Open fastq output stream */
 	if ((fastq_out = gzopen(outFile, "wb")) == NULL)
 	{
-		fputs("Error opening the output stream.\n", stderr);
+		fputs("Error opening the fastq output stream.\n", stderr);
 		exit(EXIT_FAILURE);
 	}
 
@@ -102,26 +101,23 @@ int fa2fq(int argc, char **argv)
 	/* Read through both files */
 	while (1)
 	{
-		unsigned int buffCount = 0;
-		char line[MAX_LINE_LENGTH];
+		int buffCount = 0;
 
 		/* Fill up the buffer */
 		while (buffCount < BUFFSIZE)
 		{
-			if (gzgets(seq, line, MAX_LINE_LENGTH) == Z_NULL)
+			if (gzgets(seq, seqLine[buffCount], MAX_LINE_LENGTH) == Z_NULL)
 			{
-				fputs("Error reading from sequence file\n", stderr);
-				exit (EXIT_FAILURE);
-			}
-			else
-				strncpy(seqLine[buffCount], &line[0], MAX_LINE_LENGTH);
-			if (gzgets(qual, line, MAX_LINE_LENGTH) == Z_NULL)
-			{
-				fputs("Error reading from quality file\n", stderr);
+				fputs("Error reading from fastq sequence file.\n", stderr);
 				exit(EXIT_FAILURE);
 			}
-			else
-				strncpy(qualLine[buffCount], &line[0], MAX_LINE_LENGTH);
+
+			if (gzgets(qual, qualLine[buffCount], MAX_LINE_LENGTH) == Z_NULL)
+			{
+				fputs("Error reading from fasta quality file.\n", stderr);
+				exit(EXIT_FAILURE);
+			}
+
 			++buffCount;
 		}
 

@@ -14,14 +14,15 @@ int main_convert(int argc, char **argv)
 
 int convert(int argc, char **argv)
 {
+	int i, c;
 	int convert_flag = 0;
 	char seqFile[FILE_NAME_LENGTH];
 	char outFile[FILE_NAME_LENGTH];
+	char **seqLine;
 	gzFile fastq_in;
 	gzFile fastq_out;
 
    /* Read command line options */
-	int c;
 	opterr = 0;
 	while ((c = getopt(argc, argv, "sio:")) != -1)
 	{
@@ -54,7 +55,7 @@ int convert(int argc, char **argv)
 		strcpy(seqFile, argv[optind]);
 	else
 	{
-		fputs("\nNeed input fastq sequence file name\n", stderr);
+		fputs("\nError: need input fastq sequence file name.\n", stderr);
 		convert_usage();
 		exit(EXIT_FAILURE);
 	}
@@ -62,7 +63,7 @@ int convert(int argc, char **argv)
 	/* Open sequence file */
 	if ((fastq_in = gzopen(seqFile, "rb")) == NULL)
 	{
-		fputs("Error opening the fastq sequence file\n", stderr);
+		fputs("Error opening the fastq sequence file.\n", stderr);
 		exit(EXIT_FAILURE);
 	}
 
@@ -76,11 +77,79 @@ int convert(int argc, char **argv)
 	/* Set up interrupt trap */
 	signal(SIGINT, INThandler);
 
+	/* Allocate memory for buffer */
+	seqLine = (char**)malloc(BUFFSIZE*sizeof(char*));
+	assert(seqLine);
+	for (i=0; i < BUFFSIZE; ++i)
+	{
+		seqLine[i] = (char*)malloc(MAX_LINE_LENGTH*sizeof(char));
+		assert(seqLine[i]);
+	}
+
+	/* Read through fastq input sequence file */
+	while (1)
+	{
+		int buffCount = 0;
+
+		/* Fill up the buffer */
+		while (buffCount < BUFFSIZE)
+		{
+			if (gzgets(fastq_in, seqLine[buffCount], MAX_LINE_LENGTH) == Z_NULL)
+			{
+				fputs("Error reading from fastq sequence file.\n", stderr);
+				exit (EXIT_FAILURE);
+			}
+
+			++buffCount;
+		}
+
+		/* Dump buffer to output stream */
+		for (i=0; i < buffCount; ++i)
+		{
+			if (i%4 == 2)
+			{
+				size_t j;
+				if (convert_flag & CONVERT_STD)
+				{
+					if (convert_flag & CONVERT_NUM)
+					{
+						/* TODO: Do both numerical and sanger conversion here */ ;
+					}
+					else
+					{
+						/* Only do Illumina to Sanger conversion */
+						for (j=0; j < strlen(seqLine[i])-1; ++j)
+							gzputc(fastq_out, seqLine[i][j] - 0x1f);
+						gzputc(fastq_out, 0x0a);
+					}
+				}
+				else
+				{
+					if (convert_flag & CONVERT_NUM)
+					{
+						/* TODO: numerical only conversion here */
+					}
+				}
+			}
+			else
+				gzputs(fastq_out, seqLine[i]);
+		}
+
+		/* If we are at the end of the file */
+		if (buffCount < BUFFSIZE)
+			break;
+	}
+
 	/* Close fastq input sequence file stream */
 	gzclose(fastq_in);
 
 	/* Close fastq output sequence file stream */
 	gzclose(fastq_out);
+
+	/* Take out the garbage */
+	for (i=0; i < BUFFSIZE; ++i)
+		free(seqLine[i]);
+	free(seqLine);
 
 	return 0;
 }
