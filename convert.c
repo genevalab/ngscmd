@@ -1,14 +1,36 @@
-/* File: convert.c
- * Description: Functions to transform Phred scaled quality scores in fastq files
+/*************************************************************************
+ *
+ * File: convert.c
+ *
+ * Description: Functions to transform Phred scaled quality scores in 
+ *              fastq files
+ *
  * Author: Daniel Garrigan
- */
+ *
+ *************************************************************************/
+
 #include "ngsutils.h"
 
+
+/***************************************************************************
+ *
+ *  Definitions for the convert function
+ *
+ ***************************************************************************/
+
 #define CONVERT_REV 0x1
+
 #define CONVERT_NUM 0x2
+
 #define CONVERT_ASCII 0x4
 
-/* Data structure to hold user options */
+
+/***************************************************************************
+ *
+ *  Declare data structure to hold user options
+ *
+ ***************************************************************************/
+
 typedef struct _convert_params
 {
 	int flag;
@@ -16,22 +38,41 @@ typedef struct _convert_params
 	char outFile[FILENAME_MAX];
 } convert_p;
 
-/* Function prototypes */
+
+/***************************************************************************
+ *
+ * Declare function prototypes
+ *
+ **************************************************************************/
+
 int convert(int, char**);
+
 convert_p* convert_read_params(int, char**);
+
 int convert_usage(void);
 
-/* Entry point for convert function */
+
+/***************************************************************************
+ * Function: main_convert()
+ *
+ * Description: entry point for the convert function
+ ***************************************************************************/
+
 int main_convert(int argc, char **argv)
 {
 	if (!argv[0])
 		return convert_usage();
 	else
-		convert(argc, argv);
-	return 0;
+		return convert(argc, argv);
 }
 
-/* Main convert function */
+
+/***************************************************************************
+ * Function: convert()
+ *
+ * Description: main convert function
+ ***************************************************************************/
+
 int convert(int argc, char **argv)
 {
 	int i;
@@ -181,7 +222,14 @@ int convert(int argc, char **argv)
 	return 0;
 }
 
-/* Read user-supplied command line parameters for the convert function */
+
+/***************************************************************************
+ * Function: convert_read_params()
+ *
+ * Description: read user-supplied command line parameters for the convert 
+ *              function
+ ***************************************************************************/
+
 convert_p* convert_read_params(int argc, char **argv)
 {
 	int c;
@@ -195,6 +243,7 @@ convert_p* convert_read_params(int argc, char **argv)
 		exit (EXIT_FAILURE);
 	}
 
+	/* Initialize some variables */
 	opterr = 0;
 	p->flag = 0;
 
@@ -231,6 +280,7 @@ convert_p* convert_read_params(int argc, char **argv)
 	}
 
 	/* Get non-optioned arguments */
+	/* Get the name of the input sequence file */
 	if (argv[optind])
 		strcpy(p->seqFile, argv[optind]);
 	else
@@ -243,7 +293,13 @@ convert_p* convert_read_params(int argc, char **argv)
 	return p;
 }
 
-/* Print usage message for the convert function */
+
+/***************************************************************************
+ * Function: convert_usage()
+ *
+ * Description: prints a usage message for the convert function
+ ***************************************************************************/
+
 int convert_usage(void)
 {
 	fputs("\nUsage: NGSutils convert [options] <fastq file>\n\n", stderr);

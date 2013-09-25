@@ -1,12 +1,31 @@
-/* File: fa2sq.c
- * Description: Functions convert between fasta/quality files and fastq file
+/*************************************************************************
+ *
+ * File: fa2fq.c
+ *
+ * Description: Functions convert between fasta/quality files and
+ *              fastq files
+ *
  * Author: Daniel Garrigan
- */
+ *
+ *************************************************************************/
+
 #include "ngsutils.h"
+
+/***************************************************************************
+ *
+ *  Definitions for the fa2fq function
+ *
+ ***************************************************************************/
 
 #define FATOFQ_REV 0x1
 
-/* Data structure to hold user options */
+
+/***************************************************************************
+ *
+ *  Declare data structure to hold user options
+ *
+ ***************************************************************************/
+
 typedef struct _fa2fq_params
 {
 	int flag;
@@ -15,22 +34,41 @@ typedef struct _fa2fq_params
 	char outFile[FILENAME_MAX];
 } fa2fq_p;
 
-/* Function prototypes */
+
+/***************************************************************************
+ *
+ * Declare function prototypes
+ *
+ **************************************************************************/
+
 int fa2fq(int, char**);
+
 fa2fq_p* fa2fq_read_params(int, char**);
+
 int fa2fq_usage(void);
 
-/* Entry point for fa2fq function */
+
+/***************************************************************************
+ * Function: main_fa2fq()
+ *
+ * Description: entry point for the fa2fq function
+ ***************************************************************************/
+
 int main_fa2fq(int argc, char **argv)
 {
 	if (!argv[0])
 		return fa2fq_usage();
 	else
-		fa2fq(argc, argv);
-	return 0;
+		return fa2fq(argc, argv);
 }
 
-/* Main fa2fq function */
+
+/***************************************************************************
+ * Function: fq2fq()
+ *
+ * Description: main fa2fq function
+ ***************************************************************************/
+
 int fa2fq(int argc, char **argv)
 {
 	int i;
@@ -146,7 +184,14 @@ int fa2fq(int argc, char **argv)
 	return 0;
 }
 
-/* Read user-supplied command line parameters for the fa2fq function */
+
+/***************************************************************************
+ * Function: fa2fq_read_params()
+ *
+ * Description: read user-supplied command line parameters for the fa2fq 
+ *              function
+ ***************************************************************************/
+
 fa2fq_p* fa2fq_read_params(int argc, char **argv)
 {
 	int c;
@@ -160,6 +205,7 @@ fa2fq_p* fa2fq_read_params(int argc, char **argv)
 		exit (EXIT_FAILURE);
 	}
 
+	/* Initialize some variables */
 	opterr = 0;
 	p->flag = 0;
 
@@ -188,6 +234,9 @@ fa2fq_p* fa2fq_read_params(int argc, char **argv)
 				exit(EXIT_FAILURE);
 		}
 	}
+
+	/* Get the non-optioned arguments */
+	/* First get the name of the fasta sequence file */
 	if (argv[optind])
 		strcpy(p->seqFile, argv[optind]);
 	else
@@ -196,6 +245,8 @@ fa2fq_p* fa2fq_read_params(int argc, char **argv)
 		fa2fq_usage();
 		exit(EXIT_FAILURE);
 	}
+
+	/* Second get the name of the quality file */
 	if (argv[optind+1])
 		strcpy(p->qualFile, argv[optind+1]);
 	else
@@ -208,7 +259,13 @@ fa2fq_p* fa2fq_read_params(int argc, char **argv)
 	return p;
 }
 
-/* Print usage message for the fa2fq function */
+
+/***************************************************************************
+ * Function: fa2fq_usage()
+ *
+ * Description: prints a usage message for the fa2fq function
+ ***************************************************************************/
+
 int fa2fq_usage(void)
 {
 	fputs("\nUsage: NGSutils fa2fq [options] <fasta/q input file> [quality file]\n\n", stderr);

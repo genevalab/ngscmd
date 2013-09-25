@@ -1,10 +1,22 @@
-/* File: clean.c
+/*************************************************************************
+ *
+ * File: clean.c
+ *
  * Description: Functions to filter reads and bases according to quality
+ *
  * Author: Daniel Garrigan
- */
+ *
+ *************************************************************************/
+
 #include "ngsutils.h"
 
-/* Data structure to hold user options */
+
+/***************************************************************************
+ *
+ *  Declare data structure to hold user options
+ *
+ ***************************************************************************/
+
 typedef struct _clean_params
 {
 	int flag;
@@ -12,21 +24,41 @@ typedef struct _clean_params
 	char outFile[FILENAME_MAX];
 } clean_p;
 
-/* Function prototypes */
+
+/***************************************************************************
+ *
+ * Declare function prototypes
+ *
+ **************************************************************************/
+
 int clean(int, char**);
+
 clean_p* clean_read_params(int, char**);
+
 int clean_usage(void);
+
+
+/***************************************************************************
+ * Function: main_clean()
+ *
+ * Description: entry point for the clean function
+ ***************************************************************************/
 
 int main_clean(int argc, char **argv)
 {
 	if (!argv[0])
 		return clean_usage();
 	else
-		clean(argc, argv);
-	return 0;
+		return clean(argc, argv);
 }
 
-/* Main clean function */
+
+/***************************************************************************
+ * Function: clean()
+ *
+ * Description: main clean function
+ ***************************************************************************/
+
 int clean(int argc, char **argv)
 {
 	int i=0;
@@ -104,7 +136,14 @@ int clean(int argc, char **argv)
 	return 0;
 }
 
-/* Read user-supplied command line parameters for the clean function */
+
+/***************************************************************************
+ * Function: clean_read_params()
+ *
+ * Description: read user-supplied command line parameters for the clean 
+ *              function
+ ***************************************************************************/
+
 clean_p* clean_read_params(int argc, char **argv)
 {
 	int c=0;
@@ -118,6 +157,7 @@ clean_p* clean_read_params(int argc, char **argv)
 		exit (EXIT_FAILURE);
 	}
 
+	/* Initialize some variables */
 	opterr=0;
 	p->flag=0;
 
@@ -145,6 +185,7 @@ clean_p* clean_read_params(int argc, char **argv)
 	}
 
 	/* Get non-optioned arguments */
+	/* Get the name of the input sequence file */
 	if (argv[optind])
 		strcpy(p->seqFile, argv[optind]);
 	else
@@ -157,7 +198,13 @@ clean_p* clean_read_params(int argc, char **argv)
 	return p;
 }
 
-/* Print usage message for the clean function */
+
+/***************************************************************************
+ * Function: clean_usage()
+ *
+ * Description: prints a usage message for the clean function
+ ***************************************************************************/
+
 int clean_usage(void)
 {
 	fputs("\nUsage: NGSutils clean [options] <fastq file>\n\n", stderr);

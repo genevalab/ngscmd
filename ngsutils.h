@@ -21,13 +21,16 @@
 #include <unistd.h>
 #endif
 
+
 /* Globally scoped definitions */
 #define BUFFSIZE 2000
 #define MAX_LINE_LENGTH 400
 
+
 /* Globally scoped variables */
 extern char *optarg;
 extern int optind, opterr, optopt;
+
 
 /* Function prototypes */
 extern int main_fa2fq(int, char**);

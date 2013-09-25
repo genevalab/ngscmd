@@ -1,10 +1,22 @@
-/* File: pair.c
+/*************************************************************************
+ *
+ * File: pair.c
+ *
  * Description: Functions to align reads in two paired fastq files
+ *
  * Author: Daniel Garrigan
- */
+ *
+ *************************************************************************/
+
 #include "ngsutils.h"
 
-/* Data structure to hold user options */
+
+/***************************************************************************
+ *
+ *  Declare data structure to hold user options
+ *
+ ***************************************************************************/
+
 typedef struct _pair_params
 {
 	int flag;
@@ -14,22 +26,41 @@ typedef struct _pair_params
 	char outFile2[FILENAME_MAX];
 } pair_p;
 
-/* Function prototypes */
+
+/***************************************************************************
+ *
+ * Declare function prototypes
+ *
+ **************************************************************************/
+
 int pair(int, char**);
+
 pair_p* pair_read_params(int, char**);
+
 int pair_usage(void);
 
-/* Entry point for the pair function */
+
+/***************************************************************************
+ * Function: main_pair()
+ *
+ * Description: entry point for the pair function
+ ***************************************************************************/
+
 int main_pair(int argc, char **argv)
 {
 	if (!argv[0])
 		return pair_usage();
 	else
-		pair(argc, argv);
-	return 0;
+		return pair(argc, argv);
 }
 
-/* Main pair function */
+
+/***************************************************************************
+ * Function: pair()
+ *
+ * Description: main pair function
+ ***************************************************************************/
+
 int pair(int argc, char **argv)
 {
 	pair_p *p;
@@ -92,7 +123,14 @@ int pair(int argc, char **argv)
 	return 0;
 }
 
-/* Read user-supplied command line parameters for the pair function */
+
+/***************************************************************************
+ * Function: pair_read_params()
+ *
+ * Description: read user-supplied command line parameters for the pair 
+ *              function
+ ***************************************************************************/
+
 pair_p* pair_read_params(int argc, char **argv)
 {
 	int c;
@@ -106,6 +144,7 @@ pair_p* pair_read_params(int argc, char **argv)
 		exit (EXIT_FAILURE);
 	}
 
+	/* Initialize some variables */
 	opterr = 0;
 	p->flag = 0;
 
@@ -133,6 +172,9 @@ pair_p* pair_read_params(int argc, char **argv)
 				exit(EXIT_FAILURE);
 		}
 	}
+
+	/* Get the non-optioned arguments */
+	/* First get the name of sequence input file 1 */
 	if (argv[optind])
 		strcpy(p->seqFile1, argv[optind]);
 	else
@@ -141,6 +183,8 @@ pair_p* pair_read_params(int argc, char **argv)
 		pair_usage();
 		exit(EXIT_FAILURE);
 	}
+
+	/* Second get the name of sequence input file 2 */
 	if (argv[optind+1])
 		strcpy(p->seqFile2, argv[optind+1]);
 	else
@@ -153,7 +197,13 @@ pair_p* pair_read_params(int argc, char **argv)
 	return p;
 }
 
-/* Print usage message for the pair function */
+
+/***************************************************************************
+ * Function: pair_usage()
+ *
+ * Description: prints a usage message for the pair function
+ ***************************************************************************/
+
 int pair_usage(void)
 {
 	fputs("\nUsage: NGSutils pair [options] <fastq_mate1> <fastq_mate2>\n\n", stderr);

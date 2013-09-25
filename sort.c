@@ -1,10 +1,23 @@
-/* File: sort.c
- * Description: Functions to perform lexical sort of reads by identifier string
+/*************************************************************************
+ *
+ * File: sort.c
+ *
+ * Description: Functions to perform lexical sort of reads by identifier 
+ *              string
+ *
  * Author: Daniel Garrigan
- */
+ *
+ *************************************************************************/
+
 #include "ngsutils.h"
 
-/* Data structure to hold user options */
+
+/***************************************************************************
+ *
+ *  Declare data structure to hold user options
+ *
+ ***************************************************************************/
+
 typedef struct _sort_params
 {
 	int flag;
@@ -12,22 +25,41 @@ typedef struct _sort_params
 	char outFile[FILENAME_MAX];
 } sort_p;
 
-/* Function prototypes */
+
+/***************************************************************************
+ *
+ * Declare function prototypes
+ *
+ **************************************************************************/
+
 int sort(int, char**);
+
 sort_p* sort_read_params(int, char**);
+
 int sort_usage(void);
 
-/* Entry point for the sort function */
+
+/***************************************************************************
+ * Function: main_sort()
+ *
+ * Description: entry point for the sort function
+ ***************************************************************************/
+
 int main_sort(int argc, char **argv)
 {
 	if (!argv[0])
 		return sort_usage();
 	else
-		sort(argc, argv);
-	return 0;
+		return sort(argc, argv);
 }
 
-/* Main sort function */
+
+/***************************************************************************
+ * Function: sort()
+ *
+ * Description: main sort function
+ ***************************************************************************/
+
 int sort(int argc, char **argv)
 {
 	int i=0;
@@ -105,7 +137,14 @@ int sort(int argc, char **argv)
 	return 0;
 }
 
-/* Read user-supplied command line parameters for the sort function */
+
+/***************************************************************************
+ * Function: sort_read_params()
+ *
+ * Description: read user-supplied command line parameters for the sort 
+ *              function
+ ***************************************************************************/
+
 sort_p* sort_read_params(int argc, char **argv)
 {
 	int c=0;
@@ -119,6 +158,7 @@ sort_p* sort_read_params(int argc, char **argv)
 		exit (EXIT_FAILURE);
 	}
 
+	/* Initialize some variables */
 	opterr=0;
 	p->flag=0;
 
@@ -145,7 +185,8 @@ sort_p* sort_read_params(int argc, char **argv)
 		}
 	}
 
-	/* Get non-optioned arguments */
+	/* Get the non-optioned arguments */
+	/* Get the name of the sequence input file */
 	if (argv[optind])
 		strcpy(p->seqFile, argv[optind]);
 	else
@@ -158,7 +199,13 @@ sort_p* sort_read_params(int argc, char **argv)
 	return p;
 }
 
-/* Print usage message for the sort function */
+
+/***************************************************************************
+ * Function: sort_usage()
+ *
+ * Description: prints a usage message for the sort function
+ ***************************************************************************/
+
 int sort_usage(void)
 {
 	fputs("\nUsage: NGSutils sort [options] <fastq file>\n\n", stderr);

@@ -4,10 +4,13 @@
  */
 #include "ngsutils.h"
 
+/* Definitions for the main function */
 #define VERSION 0.1
+
 
 /* Function prototypes */
 int main_usage(void);
+
 
 /* Entry point for the NGSutils program */
 int main(int argc, char **argv)
@@ -34,6 +37,7 @@ int main(int argc, char **argv)
 	}
 }
 
+
 /* Handle an interrupt signal */
 void INThandler(int sig)
 {
@@ -41,6 +45,7 @@ void INThandler(int sig)
 	fputs("\nCtl-C caught... exiting program\n", stderr);
 	exit(EXIT_SUCCESS);
 }
+
 
 /* Print usage message for the NGSutils program */
 int main_usage(void)

@@ -1,32 +1,64 @@
-/* File: bypos.c
- * Description: Functions to calculate average quality score by base position in read
+/*************************************************************************
+ *
+ * File: bypos.c
+ *
+ * Description: Functions to calculate average quality score by base 
+ *              position in read
+ *
  * Author: Daniel Garrigan
- */
+ *
+ *************************************************************************/
+
 #include "ngsutils.h"
 
-/* Data structure to hold user options */
+
+/***************************************************************************
+ *
+ *  Declare data structure to hold user options
+ *
+ ***************************************************************************/
+
 typedef struct _bypos_params
 {
 	int flag;
 	char seqFile[FILENAME_MAX];
 } bypos_p;
 
-/* Function prototypes */
+
+/***************************************************************************
+ *
+ * Declare function prototypes
+ *
+ **************************************************************************/
+
 int bypos(int, char**);
+
 bypos_p* bypos_read_params(int, char**);
+
 int bypos_usage(void);
 
-/* Entry point for the bypos function */
+
+/***************************************************************************
+ * Function: main_bypos()
+ *
+ * Description: entry point for the bypos function
+ ***************************************************************************/
+
 int main_bypos(int argc, char **argv)
 {
 	if (!argv[0])
 		return bypos_usage();
 	else
-		bypos(argc, argv);
-	return 0;
+		return bypos(argc, argv);
 }
 
-/* Main bypos function */
+
+/***************************************************************************
+ * Function: bypos()
+ *
+ * Description: main bypos function
+ ***************************************************************************/
+
 int bypos(int argc, char **argv)
 {
 	int i=0;
@@ -87,11 +119,16 @@ int bypos(int argc, char **argv)
 		/* Tally scores along each position in the sequence */
 		for (i=0; i<buffCount; ++i)
 		{
+			/* If we are reading the quality score line */
 			if (i%4 == 3)
 			{
 				size_t j;
+
+				/* Update the maximum sequence length */
 				int k = (int)(strlen(seqLine[i]) - 1);
 				max_pos = k > max_pos ? k : max_pos;
+
+				/* Update the sum of the scores at each position in the seqeucne */
 				for (j=0; j<strlen(seqLine[i])-1; ++j)
 				{
 					score_sum[j] += (unsigned long long int)(seqLine[i][j]-33);
@@ -125,7 +162,14 @@ int bypos(int argc, char **argv)
 	return 0;
 }
 
-/* Read user-supplied command line parameters for the bypos function */
+
+/***************************************************************************
+ * Function: bypos_read_params()
+ *
+ * Description: read user-supplied command line parameters for the bypos 
+ *              function
+ ***************************************************************************/
+
 bypos_p* bypos_read_params(int argc, char **argv)
 {
 	int c=0;
@@ -139,6 +183,7 @@ bypos_p* bypos_read_params(int argc, char **argv)
 		exit (EXIT_FAILURE);
 	}
 
+	/* Initialize some variables */
 	opterr=0;
 	p->flag=0;
 
@@ -177,8 +222,14 @@ bypos_p* bypos_read_params(int argc, char **argv)
 	return p;
 }
 
-/* Print usage message for the bypos function */
-int bypos_usage(void)
+
+/***************************************************************************
+ * Function: bypos_usage()
+ *
+ * Description: prints a usage message for the bypos function
+ ***************************************************************************/
+ 
+ int bypos_usage(void)
 {
 	fputs("\nUsage: NGSutils bypos <fastq file>\n\n", stderr);
 	fputs("Note: bypos writes all output to STDOUT\n\n", stderr);
