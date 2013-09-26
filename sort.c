@@ -12,11 +12,9 @@
 #include "ngsutils.h"
 
 
-/***************************************************************************
- *
- *  Declare data structure to hold user options
- *
- ***************************************************************************/
+/*
+ *  Declare the sort_p data structure to hold user options
+ */
 
 typedef struct _sort_params
 {
@@ -26,45 +24,37 @@ typedef struct _sort_params
 } sort_p;
 
 
-/***************************************************************************
- *
+/*
  * Declare function prototypes
- *
- **************************************************************************/
+ */
 
 int sort(int, char**);
-
 sort_p* sort_read_params(int, char**);
-
 int sort_usage(void);
 
 
-/***************************************************************************
- * Function: main_sort()
- *
- * Description: entry point for the sort function
- ***************************************************************************/
+/*
+ * Entry point for the sort function
+ */
 
 int main_sort(int argc, char **argv)
 {
-	if (!argv[0])
+	if (argv[0] == NULL)
 		return sort_usage();
 	else
 		return sort(argc, argv);
 }
 
 
-/***************************************************************************
- * Function: sort()
- *
- * Description: main sort function
- ***************************************************************************/
+/*
+ * Lexical sort of reads by identifier string
+ */
 
 int sort(int argc, char **argv)
 {
-	int i=0;
+	int i = 0;
 	char **seqLine;
-	sort_p *p=NULL;
+	sort_p *p = NULL;
 	gzFile seq;
 	gzFile out;
 
@@ -89,22 +79,30 @@ int sort(int argc, char **argv)
 	signal(SIGINT, INThandler);
 
 	/* Allocate memory for buffer */
-	seqLine = (char**)malloc(BUFFSIZE*sizeof(char*));
-	assert(seqLine);
-	for (i=0; i<BUFFSIZE; ++i)
+	seqLine = (char**) malloc(BUFFSIZE * sizeof(char*));
+	if (seqLine == NULL)
 	{
-		seqLine[i] = (char*)malloc(MAX_LINE_LENGTH*sizeof(char));
-		assert(seqLine[i]);
+		fputs("Memory allocation failure for seqLine.1\n", stderr);
+		exit (EXIT_FAILURE);
+	}
+	for (i = 0; i < BUFFSIZE; ++i)
+	{
+		seqLine[i] = (char*) malloc(MAX_LINE_LENGTH * sizeof(char));
+		if (seqLine[i] == NULL)
+		{
+			fputs("Memory allocation failure for seqLine.2\n", stderr);
+			exit (EXIT_FAILURE);
+		}
 	}
 
 	/* Read through input sequence file */
 	while (1)
 	{
 		/* Initialize counter for the number of lines in the buffer */
-		int buffCount=0;
+		int buffCount = 0;
 
 		/* Fill up the buffer */
-		while (buffCount<BUFFSIZE)
+		while (buffCount < BUFFSIZE)
 		{
 			/* Get line from sequence file */
 			if (gzgets(seq, seqLine[buffCount], MAX_LINE_LENGTH) == Z_NULL)
@@ -115,13 +113,13 @@ int sort(int argc, char **argv)
 		}
 
 		/* Tally scores along each position in the sequence */
-		for (i=0; i<buffCount; ++i)
+		for (i = 0; i < buffCount; ++i)
 		{
 			/* TODO: Add code to sort the sequences here */
 		}
 
 		/* If we are at the end of the file */
-		if (buffCount<BUFFSIZE)
+		if (buffCount < BUFFSIZE)
 			break;
 	}
 
@@ -132,7 +130,7 @@ int sort(int argc, char **argv)
 	gzclose(out);
 
 	/* Take out the garbage */
-	for (i=0; i<BUFFSIZE; ++i)
+	for (i = 0; i < BUFFSIZE; ++i)
 		free(seqLine[i]);
 	free(seqLine);
 	free(p);
@@ -141,20 +139,17 @@ int sort(int argc, char **argv)
 }
 
 
-/***************************************************************************
- * Function: sort_read_params()
- *
- * Description: read user-supplied command line parameters for the sort 
- *              function
- ***************************************************************************/
+/*
+ * Read user-supplied command line parameters for the sort function
+ */
 
 sort_p* sort_read_params(int argc, char **argv)
 {
-	int c=0;
-	sort_p *p=NULL;
-
+	int c = 0;
+	sort_p *p = NULL;
+	
 	/* Allocate memory for parameter data structure */
-	p = (sort_p*)malloc(sizeof(sort_p));
+	p = (sort_p*) malloc(sizeof(sort_p));
 	if (p == NULL)
 	{
 		fputs("\n\nError: memory allocation failure for sort user parameter data structure.\n\n", stderr);
@@ -162,8 +157,8 @@ sort_p* sort_read_params(int argc, char **argv)
 	}
 
 	/* Initialize some variables */
-	opterr=0;
-	p->flag=0;
+	opterr = 0;
+	p->flag = 0;
 
    /* Read command line options */
 	while ((c = getopt(argc, argv, "o:")) != -1)
@@ -203,11 +198,9 @@ sort_p* sort_read_params(int argc, char **argv)
 }
 
 
-/***************************************************************************
- * Function: sort_usage()
- *
- * Description: prints a usage message for the sort function
- ***************************************************************************/
+/*
+ * Prints a usage message for the sort function
+ */
 
 int sort_usage(void)
 {

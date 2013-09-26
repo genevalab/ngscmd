@@ -1,7 +1,7 @@
 CC = gcc
 PROG = NGSutils
-SRC = ngsutils.c getopt.c fa2fq.c pair.c convert.c clean.c bypos.c sort.c revcom.c
-CFLAGS = -Wall -ansi -g
+SRC = ngsutils.c fa2fq.c pair.c convert.c clean.c bypos.c sort.c revcom.c
+CFLAGS = -Wall -std=c99 -g -Wextra -pedantic
 LIBFLAGS = -lz
 OBJS = $(SRC:%.c=%.o)
 

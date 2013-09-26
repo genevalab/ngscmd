@@ -135,12 +135,12 @@ static int gcd(int a, int b)
 {
 	int c;
 
-	c = a % b;
+	c = a%b;
 	while (c != 0)
 	{
 		a = b;
 		b = c;
-		c = a % b;
+		c = a%b;
 	}
 
 	return b;
@@ -164,7 +164,7 @@ static void permute_args(int panonopt_start, int panonopt_end, int opt_end, char
 	ncycle = gcd(nnonopts, nopts);
 	cyclelen = (opt_end - panonopt_start) / ncycle;
 
-	for (i=0; i < ncycle; i++)
+	for (i=0; i<ncycle; i++)
 	{
 		cstart = panonopt_end+i;
 		pos = cstart;

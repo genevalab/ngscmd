@@ -11,11 +11,9 @@
 #include "ngsutils.h"
 
 
-/***************************************************************************
- *
- *  Declare data structure to hold user options
- *
- ***************************************************************************/
+/*
+ *  Declare the clean_p data structure to hold user options
+ */
 
 typedef struct _clean_params
 {
@@ -25,45 +23,37 @@ typedef struct _clean_params
 } clean_p;
 
 
-/***************************************************************************
- *
+/*
  * Declare function prototypes
- *
- **************************************************************************/
+ */
 
 int clean(int, char**);
-
 clean_p* clean_read_params(int, char**);
-
 int clean_usage(void);
 
 
-/***************************************************************************
- * Function: main_clean()
- *
- * Description: entry point for the clean function
- ***************************************************************************/
+/*
+ * Entry point for the clean function
+ */
 
 int main_clean(int argc, char **argv)
 {
-	if (!argv[0])
+	if (argv[0] == NULL)
 		return clean_usage();
 	else
 		return clean(argc, argv);
 }
 
 
-/***************************************************************************
- * Function: clean()
- *
- * Description: main clean function
- ***************************************************************************/
+/*
+ * Filter reads and bases according to quality
+ */
 
 int clean(int argc, char **argv)
 {
-	int i=0;
+	int i = 0;
 	char **seqLine;
-	clean_p *p=NULL;
+	clean_p *p = NULL;
 	gzFile seq;
 	gzFile out;
 
@@ -88,22 +78,30 @@ int clean(int argc, char **argv)
 	signal(SIGINT, INThandler);
 
 	/* Allocate memory for buffer */
-	seqLine = (char**)malloc(BUFFSIZE*sizeof(char*));
-	assert(seqLine);
-	for (i=0; i<BUFFSIZE; ++i)
+	seqLine = (char**) malloc(BUFFSIZE * sizeof(char*));
+	if (seqLine == NULL)
 	{
-		seqLine[i] = (char*)malloc(MAX_LINE_LENGTH*sizeof(char));
-		assert(seqLine[i]);
+		fputs("Memory allocation failure for seqLine.1\n", stderr);
+		exit (EXIT_FAILURE);
+	}
+	for (i = 0; i < BUFFSIZE; ++i)
+	{
+		seqLine[i] = (char*) malloc(MAX_LINE_LENGTH * sizeof(char));
+		if (seqLine[i] == NULL)
+		{
+			fputs("Memory allocation failure for seqLine.2\n", stderr);
+			exit (EXIT_FAILURE);
+		}
 	}
 
 	/* Read through input sequence file */
 	while (1)
 	{
 		/* Initialize counter for the number of lines in the buffer */
-		int buffCount=0;
+		int buffCount = 0;
 
 		/* Fill up the buffer */
-		while (buffCount<BUFFSIZE)
+		while (buffCount < BUFFSIZE)
 		{
 			/* Get line from sequence file */
 			if (gzgets(seq, seqLine[buffCount], MAX_LINE_LENGTH) == Z_NULL)
@@ -114,13 +112,13 @@ int clean(int argc, char **argv)
 		}
 
 		/* Tally scores along each position in the sequence */
-		for (i=0; i<buffCount; ++i)
+		for (i = 0; i < buffCount; ++i)
 		{
 			/* TODO: Add code to filter and trim sequences here */
 		}
 
 		/* If we are at the end of the file */
-		if (buffCount<BUFFSIZE)
+		if (buffCount < BUFFSIZE)
 			break;
 	}
 
@@ -128,7 +126,7 @@ int clean(int argc, char **argv)
 	gzclose(seq);
 
 	/* Take out the garbage */
-	for (i=0; i<BUFFSIZE; ++i)
+	for (i = 0; i < BUFFSIZE; ++i)
 		free(seqLine[i]);
 	free(seqLine);
 	free(p);
@@ -137,20 +135,17 @@ int clean(int argc, char **argv)
 }
 
 
-/***************************************************************************
- * Function: clean_read_params()
- *
- * Description: read user-supplied command line parameters for the clean 
- *              function
- ***************************************************************************/
+/*
+ * Read user-supplied command line parameters for the clean function
+ */
 
 clean_p* clean_read_params(int argc, char **argv)
 {
-	int c=0;
-	clean_p *p=NULL;
+	int c = 0;
+	clean_p *p = NULL;
 
 	/* Allocate memory for parameter data structure */
-	p = (clean_p*)malloc(sizeof(clean_p));
+	p = (clean_p*) malloc(sizeof(clean_p));
 	if (p == NULL)
 	{
 		fputs("\n\nError: memory allocation failure for clean user parameter data structure.\n\n", stderr);
@@ -158,8 +153,8 @@ clean_p* clean_read_params(int argc, char **argv)
 	}
 
 	/* Initialize some variables */
-	opterr=0;
-	p->flag=0;
+	opterr = 0;
+	p->flag = 0;
 
    /* Read command line options */
 	while ((c = getopt(argc, argv, "o:")) != -1)
@@ -199,11 +194,9 @@ clean_p* clean_read_params(int argc, char **argv)
 }
 
 
-/***************************************************************************
- * Function: clean_usage()
- *
- * Description: prints a usage message for the clean function
- ***************************************************************************/
+/*
+ * Prints a usage message for the clean function
+ */
 
 int clean_usage(void)
 {

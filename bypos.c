@@ -12,11 +12,9 @@
 #include "ngsutils.h"
 
 
-/***************************************************************************
- *
- *  Declare data structure to hold user options
- *
- ***************************************************************************/
+/*
+ *  Declare the bypos_p data structure to hold user options
+ */
 
 typedef struct _bypos_params
 {
@@ -25,48 +23,40 @@ typedef struct _bypos_params
 } bypos_p;
 
 
-/***************************************************************************
- *
+/*
  * Declare function prototypes
- *
- **************************************************************************/
+ */
 
 int bypos(int, char**);
-
 bypos_p* bypos_read_params(int, char**);
-
 int bypos_usage(void);
 
 
-/***************************************************************************
- * Function: main_bypos()
- *
- * Description: entry point for the bypos function
- ***************************************************************************/
+/*
+ * Entry point for the bypos function
+ */
 
 int main_bypos(int argc, char **argv)
 {
-	if (!argv[0])
+	if (argv[0] == NULL)
 		return bypos_usage();
 	else
 		return bypos(argc, argv);
 }
 
 
-/***************************************************************************
- * Function: bypos()
- *
- * Description: main bypos function
- ***************************************************************************/
+/*
+ * Calculate the average quality score by base position in read
+ */
 
 int bypos(int argc, char **argv)
 {
-	int i=0;
-	int max_pos=0;
-	unsigned long long int *score_sum=NULL;
-	unsigned long long int *num_bases=NULL;
+	int i = 0;
+	int max_pos = 0;
+	unsigned long long int *score_sum = NULL;
+	unsigned long int *num_bases = NULL;
 	char **seqLine;
-	bypos_p *p=NULL;
+	bypos_p *p = NULL;
 	gzFile seq;
 
 	/* Read and store user-supplied parameters */
@@ -83,30 +73,46 @@ int bypos(int argc, char **argv)
 	signal(SIGINT, INThandler);
 
 	/* Allocate memory for buffer */
-	seqLine = (char**)malloc(BUFFSIZE*sizeof(char*));
-	assert(seqLine);
-	for (i=0; i<BUFFSIZE; ++i)
+	seqLine = (char**) malloc(BUFFSIZE * sizeof(char*));
+	if (seqLine == NULL)
 	{
-		seqLine[i] = (char*)malloc(MAX_LINE_LENGTH*sizeof(char));
-		assert(seqLine[i]);
+		fputs("Memory allocation failure for seqLine.1\n", stderr);
+		exit (EXIT_FAILURE);
+	}
+	for (i = 0; i < BUFFSIZE; ++i)
+	{
+		seqLine[i] = (char*) malloc(MAX_LINE_LENGTH * sizeof(char));
+		if (seqLine[i] == NULL)
+		{
+			fputs("Memory allocation failure for seqLine.2\n", stderr);
+			exit (EXIT_FAILURE);
+		}
 	}
 
 	/* Allocate memory for score_sum array */
-	score_sum = (unsigned long long int*)calloc(MAX_LINE_LENGTH, sizeof(unsigned long long int));
-	assert(score_sum);
+	score_sum = (unsigned long long int*) calloc(MAX_LINE_LENGTH, sizeof(unsigned long long int));
+	if (score_sum == NULL)
+	{
+		fputs("Memory allocation failure for score_sum\n", stderr);
+		exit (EXIT_FAILURE);
+	}
 
 	/* Allocate memory for num_bases array */
-	num_bases = (unsigned long long int*)calloc(MAX_LINE_LENGTH, sizeof(unsigned long long int));
-	assert(num_bases);
+	num_bases = (unsigned long int*) calloc(MAX_LINE_LENGTH, sizeof(unsigned long int));
+	if (num_bases == NULL)
+	{
+		fputs("Memory allocation failure for num_bases\n", stderr);
+		exit (EXIT_FAILURE);
+	}
 
 	/* Read through input sequence file */
 	while (1)
 	{
 		/* Initialize counter for the number of lines in the buffer */
-		int buffCount=0;
+		int buffCount = 0;
 
 		/* Fill up the buffer */
-		while (buffCount<BUFFSIZE)
+		while (buffCount < BUFFSIZE)
 		{
 			/* Get line from sequence file */
 			if (gzgets(seq, seqLine[buffCount], MAX_LINE_LENGTH) == Z_NULL)
@@ -117,28 +123,29 @@ int bypos(int argc, char **argv)
 		}
 
 		/* Tally scores along each position in the sequence */
-		for (i=0; i<buffCount; ++i)
+		for (i = 0; i < buffCount; ++i)
 		{
 			/* If we are reading the quality score line */
-			if (i%4 == 3)
+			if (i % 4 == 3)
 			{
 				size_t j;
 
 				/* Update the maximum sequence length */
-				int k = (int)(strlen(seqLine[i]) - 1);
+				int k;
+				k = (int) (strlen(seqLine[i]) - 1);
 				max_pos = k > max_pos ? k : max_pos;
 
 				/* Update the sum of the scores at each position in the seqeucne */
-				for (j=0; j<strlen(seqLine[i])-1; ++j)
+				for (j = 0; j < strlen(seqLine[i]) - 1; ++j)
 				{
-					score_sum[j] += (unsigned long long int)(seqLine[i][j]-33);
+					score_sum[j] += (unsigned long long int) (seqLine[i][j] - 33);
 					++num_bases[j];
 				}
 			}
 		}
 
 		/* If we are at the end of the file */
-		if (buffCount<BUFFSIZE)
+		if (buffCount < BUFFSIZE)
 			break;
 	}
 
@@ -147,12 +154,12 @@ int bypos(int argc, char **argv)
 
 	/* Print results to STDOUT */
 	puts("Position  \tNo. Bases   \tAvg. Score");
-	for (i=0; i<max_pos; ++i)
-		if (num_bases[i]>0)
-			printf("%-10d\t%-12llu\t%-12.7lf\n", i+1, num_bases[i], (double)score_sum[i]/num_bases[i]);
+	for (i = 0; i < max_pos; ++i)
+		if (num_bases[i] > 0)
+			printf("%-10d\t%-12lu\t%-12.7lf\n", i + 1, num_bases[i], (double) score_sum[i] / num_bases[i]);
 
 	/* Take out the garbage */
-	for (i=0; i<BUFFSIZE; ++i)
+	for (i = 0; i < BUFFSIZE; ++i)
 		free(seqLine[i]);
 	free(seqLine);
 	free(num_bases);
@@ -163,20 +170,17 @@ int bypos(int argc, char **argv)
 }
 
 
-/***************************************************************************
- * Function: bypos_read_params()
- *
- * Description: read user-supplied command line parameters for the bypos 
- *              function
- ***************************************************************************/
+/*
+ * Read user-supplied command line parameters for the bypos function
+ */
 
 bypos_p* bypos_read_params(int argc, char **argv)
 {
-	int c=0;
-	bypos_p *p=NULL;
+	int c = 0;
+	bypos_p *p = NULL;
 
 	/* Allocate memory for parameter data structure */
-	p = (bypos_p*)malloc(sizeof(bypos_p));
+	p = (bypos_p*) malloc(sizeof(bypos_p));
 	if (p == NULL)
 	{
 		fputs("\n\nError: memory allocation failure for bypos user parameter data structure.\n\n", stderr);
@@ -184,8 +188,8 @@ bypos_p* bypos_read_params(int argc, char **argv)
 	}
 
 	/* Initialize some variables */
-	opterr=0;
-	p->flag=0;
+	opterr = 0;
+	p->flag = 0;
 
    /* Read command line options */
 	while ((c = getopt(argc, argv, "h")) != -1)
@@ -223,11 +227,9 @@ bypos_p* bypos_read_params(int argc, char **argv)
 }
 
 
-/***************************************************************************
- * Function: bypos_usage()
- *
- * Description: prints a usage message for the bypos function
- ***************************************************************************/
+/*
+ * Prints a usage message for the bypos function
+ */
  
  int bypos_usage(void)
 {

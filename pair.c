@@ -11,11 +11,9 @@
 #include "ngsutils.h"
 
 
-/***************************************************************************
- *
+/*
  *  Declare data structure to hold user options
- *
- ***************************************************************************/
+ */
 
 typedef struct _pair_params
 {
@@ -27,43 +25,35 @@ typedef struct _pair_params
 } pair_p;
 
 
-/***************************************************************************
- *
+/*
  * Declare function prototypes
- *
- **************************************************************************/
+ */
 
 int pair(int, char**);
-
 pair_p* pair_read_params(int, char**);
-
 int pair_usage(void);
 
 
-/***************************************************************************
- * Function: main_pair()
- *
- * Description: entry point for the pair function
- ***************************************************************************/
+/*
+ * Entry point for the pair function
+ */
 
 int main_pair(int argc, char **argv)
 {
-	if (!argv[0])
+	if (argv[0] == NULL)
 		return pair_usage();
 	else
 		return pair(argc, argv);
 }
 
 
-/***************************************************************************
- * Function: pair()
- *
- * Description: main pair function
- ***************************************************************************/
+/*
+ * Main pair function
+ */
 
 int pair(int argc, char **argv)
 {
-	pair_p *p;
+	pair_p *p = NULL;
 	gzFile seq1;
 	gzFile seq2;
 	gzFile out1;
@@ -124,20 +114,17 @@ int pair(int argc, char **argv)
 }
 
 
-/***************************************************************************
- * Function: pair_read_params()
- *
- * Description: read user-supplied command line parameters for the pair 
- *              function
- ***************************************************************************/
+/*
+ * Read user-supplied command line parameters for the pair function
+ */
 
 pair_p* pair_read_params(int argc, char **argv)
 {
-	int c;
-	pair_p *p;
+	int c = 0;
+	pair_p *p = NULL;
 
 	/* Allocate memory for parameter data structure */
-	p = (pair_p*)malloc(sizeof(pair_p));
+	p = (pair_p*) malloc(sizeof(pair_p));
 	if (p == NULL)
 	{
 		fputs("\n\nError: memory allocation failure for pair user parameter data structure.\n", stderr);
@@ -185,8 +172,8 @@ pair_p* pair_read_params(int argc, char **argv)
 	}
 
 	/* Second get the name of sequence input file 2 */
-	if (argv[optind+1])
-		strcpy(p->seqFile2, argv[optind+1]);
+	if (argv[optind + 1])
+		strcpy(p->seqFile2, argv[optind + 1]);
 	else
 	{
 		fputs("\n\nError: need the name of the second input fastq sequence file as a mandatory argument.\n\n", stderr);
@@ -198,16 +185,13 @@ pair_p* pair_read_params(int argc, char **argv)
 }
 
 
-/***************************************************************************
- * Function: pair_usage()
- *
- * Description: prints a usage message for the pair function
- ***************************************************************************/
+/*
+ * Prints a usage message for the pair function
+ */
 
 int pair_usage(void)
 {
 	fputs("\nUsage: NGSutils pair [options] <fastq_mate1> <fastq_mate2>\n\n", stderr);
-	fputs("Options:        -o         prefix string for naming both output files\n", stderr);
-	fputc(0x0a, stderr);
+	fputs("Options:        -o         prefix string for naming both output files\n\n", stderr);
 	return 0;
 }

@@ -12,24 +12,18 @@
 #include "ngsutils.h"
 
 
-/***************************************************************************
- *
+/*
  *  Definitions for the convert function
- *
- ***************************************************************************/
+ */
 
 #define CONVERT_REV 0x1
-
 #define CONVERT_NUM 0x2
-
 #define CONVERT_ASCII 0x4
 
 
-/***************************************************************************
- *
- *  Declare data structure to hold user options
- *
- ***************************************************************************/
+/*
+ *  Declare the convert_p data structure to hold user options
+ */
 
 typedef struct _convert_params
 {
@@ -39,45 +33,37 @@ typedef struct _convert_params
 } convert_p;
 
 
-/***************************************************************************
- *
+/*
  * Declare function prototypes
- *
- **************************************************************************/
+ */
 
 int convert(int, char**);
-
 convert_p* convert_read_params(int, char**);
-
 int convert_usage(void);
 
 
-/***************************************************************************
- * Function: main_convert()
- *
- * Description: entry point for the convert function
- ***************************************************************************/
+/*
+ * Entry point for the convert function
+ */
 
 int main_convert(int argc, char **argv)
 {
-	if (!argv[0])
+	if (argv[0] == NULL)
 		return convert_usage();
 	else
 		return convert(argc, argv);
 }
 
 
-/***************************************************************************
- * Function: convert()
- *
- * Description: main convert function
- ***************************************************************************/
+/*
+ * Transform Phred scaled quality scores
+ */
 
 int convert(int argc, char **argv)
 {
-	int i;
+	int i = 0;
 	char **seqLine;
-	convert_p *p;
+	convert_p *p = NULL;
 	gzFile seq;
 	gzFile out;
 
@@ -102,12 +88,20 @@ int convert(int argc, char **argv)
 	signal(SIGINT, INThandler);
 
 	/* Allocate memory for buffer */
-	seqLine = (char**)malloc(BUFFSIZE*sizeof(char*));
-	assert(seqLine);
-	for (i=0; i<BUFFSIZE; ++i)
+	seqLine = (char**) malloc(BUFFSIZE * sizeof(char*));
+	if (seqLine == NULL)
 	{
-		seqLine[i] = (char*)malloc(MAX_LINE_LENGTH*sizeof(char));
-		assert(seqLine[i]);
+		fputs("Memory allocation failure for seqLine.1\n", stderr);
+		exit (EXIT_FAILURE);
+	}
+	for (i = 0; i < BUFFSIZE; ++i)
+	{
+		seqLine[i] = (char*) malloc(MAX_LINE_LENGTH * sizeof(char));
+		if (seqLine[i] == NULL)
+		{
+			fputs("Memory allocation failure for seqLine.2\n", stderr);
+			exit (EXIT_FAILURE);
+		}
 	}
 
 	/* Read through fastq input sequence file */
@@ -116,7 +110,7 @@ int convert(int argc, char **argv)
 		int buffCount = 0;
 
 		/* Fill up the buffer */
-		while (buffCount<BUFFSIZE)
+		while (buffCount < BUFFSIZE)
 		{
 			if (gzgets(seq, seqLine[buffCount], MAX_LINE_LENGTH) == Z_NULL)
 				break;
@@ -124,17 +118,18 @@ int convert(int argc, char **argv)
 		}
 
 		/* Dump buffer to output stream */
-		for (i=0; i<buffCount; ++i)
+		for (i = 0; i < buffCount; ++i)
 		{
-			if (i%4 == 3)
+			if (i % 4 == 3)
 			{
 				size_t j;
 				if (p->flag & CONVERT_REV)
 				{
 					/* Only do Sanger to Illumina conversion */
-					for (j=0; j<strlen(seqLine[i])-1; ++j)
+					for (j = 0; j < strlen(seqLine[i]) - 1; ++j)
 					{
-						int score = seqLine[i][j]+0x1f;
+						int score;
+						score = seqLine[i][j] + 31;
 						if (score > SCHAR_MAX)
 						{
 							fputs("\n\nError: the original Phred scores are not in standard Sanger format.\n\n", stderr);
@@ -143,12 +138,12 @@ int convert(int argc, char **argv)
 						else
 							gzputc(out, score);
 					}
-					gzputc(out, 0x0a);
+					gzputc(out, '\n');
 
 					if (p->flag & CONVERT_NUM)
 					{
 						/* Do both numerical and Sanger to Illumina conversion here */
-						const char delim = 0x20;
+						const char delim = ' ';
 						char *tok;
 						int score;
 						tok = strtok(seqLine[i], &delim);
@@ -158,31 +153,32 @@ int convert(int argc, char **argv)
 						{
 							tok = strtok(NULL, &delim);
 							score = atoi(tok);
-							gzputc(out, score+0x1f);
+							gzputc(out, score + 31);
 						}
-						gzputc(out, 0x0a);
+						gzputc(out, '\n');
 					}
 				}
 				else
 				{
 					/* Only do Illumina to Sanger conversion */
-					for (j=0; j<strlen(seqLine[i])-1; ++j)
+					for (j = 0; j < strlen(seqLine[i]) - 1; ++j)
 					{
-						int score = seqLine[i][j]-0x1f;
+						int score;
+						score = seqLine[i][j] - 31;
 						if ((score > SCHAR_MAX) || (score < 33))
 						{
 							fputs("\n\nError: the original Phred scores are not in Illumina format.\n\n", stderr);
 							exit(EXIT_FAILURE);
 						}
 						else
-							gzputc(out, seqLine[i][j] - 0x1f);
+							gzputc(out, seqLine[i][j] - 31);
 					}
-					gzputc(out, 0x0a);
+					gzputc(out, '\n');
 
 					if (p->flag & CONVERT_NUM)
 					{
 						/* Do both numerical and Illumina to Sanger conversion here */
-						const char delim = 0x20;
+						const char delim = ' ';
 						char *tok;
 						int score;
 						tok = strtok(seqLine[i], &delim);
@@ -192,9 +188,9 @@ int convert(int argc, char **argv)
 						{
 							tok = strtok(NULL, &delim);
 							score = atoi(tok);
-							gzputc(out, score - 0x1f);
+							gzputc(out, score - 31);
 						}
-						gzputc(out, 0x0a);
+						gzputc(out, '\n');
 					}
 				}
 			}
@@ -214,7 +210,7 @@ int convert(int argc, char **argv)
 	gzclose(out);
 
 	/* Take out the garbage */
-	for (i=0; i<BUFFSIZE; ++i)
+	for (i = 0; i < BUFFSIZE; ++i)
 		free(seqLine[i]);
 	free(seqLine);
 	free(p);
@@ -223,20 +219,17 @@ int convert(int argc, char **argv)
 }
 
 
-/***************************************************************************
- * Function: convert_read_params()
- *
- * Description: read user-supplied command line parameters for the convert 
- *              function
- ***************************************************************************/
+/*
+ * Read user-supplied command line parameters for the convert function
+ */
 
 convert_p* convert_read_params(int argc, char **argv)
 {
-	int c;
-	convert_p *p;
+	int c = 0;
+	convert_p *p = NULL;
 
 	/* Allocate memory for parameter data structure */
-	p = (convert_p*)malloc(sizeof(convert_p));
+	p = (convert_p*) malloc(sizeof(convert_p));
 	if (p == NULL)
 	{
 		fputs("\n\nError: memory allocation failure for convert user parameter data structure.\n\n", stderr);
@@ -294,11 +287,9 @@ convert_p* convert_read_params(int argc, char **argv)
 }
 
 
-/***************************************************************************
- * Function: convert_usage()
- *
- * Description: prints a usage message for the convert function
- ***************************************************************************/
+/*
+ * Prints a usage message for the convert function
+ */
 
 int convert_usage(void)
 {
@@ -307,7 +298,6 @@ int convert_usage(void)
 	fputs("                -s         convert from 33-126 scale to 64-126 scale\n", stderr);
 	fputs("                           default: 64-126 to 33-126 scale\n", stderr);
 	fputs("                -a         convert from numerical scores to ASCII\n", stderr);
-	fputs("                -n         convert from ASCII scores to numerical\n", stderr);
-	fputc(0x0a, stderr);
+	fputs("                -n         convert from ASCII scores to numerical\n\n", stderr);
 	return 0;
 }

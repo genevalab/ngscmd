@@ -11,20 +11,16 @@
 
 #include "ngsutils.h"
 
-/***************************************************************************
- *
+/*
  *  Definitions for the fa2fq function
- *
- ***************************************************************************/
+ */
 
 #define FATOFQ_REV 0x1
 
 
-/***************************************************************************
- *
- *  Declare data structure to hold user options
- *
- ***************************************************************************/
+/*
+ *  Declare the fa2fq_p data structure to hold user options
+ */
 
 typedef struct _fa2fq_params
 {
@@ -35,54 +31,46 @@ typedef struct _fa2fq_params
 } fa2fq_p;
 
 
-/***************************************************************************
- *
+/*
  * Declare function prototypes
- *
- **************************************************************************/
+ */
 
 int fa2fq(int, char**);
-
 fa2fq_p* fa2fq_read_params(int, char**);
-
 int fa2fq_usage(void);
 
 
-/***************************************************************************
- * Function: main_fa2fq()
- *
- * Description: entry point for the fa2fq function
- ***************************************************************************/
+/*
+ * Entry point for the fa2fq function
+ */
 
 int main_fa2fq(int argc, char **argv)
 {
-	if (!argv[0])
+	if (argv[0] == NULL)
 		return fa2fq_usage();
 	else
 		return fa2fq(argc, argv);
 }
 
 
-/***************************************************************************
- * Function: fq2fq()
- *
- * Description: main fa2fq function
- ***************************************************************************/
+/*
+ * Join fasta/quality files into a single fastq file
+ */
 
 int fa2fq(int argc, char **argv)
 {
-	int i;
+	int i = 0;
 	char **seqLine;
 	char **qualLine;
-	fa2fq_p *p;
+	fa2fq_p *p = NULL;
 	gzFile seq;
 	gzFile qual;
 	gzFile out;
 
-	/* Read and store user-supplied parameters */
+	/* Read and store the user-supplied parameters */
 	p = fa2fq_read_params(argc, argv);
 
-	/* Open sequence file */
+	/* Open the sequence file */
 	if ((seq = gzopen(p->seqFile, "rb")) == NULL)
 	{
 		fputs("\n\nError: cannot open the input fasta sequence file.\n\n", stderr);
@@ -96,27 +84,43 @@ int fa2fq(int argc, char **argv)
 			exit(EXIT_FAILURE);
 	}
 
-	/* Open fastq output stream */
+	/* Open the fastq output stream */
 	if ((out = gzopen(p->outFile, "wb")) == NULL)
 	{
 		fputs("\n\nError: cannot open the output fastq sequence file.\n", stderr);
 		exit(EXIT_FAILURE);
 	}
 
-	/* Set up interrupt trap */
+	/* Set up the interrupt trap */
 	signal(SIGINT, INThandler);
 
-	/* Allocate memory for buffer */
-	seqLine = (char**)malloc(BUFFSIZE*sizeof(char*));
-	assert(seqLine);
-	qualLine = (char**)malloc(BUFFSIZE*sizeof(char*));
-	assert(qualLine);
-	for (i=0; i < BUFFSIZE; ++i)
+	/* Allocate memory for the two buffers */
+	seqLine = (char**) malloc(BUFFSIZE * sizeof(char*));
+	if (seqLine == NULL)
 	{
-		seqLine[i] = (char*)malloc(MAX_LINE_LENGTH*sizeof(char));
-		assert(seqLine[i]);
-		qualLine[i] = (char*)malloc(MAX_LINE_LENGTH*sizeof(char));
-		assert(qualLine[i]);
+		fputs("Memory allocation failure for seqLine.1\n", stderr);
+		exit (EXIT_FAILURE);
+	}
+	qualLine = (char**) malloc(BUFFSIZE * sizeof(char*));
+	if (qualLine == NULL)
+	{
+		fputs("Memory allocation failure for qualLine.1\n", stderr);
+		exit (EXIT_FAILURE);
+	}
+	for (i = 0; i < BUFFSIZE; ++i)
+	{
+		seqLine[i] = (char*) malloc(MAX_LINE_LENGTH * sizeof(char));
+		if (seqLine[i] == NULL)
+		{
+			fputs("Memory allocation failure for seqLine.2\n", stderr);
+			exit (EXIT_FAILURE);
+		}
+		qualLine[i] = (char*) malloc(MAX_LINE_LENGTH * sizeof(char));
+		if (qualLine[i] == NULL)
+		{
+			fputs("Memory allocation failure for qualLine.2\n", stderr);
+			exit (EXIT_FAILURE);
+		}
 	}
 
 	/* Read through both files */
@@ -141,19 +145,18 @@ int fa2fq(int argc, char **argv)
 		}
 
 		/* Dump buffer to output stream */
-		for (i=0; i < buffCount; ++i)
+		for (i = 0; i < buffCount; ++i)
 		{
-			if (i%2)
+			if (i % 2)
 			{
 				gzputs(out, seqLine[i]);
-				gzputc(out, 0x2b);
-				gzputc(out, 0xa);
+				gzputs(out, "+\n");
 				gzputs(out, qualLine[i]);
 			}
 			else
 			{
-				gzputc(out, 0x40);
-				gzputs(out, seqLine[i]+1);
+				gzputc(out, '@');
+				gzputs(out, seqLine[i] + 1);
 			}
 		}
 
@@ -172,7 +175,7 @@ int fa2fq(int argc, char **argv)
 	gzclose(out);
 
 	/* Take out the garbage */
-	for (i=0; i < BUFFSIZE; ++i)
+	for (i = 0; i < BUFFSIZE; ++i)
 	{
 		free(seqLine[i]);
 		free(qualLine[i]);
@@ -185,20 +188,17 @@ int fa2fq(int argc, char **argv)
 }
 
 
-/***************************************************************************
- * Function: fa2fq_read_params()
- *
- * Description: read user-supplied command line parameters for the fa2fq 
- *              function
- ***************************************************************************/
+/*
+ * Read user-supplied command line parameters for the fa2fq function
+ */
 
 fa2fq_p* fa2fq_read_params(int argc, char **argv)
 {
-	int c;
-	fa2fq_p *p;
+	int c = 0;
+	fa2fq_p *p = NULL;
 
 	/* Allocate memory for parameter data structure */
-	p = (fa2fq_p*)malloc(sizeof(fa2fq_p));
+	p = (fa2fq_p*) malloc(sizeof(fa2fq_p));
 	if (p == NULL)
 	{
 		fputs("\n\nError: memory allocation failure for fa2fq user parameter data structure.\n\n", stderr);
@@ -247,8 +247,8 @@ fa2fq_p* fa2fq_read_params(int argc, char **argv)
 	}
 
 	/* Second get the name of the quality file */
-	if (argv[optind+1])
-		strcpy(p->qualFile, argv[optind+1]);
+	if (argv[optind + 1])
+		strcpy(p->qualFile, argv[optind + 1]);
 	else
 	{
 		fputs("\n\nError: need the fasta quality file name as a mandatory argument.\n", stderr);
@@ -260,17 +260,14 @@ fa2fq_p* fa2fq_read_params(int argc, char **argv)
 }
 
 
-/***************************************************************************
- * Function: fa2fq_usage()
- *
- * Description: prints a usage message for the fa2fq function
- ***************************************************************************/
+/*
+ * Prints a usage message for the fa2fq function
+ */
 
 int fa2fq_usage(void)
 {
 	fputs("\nUsage: NGSutils fa2fq [options] <fasta/q input file> [quality file]\n\n", stderr);
 	fputs("Options:        -o         prefix string for name of fastq/fasta/quality output files\n", stderr);
-	fputs("                -r         split fastq file into separate fasta and quality files\n", stderr);
-	fputc(0x0a, stderr);
+	fputs("                -r         split fastq file into separate fasta and quality files\n\n", stderr);
 	return 0;
 }

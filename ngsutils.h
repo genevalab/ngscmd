@@ -1,7 +1,13 @@
-/* File: ngsutils.h
+/*************************************************************************
+ *
+ * File: ngsutils.c
+ *
  * Description: Header for the NGSutils program
+ *
  * Author: Daniel Garrigan
- */
+ *
+ *************************************************************************/
+
 #ifndef NGSUTILS_H
 #define NGSUTILS_H
 
@@ -10,7 +16,6 @@
 #include <string.h>
 #include <errno.h>
 #include <signal.h>
-#include <assert.h>
 #include <malloc.h>
 #include <ctype.h>
 #include <limits.h>
