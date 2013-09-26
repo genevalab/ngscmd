@@ -14,10 +14,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <errno.h>
-#include <signal.h>
-#include <malloc.h>
 #include <ctype.h>
+#include <signal.h>
 #include <limits.h>
 #include <zlib.h>
 #ifdef _MSC_VER
