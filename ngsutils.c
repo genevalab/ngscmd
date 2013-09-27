@@ -24,6 +24,9 @@
 
 #ifdef _MSC_VER
 #include "getopt.h"
+#include <io.h>
+#define open _open
+#define close _close
 #else
 #include <unistd.h>
 #endif
@@ -49,6 +52,8 @@ extern int optind, opterr, optopt;
 int
 main(int argc, char **argv)
 {
+	int id;
+	int od;
 	ngsParams *p;
 
 	if (argc < 2)
@@ -78,7 +83,11 @@ main(int argc, char **argv)
 				ngs_sort(p);
 				break;
 			case REVCOM:
-				ngs_revcom(p);
+				id = open(p->seqFile1, O_RDONLY);
+				od = open(p->outFile1, O_WRONLY);
+				ngs_revcom(id, od);
+				close(id);
+				close(od);
 				break;
 			case KMER:
 				ngs_kmer(p);
@@ -88,6 +97,10 @@ main(int argc, char **argv)
 				return 1;
 		}
 	}
+
+	/* take out the garbage */
+	free(p);
+
 	return 0;
 }
 

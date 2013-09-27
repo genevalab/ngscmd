@@ -78,7 +78,7 @@ ngs_pair(ngsParams *p)
 	gzclose(out2);
 
 	/* take out the garbage */
-	free(p);
+
 
 	return 0;
 }

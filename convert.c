@@ -177,7 +177,6 @@ ngs_convert(ngsParams *p)
 	for (i = 0; i < BUFFSIZE; ++i)
 		free(seqLine[i]);
 	free(seqLine);
-	free(p);
 
 	return 0;
 }

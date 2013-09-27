@@ -146,7 +146,6 @@ ngs_fa2fq(ngsParams *p)
 	}
 	free(seqLine);
 	free(qualLine);
-	free(p);
 
 	return 0;
 }

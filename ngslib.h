@@ -32,6 +32,7 @@
 #include <signal.h>
 #include <limits.h>
 #include <ctype.h>
+#include <fcntl.h>
 #include <zlib.h>
 
 #ifdef __cplusplus
@@ -86,7 +87,7 @@ extern int  ngs_pair(ngsParams*);
 extern int  ngs_clean(ngsParams*);
 extern int  ngs_bypos(ngsParams*);
 extern int  ngs_sort(ngsParams*);
-extern int  ngs_revcom(ngsParams*);
+extern int  ngs_revcom(int, int);
 extern int  ngs_kmer(ngsParams*);
 extern void INThandler(int);
 

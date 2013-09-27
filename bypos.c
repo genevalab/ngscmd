@@ -137,7 +137,6 @@ ngs_bypos(ngsParams *p)
 	free(seqLine);
 	free(num_bases);
 	free(score_sum);
-	free(p);
 
 	return 0;
 }
