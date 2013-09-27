@@ -1,36 +1,51 @@
-/*************************************************************************
- *
- * File: ngsutils.c
- *
- * Description: Main entry point for the NGSutils program
- *
- * Author: Daniel Garrigan
- *
- *************************************************************************/
-#include "ngsutils.h"
+/* Copyright (c) 2013 Daniel Garrigan
+
+	Permission is hereby granted, free of charge, to any person obtaining a copy of
+	this software and associated documentation files (the "Software"), to deal in
+	the Software without restriction, including without limitation the rights to
+	use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+	the Software, and to permit persons to whom the Software is furnished to do so,
+	subject to the following conditions:
+
+	The above copyright notice and this permission notice shall be included in all
+	copies or substantial portions of the Software.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+	FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+	COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+	IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+	CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+	Daniel Garrigan    dgarriga@bio.rochester.edu
+*/
+
+#include "ngslib.h"
+
 #ifdef _MSC_VER
 #include "getopt.h"
 #else
 #include <unistd.h>
 #endif
 
-/* Definitions for the main function */
+/* constants */
 #define VERSION 0.1
 #define NFUNCTIONS 9
 
-/* Declare function prototypes */
+/* function prototypes */
 ngsParams *readParams(int, char**);
 int mainUsage(void);
 int functionUsage(int);
 extern int getopt (int, char *const *, const char*);
 
 
-/* Globally scoped variables */
+/* globally scoped variables */
 extern char *optarg;
 extern int optind, opterr, optopt;
 
 
-/* Entry point for the NGSutils program */
+/* entry point for the NGSutils program */
+
 int
 main(int argc, char **argv)
 {
@@ -77,14 +92,15 @@ main(int argc, char **argv)
 }
 
 
-/* Read user-supplied command line parameters */
+/* read user-supplied command line parameters */
+
 ngsParams*
 readParams(int argc, char **argv)
 {
 	int c = 0;
 	ngsParams *p = NULL;
 
-	/* Allocate memory for parameter data structure */
+	/* allocate memory for parameter data structure */
 	p = (ngsParams*) malloc(sizeof(ngsParams));
 	if (p == NULL)
 	{
@@ -92,13 +108,13 @@ readParams(int argc, char **argv)
 		exit (EXIT_FAILURE);
 	}
 
-	/* Initialize some variables to default values */
+	/* initialize some variables to default values */
 	opterr = 0;
 	p->flag = 0;
 	p->kmer_size = 31;
 	p->func = -1;
 
-	/* Assign the function */
+	/* assign the function */
 	if (strcmp(argv[1], "fa2fq") == 0)
 		p->func = FA2FQ;
 	else if (strcmp(argv[1], "pair") == 0)
@@ -122,14 +138,14 @@ readParams(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 
-	/* Iterate argument variables */
+	/* increment the argument variables */
 	--argc;
 	++argv;
 
 	if (argv == NULL)
 		functionUsage(p->func);
 
-   /* Read command line options */
+   /* read the command line options */
 	while ((c = getopt(argc, argv, "anso:")) != -1)
 	{
 		switch(c)
@@ -184,23 +200,24 @@ readParams(int argc, char **argv)
 		}
 	}
 
-	/* Get first non-optioned argument */
+	/* get first non-optioned argument */
 	if (argv[optind])
 		strcpy(p->seqFile1, argv[optind]);
 	else
 	{
-		puts("\n\nError: need the input fastq sequence file name as mandatory argument.\n\n");
+		puts("\n\nError: need the input fastQ sequence file name as mandatory argument.\n\n");
 		functionUsage(p->func);
 		exit(EXIT_FAILURE);
 	}
 
+	/* get the second non-optioned argument */
 	if ((p->func == FA2FQ) || (p->func == PAIR))
 	{
 		if (argv[optind + 1])
 			strcpy(p->seqFile2, argv[optind + 1]);
 		else
 		{
-			puts("\n\nError: need the name of the second input fastq sequence as a mandatory argument.\n\n");
+			puts("\n\nError: need the name of the second input fastQ sequence as a mandatory argument.\n\n");
 			functionUsage(p->func);
 			exit(EXIT_FAILURE);
 		}
@@ -209,7 +226,8 @@ readParams(int argc, char **argv)
 	return p;
 }
 
-/* Handler for an interrupt signal */
+/* handler for an interrupt signal */
+
 void
 INThandler(int sig)
 {
@@ -219,25 +237,26 @@ INThandler(int sig)
 }
 
 
-/* Prints a usage message for the NGSutils program */
+/* prints a usage message for the NGSutils program */
+
 int
 mainUsage(void)
 {
 	puts("\n\nUsage: NGSutils <function> [options] <infile> ...\n");
-	puts("Functions:       fa2fq      convert from fasta/quality files to fastq format");
-	puts("                 fq2fa      convert from fastq format to fasta/quality files");
-	puts("                 pair       aligned mated pairs in two fastq files");
-	puts("                 convert    convert Phred scaled quality scores");
+	puts("Functions:       fa2fq      convert from fastA and quality files to fastQ format");
+	puts("                 fq2fa      convert from fastQ format to fastA and quality files");
+	puts("                 pair       aligned mated pairs in two fastQ files");
+	puts("                 convert    convert Phred-scaled quality scores");
 	puts("                 clean      perform a variety of cleaning procedures for reads");
 	puts("                 bypos      show average quality by sequence position");
 	puts("                 sort       lexical sort of reads by identifier string");
-	puts("                 revcom     reverse complement bases in fastq file");
-	puts("                 kmer       count number of unique k-mers in fastq file\n");
+	puts("                 revcom     reverse complement bases in fastQ file");
+	puts("                 kmer       count number of unique k-mers in fastQ file\n");
 	return 0;
 }
 
 
-/* Prints a custom usage message for each function */
+/* prints a custom usage message for each function */
 int
 functionUsage(int f)
 {

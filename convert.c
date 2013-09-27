@@ -1,16 +1,29 @@
-/*************************************************************************
- *
- * File: convert.c
- *
- * Description: Functions to transform Phred scaled quality scores in 
- *              fastq files
- *
- * Author: Daniel Garrigan
- *
- *************************************************************************/
-#include "ngsutils.h"
+/* Copyright (c) 2013 Daniel Garrigan
 
-/* Transform Phred scaled quality scores */
+	Permission is hereby granted, free of charge, to any person obtaining a copy of
+	this software and associated documentation files (the "Software"), to deal in
+	the Software without restriction, including without limitation the rights to
+	use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+	the Software, and to permit persons to whom the Software is furnished to do so,
+	subject to the following conditions:
+
+	The above copyright notice and this permission notice shall be included in all
+	copies or substantial portions of the Software.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+	FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+	COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+	IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+	CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+	Daniel Garrigan    dgarriga@bio.rochester.edu
+*/
+
+#include "ngslib.h"
+
+/* transform Phred-scaled quality scores in a fastQ file */
+
 int
 ngs_convert(ngsParams *p)
 {
@@ -19,24 +32,24 @@ ngs_convert(ngsParams *p)
 	gzFile seq;
 	gzFile out;
 
-	/* Open sequence file */
+	/* open sequence file */
 	if ((seq = gzopen(p->seqFile1, "rb")) == NULL)
 	{
 		fputs("\n\nError: cannot open the input fastq sequence file.\n\n", stderr);
 		exit(EXIT_FAILURE);
 	}
 
-	/* Open output fastq stream */
+	/* open output fastq stream */
 	if ((out = gzopen(p->outFile1, "wb")) == NULL)
 	{
 		fputs("\n\nError: cannot open the output fastq sequence file.\n\n", stderr);
 		exit(EXIT_FAILURE);
 	}
 
-	/* Set up interrupt trap */
+	/* set up interrupt trap */
 	signal(SIGINT, INThandler);
 
-	/* Allocate memory for buffer */
+	/* allocate memory for buffer */
 	seqLine = (char**) malloc(BUFFSIZE * sizeof(char*));
 	if (seqLine == NULL)
 	{
@@ -53,12 +66,12 @@ ngs_convert(ngsParams *p)
 		}
 	}
 
-	/* Read through fastq input sequence file */
+	/* read through fastQ input sequence file */
 	while (1)
 	{
 		int buffCount = 0;
 
-		/* Fill up the buffer */
+		/* fill up the buffer */
 		while (buffCount < BUFFSIZE)
 		{
 			if (gzgets(seq, seqLine[buffCount], MAX_LINE_LENGTH) == Z_NULL)
@@ -66,19 +79,19 @@ ngs_convert(ngsParams *p)
 			++buffCount;
 		}
 
-		/* Dump buffer to output stream */
+		/* dump the buffer to the output stream */
 		for (i = 0; i < buffCount; ++i)
 		{
 			if (i % 4 == 3)
 			{
-				size_t j;
+				size_t j = 0;
+				size_t len = strlen(seqLine[i]) - 1;
 				if (p->flag & CONVERT_REV)
 				{
-					/* Only do Sanger to Illumina conversion */
-					for (j = 0; j < strlen(seqLine[i]) - 1; ++j)
+					/* only do Sanger to Illumina conversion */
+					while (j < len)
 					{
-						int score;
-						score = seqLine[i][j] + 31;
+						int score = seqLine[i][j] + 31;
 						if (score > SCHAR_MAX)
 						{
 							fputs("\n\nError: the original Phred scores are not in standard Sanger format.\n\n", stderr);
@@ -86,12 +99,13 @@ ngs_convert(ngsParams *p)
 						}
 						else
 							gzputc(out, score);
+						++j;
 					}
 					gzputc(out, '\n');
 
 					if (p->flag & CONVERT_NUM)
 					{
-						/* Do both numerical and Sanger to Illumina conversion here */
+						/* do both numerical and Sanger to Illumina conversion here */
 						const char delim = ' ';
 						char *tok;
 						int score;
@@ -109,8 +123,8 @@ ngs_convert(ngsParams *p)
 				}
 				else
 				{
-					/* Only do Illumina to Sanger conversion */
-					for (j = 0; j < strlen(seqLine[i]) - 1; ++j)
+					/* only do Illumina to Sanger conversion */
+					while (j < len)
 					{
 						int score;
 						score = seqLine[i][j] - 31;
@@ -121,12 +135,13 @@ ngs_convert(ngsParams *p)
 						}
 						else
 							gzputc(out, seqLine[i][j] - 31);
+						++j;
 					}
 					gzputc(out, '\n');
 
 					if (p->flag & CONVERT_NUM)
 					{
-						/* Do both numerical and Illumina to Sanger conversion here */
+						/* do both numerical and Illumina to Sanger conversion here */
 						const char delim = ' ';
 						char *tok;
 						int score;

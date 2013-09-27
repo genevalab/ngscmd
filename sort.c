@@ -1,16 +1,29 @@
-/*************************************************************************
- *
- * File: sort.c
- *
- * Description: Functions to perform lexical sort of reads by identifier 
- *              string
- *
- * Author: Daniel Garrigan
- *
- *************************************************************************/
-#include "ngsutils.h"
+/* Copyright (c) 2013 Daniel Garrigan
 
-/* Lexical sort of reads by identifier string */
+	Permission is hereby granted, free of charge, to any person obtaining a copy of
+	this software and associated documentation files (the "Software"), to deal in
+	the Software without restriction, including without limitation the rights to
+	use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+	the Software, and to permit persons to whom the Software is furnished to do so,
+	subject to the following conditions:
+
+	The above copyright notice and this permission notice shall be included in all
+	copies or substantial portions of the Software.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+	FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+	COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+	IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+	CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+	Daniel Garrigan    dgarriga@bio.rochester.edu
+*/
+
+#include "ngslib.h"
+
+/* lexical sort of reads in a fastQ file by the identifier strings */
+
 int
 ngs_sort(ngsParams *p)
 {
@@ -19,24 +32,24 @@ ngs_sort(ngsParams *p)
 	gzFile seq;
 	gzFile out;
 
-	/* Open sequence input file */
+	/* open sequence input file */
 	if ((seq = gzopen(p->seqFile1, "rb")) == NULL)
 	{
 		fputs("\n\nError: cannot open the input fastq sequence file.\n\n", stderr);
 		exit(EXIT_FAILURE);
 	}
 
-	/* Open sequence output file */
+	/* open sequence output file */
 	if ((out = gzopen(p->outFile1, "wb")) == NULL)
 	{
 		fputs("\n\nError: cannot open the output fastq sequence file.\n\n", stderr);
 		exit(EXIT_FAILURE);
 	}
 
-	/* Set up interrupt trap */
+	/* set up interrupt trap */
 	signal(SIGINT, INThandler);
 
-	/* Allocate memory for buffer */
+	/* allocate memory for buffer */
 	seqLine = (char**) malloc(BUFFSIZE * sizeof(char*));
 	if (seqLine == NULL)
 	{
@@ -53,41 +66,41 @@ ngs_sort(ngsParams *p)
 		}
 	}
 
-	/* Read through input sequence file */
+	/* read through input sequence file */
 	while (1)
 	{
-		/* Initialize counter for the number of lines in the buffer */
+		/* initialize counter for the number of lines in the buffer */
 		int buffCount = 0;
 
-		/* Fill up the buffer */
+		/* fill up the buffer */
 		while (buffCount < BUFFSIZE)
 		{
-			/* Get line from sequence file */
+			/* get line from sequence file */
 			if (gzgets(seq, seqLine[buffCount], MAX_LINE_LENGTH) == Z_NULL)
 				break;
 
-			/* Iterate the counter for the number of lines currently in the buffer */
+			/* increment the counter for the number of lines currently in the buffer */
 			++buffCount;
 		}
 
-		/* Tally scores along each position in the sequence */
+		/* tally scores along each position in the sequence */
 		for (i = 0; i < buffCount; ++i)
 		{
-			/* TODO: Add code to sort the sequences here */
+			/* TODO: add code to sort the sequences here */
 		}
 
-		/* If we are at the end of the file */
+		/* if we are at the end of the file */
 		if (buffCount < BUFFSIZE)
 			break;
 	}
 
-	/* Close sequence input stream */
+	/* close sequence input stream */
 	gzclose(seq);
 
-	/* Close sequence output stream */
+	/* close sequence output stream */
 	gzclose(out);
 
-	/* Take out the garbage */
+	/* take out the garbage */
 	for (i = 0; i < BUFFSIZE; ++i)
 		free(seqLine[i]);
 	free(seqLine);
