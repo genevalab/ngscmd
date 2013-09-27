@@ -8,68 +8,26 @@
  * Author: Daniel Garrigan
  *
  *************************************************************************/
-
 #include "ngsutils.h"
 
-
-/*
- *  Declare the sort_p data structure to hold user options
- */
-
-typedef struct _sort_params
-{
-	int flag;
-	char seqFile[FILENAME_MAX];
-	char outFile[FILENAME_MAX];
-} sort_p;
-
-
-/*
- * Declare function prototypes
- */
-
-int sort(int, char**);
-sort_p* sort_read_params(int, char**);
-int sort_usage(void);
-
-
-/*
- * Entry point for the sort function
- */
-
-int main_sort(int argc, char **argv)
-{
-	if (argv[0] == NULL)
-		return sort_usage();
-	else
-		return sort(argc, argv);
-}
-
-
-/*
- * Lexical sort of reads by identifier string
- */
-
-int sort(int argc, char **argv)
+/* Lexical sort of reads by identifier string */
+int
+ngs_sort(ngsParams *p)
 {
 	int i = 0;
 	char **seqLine;
-	sort_p *p = NULL;
 	gzFile seq;
 	gzFile out;
 
-	/* Read and store user-supplied parameters */
-	p = sort_read_params(argc, argv);
-
 	/* Open sequence input file */
-	if ((seq = gzopen(p->seqFile, "rb")) == NULL)
+	if ((seq = gzopen(p->seqFile1, "rb")) == NULL)
 	{
 		fputs("\n\nError: cannot open the input fastq sequence file.\n\n", stderr);
 		exit(EXIT_FAILURE);
 	}
 
 	/* Open sequence output file */
-	if ((out = gzopen(p->outFile, "wb")) == NULL)
+	if ((out = gzopen(p->outFile1, "wb")) == NULL)
 	{
 		fputs("\n\nError: cannot open the output fastq sequence file.\n\n", stderr);
 		exit(EXIT_FAILURE);
@@ -135,76 +93,5 @@ int sort(int argc, char **argv)
 	free(seqLine);
 	free(p);
 
-	return 0;
-}
-
-
-/*
- * Read user-supplied command line parameters for the sort function
- */
-
-sort_p* sort_read_params(int argc, char **argv)
-{
-	int c = 0;
-	sort_p *p = NULL;
-	
-	/* Allocate memory for parameter data structure */
-	p = (sort_p*) malloc(sizeof(sort_p));
-	if (p == NULL)
-	{
-		fputs("\n\nError: memory allocation failure for sort user parameter data structure.\n\n", stderr);
-		exit (EXIT_FAILURE);
-	}
-
-	/* Initialize some variables */
-	opterr = 0;
-	p->flag = 0;
-
-   /* Read command line options */
-	while ((c = getopt(argc, argv, "o:")) != -1)
-	{
-		switch(c)
-		{
-			case 'o':
-				strcpy(p->outFile, optarg);
-				strcat(p->outFile, ".gz");
-				break;
-			case '?':
-				if (optopt == 'o')
-					fprintf(stderr, "\n\nError: the option -%c requires an argument.\n\n", optopt);
-				else if (isprint(optopt))
-					fprintf(stderr, "\n\nError: unknown option \"-%c\".\n\n", optopt);
-				else
-					fprintf(stderr, "\n\nError: unknown option character '\\x%x'.\n\n", optopt);
-				exit(EXIT_FAILURE);
-			default:
-				sort_usage();
-				exit(EXIT_FAILURE);
-		}
-	}
-
-	/* Get the non-optioned arguments */
-	/* Get the name of the sequence input file */
-	if (argv[optind])
-		strcpy(p->seqFile, argv[optind]);
-	else
-	{
-		fputs("\n\nError: need the input fastq sequence file name as a mandatory argument.\n", stderr);
-		sort_usage();
-		exit(EXIT_FAILURE);
-	}
-	
-	return p;
-}
-
-
-/*
- * Prints a usage message for the sort function
- */
-
-int sort_usage(void)
-{
-	fputs("\nUsage: NGSutils sort [options] <fastq file>\n\n", stderr);
-	fputs("Options:        -o         prefix string for name of fastq output file\n\n", stderr);
 	return 0;
 }

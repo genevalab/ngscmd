@@ -14,36 +14,64 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
 #include <signal.h>
 #include <limits.h>
+#include <ctype.h>
 #include <zlib.h>
-#ifdef _MSC_VER
-#include "getopt.h"
-#else
-#include <unistd.h>
-#endif
 
 
 /* Globally scoped definitions */
 #define BUFFSIZE 2000
 #define MAX_LINE_LENGTH 400
+#define CONVERT_REV 0x1
+#define CONVERT_NUM 0x2
+#define CONVERT_ASCII 0x4
+
+enum FUNC {FA2FQ, FQ2FA, PAIR, CONVERT, CLEAN, BYPOS, SORT, REVCOM, KMER};
+
+#define STR_TRIM(s)                                                     \
+{                                                                       \
+	char *ptr = NULL;                                                   \
+	for (ptr = s + strlen(s) - 1; (ptr >= s) && isspace(*ptr); --ptr);  \
+	ptr[1] = '\0';                                                      \
+}
+
+#define STR_REVERSE(s)                                                  \
+{                                                                       \
+	char *p1 = NULL;                                                    \
+	char *p2 = NULL;                                                    \
+	for (p1=s, p2=s+strlen(s)-1; p2 > p1; ++p1, --p2)                   \
+	{                                                                   \
+		*p1 ^= *p2;                                                     \
+		*p2 ^= *p1;                                                     \
+		*p1 ^= *p2;                                                     \
+	}                                                                   \
+}
 
 
-/* Globally scoped variables */
-extern char *optarg;
-extern int optind, opterr, optopt;
+typedef struct _ngsParams
+{
+	int flag;
+	int kmer_size;
+	int func;
+	char outFilePrefix[FILENAME_MAX - 5];
+	char seqFile1[FILENAME_MAX];
+	char seqFile2[FILENAME_MAX];
+	char qualFile[FILENAME_MAX];
+	char outFile1[FILENAME_MAX];
+	char outFile2[FILENAME_MAX];
+} ngsParams;
 
 
 /* Function prototypes */
-extern int main_fa2fq(int, char**);
-extern int main_convert(int, char**);
-extern int main_pair(int, char**);
-extern int main_clean(int, char**);
-extern int main_bypos(int, char**);
-extern int main_sort(int, char**);
-extern int main_revcom(int, char**);
-extern int getopt (int, char *const *, const char*);
+extern int ngs_fa2fq(ngsParams*);
+extern int ngs_convert(ngsParams*);
+extern int ngs_pair(ngsParams*);
+extern int ngs_clean(ngsParams*);
+extern int ngs_bypos(ngsParams*);
+extern int ngs_sort(ngsParams*);
+extern int ngs_revcom(ngsParams*);
+extern int ngs_kmer(ngsParams*);
 extern void INThandler(int);
 
 #endif

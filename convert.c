@@ -8,77 +8,26 @@
  * Author: Daniel Garrigan
  *
  *************************************************************************/
-
 #include "ngsutils.h"
 
-
-/*
- *  Definitions for the convert function
- */
-
-#define CONVERT_REV 0x1
-#define CONVERT_NUM 0x2
-#define CONVERT_ASCII 0x4
-
-
-/*
- *  Declare the convert_p data structure to hold user options
- */
-
-typedef struct _convert_params
-{
-	int flag;
-	char seqFile[FILENAME_MAX];
-	char outFile[FILENAME_MAX];
-} convert_p;
-
-
-/*
- * Declare function prototypes
- */
-
-int convert(int, char**);
-convert_p* convert_read_params(int, char**);
-int convert_usage(void);
-
-
-/*
- * Entry point for the convert function
- */
-
-int main_convert(int argc, char **argv)
-{
-	if (argv[0] == NULL)
-		return convert_usage();
-	else
-		return convert(argc, argv);
-}
-
-
-/*
- * Transform Phred scaled quality scores
- */
-
-int convert(int argc, char **argv)
+/* Transform Phred scaled quality scores */
+int
+ngs_convert(ngsParams *p)
 {
 	int i = 0;
 	char **seqLine;
-	convert_p *p = NULL;
 	gzFile seq;
 	gzFile out;
 
-	/* Read and store user-supplied parameters */
-	p = convert_read_params(argc, argv);
-
 	/* Open sequence file */
-	if ((seq = gzopen(p->seqFile, "rb")) == NULL)
+	if ((seq = gzopen(p->seqFile1, "rb")) == NULL)
 	{
 		fputs("\n\nError: cannot open the input fastq sequence file.\n\n", stderr);
 		exit(EXIT_FAILURE);
 	}
 
 	/* Open output fastq stream */
-	if ((out = gzopen(p->outFile, "wb")) == NULL)
+	if ((out = gzopen(p->outFile1, "wb")) == NULL)
 	{
 		fputs("\n\nError: cannot open the output fastq sequence file.\n\n", stderr);
 		exit(EXIT_FAILURE);
@@ -215,89 +164,5 @@ int convert(int argc, char **argv)
 	free(seqLine);
 	free(p);
 
-	return 0;
-}
-
-
-/*
- * Read user-supplied command line parameters for the convert function
- */
-
-convert_p* convert_read_params(int argc, char **argv)
-{
-	int c = 0;
-	convert_p *p = NULL;
-
-	/* Allocate memory for parameter data structure */
-	p = (convert_p*) malloc(sizeof(convert_p));
-	if (p == NULL)
-	{
-		fputs("\n\nError: memory allocation failure for convert user parameter data structure.\n\n", stderr);
-		exit (EXIT_FAILURE);
-	}
-
-	/* Initialize some variables */
-	opterr = 0;
-	p->flag = 0;
-
-   /* Read command line options */
-	while ((c = getopt(argc, argv, "snao:")) != -1)
-	{
-		switch(c)
-		{
-			case 'o':
-				strcpy(p->outFile, optarg);
-				strcat(p->outFile, ".gz");
-				break;
-			case 'a':
-				p->flag |= CONVERT_NUM;
-				break;
-			case 'n':
-				p->flag |= CONVERT_ASCII;
-				break;
-			case 's':
-				p->flag |= CONVERT_REV;
-				break;
-			case '?':
-				if (optopt == 'o')
-					fprintf(stderr, "\n\nError: the option -%c requires an argument.\n\n", optopt);
-				else if (isprint(optopt))
-					fprintf(stderr, "\n\nError: unknown option \"-%c\".\n\n", optopt);
-				else
-					fprintf(stderr, "\n\nError: unknown option character '\\x%x'.\n\n", optopt);
-				exit(EXIT_FAILURE);
-			default:
-				convert_usage();
-				exit(EXIT_FAILURE);
-		}
-	}
-
-	/* Get non-optioned arguments */
-	/* Get the name of the input sequence file */
-	if (argv[optind])
-		strcpy(p->seqFile, argv[optind]);
-	else
-	{
-		fputs("\n\nError: need the input fastq sequence file name as mandatory argument.\n", stderr);
-		convert_usage();
-		exit(EXIT_FAILURE);
-	}
-	
-	return p;
-}
-
-
-/*
- * Prints a usage message for the convert function
- */
-
-int convert_usage(void)
-{
-	fputs("\nUsage: NGSutils convert [options] <fastq file>\n\n", stderr);
-	fputs("Options:        -o         prefix string for name of fastq output file\n", stderr);
-	fputs("                -s         convert from 33-126 scale to 64-126 scale\n", stderr);
-	fputs("                           default: 64-126 to 33-126 scale\n", stderr);
-	fputs("                -a         convert from numerical scores to ASCII\n", stderr);
-	fputs("                -n         convert from ASCII scores to numerical\n\n", stderr);
 	return 0;
 }

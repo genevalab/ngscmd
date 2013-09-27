@@ -8,62 +8,21 @@
  * Author: Daniel Garrigan
  *
  *************************************************************************/
-
 #include "ngsutils.h"
 
-
-/*
- *  Declare the bypos_p data structure to hold user options
- */
-
-typedef struct _bypos_params
-{
-	int flag;
-	char seqFile[FILENAME_MAX];
-} bypos_p;
-
-
-/*
- * Declare function prototypes
- */
-
-int bypos(int, char**);
-bypos_p* bypos_read_params(int, char**);
-int bypos_usage(void);
-
-
-/*
- * Entry point for the bypos function
- */
-
-int main_bypos(int argc, char **argv)
-{
-	if (argv[0] == NULL)
-		return bypos_usage();
-	else
-		return bypos(argc, argv);
-}
-
-
-/*
- * Calculate the average quality score by base position in read
- */
-
-int bypos(int argc, char **argv)
+/* Calculate the average quality score by base position in read */
+int
+ngs_bypos(ngsParams *p)
 {
 	int i = 0;
 	int max_pos = 0;
 	unsigned long long int *score_sum = NULL;
 	unsigned long int *num_bases = NULL;
 	char **seqLine;
-	bypos_p *p = NULL;
 	gzFile seq;
 
-	/* Read and store user-supplied parameters */
-	p = bypos_read_params(argc, argv);
-
 	/* Open sequence file */
-	if ((seq = gzopen(p->seqFile, "rb")) == NULL)
+	if ((seq = gzopen(p->seqFile1, "rb")) == NULL)
 	{
 		fputs("\n\nError: cannot open the input fastq sequence file.\n\n", stderr);
 		exit(EXIT_FAILURE);
@@ -166,74 +125,5 @@ int bypos(int argc, char **argv)
 	free(score_sum);
 	free(p);
 
-	return 0;
-}
-
-
-/*
- * Read user-supplied command line parameters for the bypos function
- */
-
-bypos_p* bypos_read_params(int argc, char **argv)
-{
-	int c = 0;
-	bypos_p *p = NULL;
-
-	/* Allocate memory for parameter data structure */
-	p = (bypos_p*) malloc(sizeof(bypos_p));
-	if (p == NULL)
-	{
-		fputs("\n\nError: memory allocation failure for bypos user parameter data structure.\n\n", stderr);
-		exit (EXIT_FAILURE);
-	}
-
-	/* Initialize some variables */
-	opterr = 0;
-	p->flag = 0;
-
-   /* Read command line options */
-	while ((c = getopt(argc, argv, "h")) != -1)
-	{
-		switch(c)
-		{
-			case 'h':
-				bypos_usage();
-				exit(EXIT_SUCCESS);
-			case '?':
-				if (optopt == 'o')
-					fprintf(stderr, "\n\nError: the option -%c requires an argument.\n\n", optopt);
-				else if (isprint(optopt))
-					fprintf(stderr, "\n\nError: unknown option \"-%c\".\n\n", optopt);
-				else
-					fprintf(stderr, "\n\nError: unknown option character '\\x%x'.\n\n", optopt);
-				exit(EXIT_FAILURE);
-			default:
-				bypos_usage();
-				exit(EXIT_FAILURE);
-		}
-	}
-
-	/* Get non-optioned arguments */
-	if (argv[optind])
-		strcpy(p->seqFile, argv[optind]);
-	else
-	{
-		fputs("\n\nError: need the input fastq sequence file name as mandatory argument.\n", stderr);
-		bypos_usage();
-		exit(EXIT_FAILURE);
-	}
-	
-	return p;
-}
-
-
-/*
- * Prints a usage message for the bypos function
- */
- 
- int bypos_usage(void)
-{
-	fputs("\nUsage: NGSutils bypos <fastq file>\n\n", stderr);
-	fputs("Note: bypos writes all output to STDOUT\n\n", stderr);
 	return 0;
 }

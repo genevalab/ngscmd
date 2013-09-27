@@ -7,68 +7,26 @@
  * Author: Daniel Garrigan
  *
  *************************************************************************/
-
 #include "ngsutils.h"
 
-
-/*
- *  Declare the clean_p data structure to hold user options
- */
-
-typedef struct _clean_params
-{
-	int flag;
-	char seqFile[FILENAME_MAX];
-	char outFile[FILENAME_MAX];
-} clean_p;
-
-
-/*
- * Declare function prototypes
- */
-
-int clean(int, char**);
-clean_p* clean_read_params(int, char**);
-int clean_usage(void);
-
-
-/*
- * Entry point for the clean function
- */
-
-int main_clean(int argc, char **argv)
-{
-	if (argv[0] == NULL)
-		return clean_usage();
-	else
-		return clean(argc, argv);
-}
-
-
-/*
- * Filter reads and bases according to quality
- */
-
-int clean(int argc, char **argv)
+/* Filter reads and bases according to quality */
+int
+ngs_clean(ngsParams *p)
 {
 	int i = 0;
 	char **seqLine;
-	clean_p *p = NULL;
 	gzFile seq;
 	gzFile out;
 
-	/* Read and store user-supplied parameters */
-	p = clean_read_params(argc, argv);
-
 	/* Open sequence input file */
-	if ((seq = gzopen(p->seqFile, "rb")) == NULL)
+	if ((seq = gzopen(p->seqFile1, "rb")) == NULL)
 	{
 		fputs("\n\nError: cannot open the input fastq sequence file.\n\n", stderr);
 		exit(EXIT_FAILURE);
 	}
 
 	/* Open sequence output file */
-	if ((out = gzopen(p->outFile, "wb")) == NULL)
+	if ((out = gzopen(p->outFile1, "wb")) == NULL)
 	{
 		fputs("\n\nError: cannot open the output fastq sequence file.\n", stderr);
 		exit(EXIT_FAILURE);
@@ -131,76 +89,5 @@ int clean(int argc, char **argv)
 	free(seqLine);
 	free(p);
 
-	return 0;
-}
-
-
-/*
- * Read user-supplied command line parameters for the clean function
- */
-
-clean_p* clean_read_params(int argc, char **argv)
-{
-	int c = 0;
-	clean_p *p = NULL;
-
-	/* Allocate memory for parameter data structure */
-	p = (clean_p*) malloc(sizeof(clean_p));
-	if (p == NULL)
-	{
-		fputs("\n\nError: memory allocation failure for clean user parameter data structure.\n\n", stderr);
-		exit (EXIT_FAILURE);
-	}
-
-	/* Initialize some variables */
-	opterr = 0;
-	p->flag = 0;
-
-   /* Read command line options */
-	while ((c = getopt(argc, argv, "o:")) != -1)
-	{
-		switch(c)
-		{
-			case 'o':
-				strcpy(p->outFile, optarg);
-				strcat(p->outFile, ".gz");
-				break;
-			case '?':
-				if (optopt == 'o')
-					fprintf(stderr, "\n\nError: the option -%c requires an argument.\n\n", optopt);
-				else if (isprint(optopt))
-					fprintf(stderr, "\n\nError: unknown option \"-%c\".\n\n", optopt);
-				else
-					fprintf(stderr, "\n\nError: unknown option character '\\x%x'.\n\n", optopt);
-				exit(EXIT_FAILURE);
-			default:
-				clean_usage();
-				exit(EXIT_FAILURE);
-		}
-	}
-
-	/* Get non-optioned arguments */
-	/* Get the name of the input sequence file */
-	if (argv[optind])
-		strcpy(p->seqFile, argv[optind]);
-	else
-	{
-		fputs("\n\nError: need the input fastq sequence file name as mandatory argument.\n", stderr);
-		clean_usage();
-		exit(EXIT_FAILURE);
-	}
-	
-	return p;
-}
-
-
-/*
- * Prints a usage message for the clean function
- */
-
-int clean_usage(void)
-{
-	fputs("\nUsage: NGSutils clean [options] <fastq file>\n\n", stderr);
-	fputs("Options:        -o         prefix string for name of fastq output file\n\n", stderr);
 	return 0;
 }

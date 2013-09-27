@@ -1,8 +1,8 @@
 /*************************************************************************
  *
- * File: revcom.c
+ * File: kmer.c
  *
- * Description: Functions to reverse complement all sequences in a 
+ * Description: Functions to count the number of unique k-mers in a 
  *              fastq file
  *
  * Author: Daniel Garrigan
@@ -10,26 +10,19 @@
  *************************************************************************/
 #include "ngsutils.h"
 
+/* Count number of unique k-mers in fastq file */
 int
-ngs_revcom(ngsParams *p)
+ngs_kmer(ngsParams *p)
 {
 	int i = 0;
 	char **seqLine;
 	gzFile seq;
-	gzFile out;
 
 
-	/* Open sequence input file */
+	/* Open sequence file */
 	if ((seq = gzopen(p->seqFile1, "rb")) == NULL)
 	{
 		fputs("\n\nError: cannot open the input fastq sequence file.\n\n", stderr);
-		exit(EXIT_FAILURE);
-	}
-
-	/* Open sequence output file */
-	if ((out = gzopen(p->outFile1, "wb")) == NULL)
-	{
-		fputs("\n\nError: cannot open the output fastq sequence file.\n\n", stderr);
 		exit(EXIT_FAILURE);
 	}
 
@@ -70,46 +63,10 @@ ngs_revcom(ngsParams *p)
 			++buffCount;
 		}
 
-		/* Reverse complement bases and reverse quality scores */
+		/* Tally scores along each position in the sequence */
 		for (i = 0; i < buffCount; ++i)
 		{
-			int j = i % 4;
-			if ((j == 1) || (j == 3))
-			{
-				char *rev;
-				rev = (char*) malloc(MAX_LINE_LENGTH * sizeof(char));
-				if (rev == NULL)
-				{
-					fputs("Memory allocation failure for rev\n", stderr);
-					exit (EXIT_FAILURE);
-				}
-				strcpy(rev, seqLine[i]);
-				STR_TRIM(rev);
-				STR_REVERSE(rev);
-				if (j == 1)
-				{
-					size_t k;
-					for (k = 0; k < strlen(rev); ++k)
-					{
-						if (rev[k] == 'A')
-							gzputc(out, 'T');
-						else if (rev[k] == 'C')
-							gzputc(out, 'G');
-						else if (rev[k] == 'G')
-							gzputc(out, 'C');
-						else if (rev[k] == 'T')
-							gzputc(out, 'A');
-						else
-							gzputc(out, rev[k]);
-					}
-				}
-				else
-					gzputs(out, rev);
-				gzputc(out, '\n');
-				free(rev);
-			}
-			else
-				gzputs(out, seqLine[i]);
+			/* TODO: Implement kmer counting algorithm */
 		}
 
 		/* If we are at the end of the file */
@@ -120,8 +77,6 @@ ngs_revcom(ngsParams *p)
 	/* Close sequence input stream */
 	gzclose(seq);
 
-	/* Close sequence output stream */
-	gzclose(out);
 
 	/* Take out the garbage */
 	for (i = 0; i < BUFFSIZE; ++i)
