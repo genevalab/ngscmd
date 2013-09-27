@@ -263,47 +263,47 @@ functionUsage(int f)
 	switch(f)
 	{
 		case FA2FQ:
-			puts("\n\nUsage: NGSutils fa2fq [options] <fasta/q input file> <quality file>\n\n");
+			puts("\n\nUsage: NGSutils fa2fq [options] <fasta/q input file> <quality file>");
 			puts("Options:        -o         prefix string for name of fastq/fasta/quality output files\n");
 			break;
 		case FQ2FA:
-			puts("\n\nUsage: NGSutils fq2fa [options] <fastq file>\n\n");
-			puts("Options:        -o         prefix string for name of fasta and quality file output file\n\n");
+			puts("\n\nUsage: NGSutils fq2fa [options] <fastq file>");
+			puts("Options:        -o         prefix string for name of fasta and quality file output file\n");
 			break;
 		case PAIR:
-			puts("\n\nUsage: NGSutils pair [options] <fastq_mate1> <fastq_mate2>\n\n");
-			puts("Options:        -o         prefix string for naming both output files\n\n");
+			puts("\n\nUsage: NGSutils pair [options] <fastq_mate1> <fastq_mate2>");
+			puts("Options:        -o         prefix string for naming both output files\n");
 			break;
 		case CONVERT:
-			puts("\n\nUsage: NGSutils convert [options] <fastq file>\n\n");
-			puts("Options:        -o         prefix string for name of fastq output file\n");
-			puts("                -s         convert from 33-126 scale to 64-126 scale\n");
-			puts("                           default: 64-126 to 33-126 scale\n");
-			puts("                -a         convert from numerical scores to ASCII\n");
-			puts("                -n         convert from ASCII scores to numerical\n\n");
+			puts("\n\nUsage: NGSutils convert [options] <fastq file>");
+			puts("Options:        -o         prefix string for name of fastq output file");
+			puts("                -s         convert from 33-126 scale to 64-126 scale");
+			puts("                           default: 64-126 to 33-126 scale");
+			puts("                -a         convert from numerical scores to ASCII");
+			puts("                -n         convert from ASCII scores to numerical\n");
 			break;
 		case CLEAN:
-			puts("\n\nUsage: NGSutils clean [options] <fastq file>\n\n");
-			puts("Options:        -o         prefix string for name of fastq output file\n\n");
+			puts("\n\nUsage: NGSutils clean [options] <fastq file>");
+			puts("Options:        -o         prefix string for name of fastq output file\n");
 			break;
 		case BYPOS:
-			puts("\n\nUsage: NGSutils bypos <fastq file>\n\n");
-			puts("Note: bypos writes all output to STDOUT\n\n");
+			puts("\n\nUsage: NGSutils bypos <fastq file>");
+			puts("Note: bypos writes all output to STDOUT\n");
 			break;
 		case SORT:
-			puts("\n\nUsage: NGSutils sort [options] <fastq file>\n\n");
-			puts("Options:        -o         prefix string for name of fastq output file\n\n");
+			puts("\n\nUsage: NGSutils sort [options] <fastq file>");
+			puts("Options:        -o         prefix string for name of fastq output file\n");
 			break;
 		case REVCOM:
-			puts("\n\nUsage: NGSutils revcom [options] <fastq file>\n\n");
-			puts("Options:        -o         prefix string for name of fastq output file\n\n");
+			puts("\n\nUsage: NGSutils revcom [options] <fastq file>");
+			puts("Options:        -o         prefix string for name of fastq output file\n");
 			break;
 		case KMER:
-			puts("\n\nUsage: NGSutils kmer [options] <fastq file>\n\n");
-			puts("Options:        -n         k-mer size       [ default: 31 ]\n\n");
+			puts("\n\nUsage: NGSutils kmer [options] <fastq file>\n");
+			puts("Options:        -n         k-mer size       [ default: 31 ]\n");
 			break;
 		default:
-			puts("\n\nError: cannot determine specified function\n\n");
+			puts("\n\nError: cannot determine specified function\n");
 			exit(EXIT_FAILURE);
 	}
 	return 0;
