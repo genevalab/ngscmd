@@ -25,7 +25,7 @@
 /* aligned mated pairs in two fastq files */ 
 
 int
-ngs_pair(int ifd, int iifd, int ofd, int oofd)
+ngs_pair(ngsParams *p)
 {
 	gzFile seq1;
 	gzFile seq2;
@@ -33,30 +33,30 @@ ngs_pair(int ifd, int iifd, int ofd, int oofd)
 	gzFile out2;
 
 	/* open sequence file 1 */
-	if ((seq1 = gzdopen(ifd, "r")) == NULL)
+	if ((seq1 = gzopen(p->seqFile1, "rb")) == NULL)
 	{
-		fputs("\n\nError: cannot open the first input fastq sequence file.\n\n", stderr);
+		fputs("\n\nError: cannot open the first input fastQ sequence file.\n\n", stderr);
 		exit(EXIT_FAILURE);
 	}
 
 	/* open sequence file 2 */
-	if ((seq2 = gzdopen(iifd, "r")) == NULL)
+	if ((seq2 = gzopen(p->seqFile2, "rb")) == NULL)
 	{
-			fputs("\n\nError: cannot open the second input fastq sequence file.\n\n", stderr);
+			fputs("\n\nError: cannot open the second input fastQ sequence file.\n\n", stderr);
 			exit(EXIT_FAILURE);
 	}
 
-	/* open the first fastq output stream */
-	if ((out1 = gzdopen(ofd, "w")) == NULL)
+	/* open the first fastQ output stream */
+	if ((out1 = gzopen(p->outFile1, "wb")) == NULL)
 	{
-		fputs("\n\nError: cannot open the output stream for the first fastq sequence file.\n\n", stderr);
+		fputs("\n\nError: cannot open the output stream for the first fastQ sequence file.\n\n", stderr);
 		exit(EXIT_FAILURE);
 	}
 
-	/* open the second fastq output stream */
-	if ((out2 = gzdopen(oofd, "w")) == NULL)
+	/* open the second fastA output stream */
+	if ((out2 = gzopen(p->outFile2, "wb")) == NULL)
 	{
-		fputs("\n\nError: cannot open the output stream for the second fastq sequence file.\n\n", stderr);
+		fputs("\n\nError: cannot open the output stream for the second fastQ sequence file.\n\n", stderr);
 		exit(EXIT_FAILURE);
 	}
 

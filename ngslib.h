@@ -32,8 +32,6 @@
 #include <signal.h>
 #include <limits.h>
 #include <ctype.h>
-#include <fcntl.h>
-#include <sys/stat.h>
 #include <zlib.h>
 
 #ifdef __cplusplus
@@ -59,10 +57,10 @@ typedef struct _ngsParams
 #define CONVERT_REV 0x1
 #define CONVERT_NUM 0x2
 #define CONVERT_ASCII 0x4
-enum FUNC {FA2FQ, FQ2FA, PAIR, CONVERT, CLEAN, BYPOS, SORT, REVCOM, KMER};
+enum FUNC {FA2FQ, FQ2FA, PAIR, CONVERT, CLEAN, BYPOS, SORT, REVCOM, KMER, INDEX};
 
 /* inline functions */
-#define STR_TRIM(s)                                  \
+#define chomp(s)                                     \
 {                                                    \
 	char *ptr = s + strlen(s) - 1;                   \
 	while ((ptr >= s) && isspace(*ptr))              \
@@ -70,7 +68,7 @@ enum FUNC {FA2FQ, FQ2FA, PAIR, CONVERT, CLEAN, BYPOS, SORT, REVCOM, KMER};
 	ptr[1] = '\0';                                   \
 }
 
-#define STR_REVERSE(s)                                \
+#define strrev(s)                                     \
 {                                                     \
 	char *p1 = s;                                     \
 	char *p2 = s + strlen(s) - 1;                     \
@@ -87,21 +85,25 @@ enum FUNC {FA2FQ, FQ2FA, PAIR, CONVERT, CLEAN, BYPOS, SORT, REVCOM, KMER};
 /* function prototypes */
 
 
-extern int  ngs_fa2fq(int ifd, int iifd, int ofd);
+extern int  ngs_fa2fq(ngsParams*);
 
-extern int  ngs_convert(int ifd, int ofd, int flag);
+extern int  ngs_fq2fa(ngsParams*);
 
-extern int  ngs_pair(int ifd, int iifd, int ofd, int oofd);
+extern int  ngs_convert(ngsParams*);
 
-extern int  ngs_clean(int ifd, int ofd);
+extern int  ngs_pair(ngsParams*);
 
-extern int  ngs_bypos(int ifd);
+extern int  ngs_clean(ngsParams*);
 
-extern int  ngs_sort(int ifd, int ofd);
+extern int  ngs_bypos(ngsParams*);
 
-extern int  ngs_revcom(int ifd, int ofd);
+extern int  ngs_sort(ngsParams*);
 
-extern int  ngs_kmer(int ifd);
+extern int  ngs_revcom(ngsParams*);
+
+extern int  ngs_kmer(ngsParams*);
+
+extern int ngs_index(ngsParams*);
 
 extern void INThandler(int sig);
 

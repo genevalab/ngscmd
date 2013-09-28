@@ -25,7 +25,7 @@
 /* transform Phred-scaled quality scores in a fastQ file */
 
 int
-ngs_convert(int ifd, int ofd, int flag)
+ngs_convert(ngsParams *p)
 {
 	int i = 0;
 	char **seqLine;
@@ -33,16 +33,16 @@ ngs_convert(int ifd, int ofd, int flag)
 	gzFile out;
 
 	/* open sequence file */
-	if ((seq = gzdopen(ifd, "r")) == NULL)
+	if ((seq = gzopen(p->seqFile1, "rb")) == NULL)
 	{
-		fputs("\n\nError: cannot open the input fastq sequence file.\n\n", stderr);
+		fputs("\n\nError: cannot open the input fastQ sequence file.\n\n", stderr);
 		exit(EXIT_FAILURE);
 	}
 
 	/* open output fastq stream */
-	if ((out = gzdopen(ofd, "w")) == NULL)
+	if ((out = gzopen(p->outFile1, "wb")) == NULL)
 	{
-		fputs("\n\nError: cannot open the output fastq sequence file.\n\n", stderr);
+		fputs("\n\nError: cannot open the output fastQ sequence file.\n\n", stderr);
 		exit(EXIT_FAILURE);
 	}
 
@@ -86,7 +86,7 @@ ngs_convert(int ifd, int ofd, int flag)
 			{
 				size_t j = 0;
 				size_t len = strlen(seqLine[i]) - 1;
-				if (flag & CONVERT_REV)
+				if (p->flag & CONVERT_REV)
 				{
 					/* only do Sanger to Illumina conversion */
 					while (j < len)
@@ -103,7 +103,7 @@ ngs_convert(int ifd, int ofd, int flag)
 					}
 					gzputc(out, '\n');
 
-					if (flag & CONVERT_NUM)
+					if (p->flag & CONVERT_NUM)
 					{
 						/* do both numerical and Sanger to Illumina conversion here */
 						const char delim = ' ';
@@ -139,7 +139,7 @@ ngs_convert(int ifd, int ofd, int flag)
 					}
 					gzputc(out, '\n');
 
-					if (flag & CONVERT_NUM)
+					if (p->flag & CONVERT_NUM)
 					{
 						/* do both numerical and Illumina to Sanger conversion here */
 						const char delim = ' ';

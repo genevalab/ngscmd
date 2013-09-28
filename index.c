@@ -22,10 +22,10 @@
 
 #include "ngslib.h"
 
-/* counts the number of unique k-mers in a fastQ file */
+/* create index of either read identifiers or sequences in a fastQ file */
 
 int
-ngs_kmer(ngsParams *p)
+ngs_index(ngsParams *p)
 {
 	int i = 0;
 	char **seqLine;

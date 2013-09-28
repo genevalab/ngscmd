@@ -1,7 +1,7 @@
 CC = gcc
 AR = ar
 PROG = NGSutils
-LIB_SRC = fa2fq.c fq2fa.c pair.c convert.c clean.c bypos.c sort.c revcom.c kmer.c
+LIB_SRC = fa2fq.c fq2fa.c pair.c convert.c clean.c bypos.c sort.c revcom.c kmer.c index.c
 SRC = ngsutils.c
 CFLAGS = -Wall -std=c99 -g -Wextra -pedantic
 LIBPATH = -L .

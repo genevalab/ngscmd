@@ -23,16 +23,13 @@
 #include "ngslib.h"
 #ifdef _MSC_VER
 #include "getopt.h"
-#include <io.h>
-#define open _open
-#define close _close
 #else
 #include <unistd.h>
 #endif
 
 /* constants */
 #define VERSION 0.1
-#define NFUNCTIONS 9
+#define NFUNCTIONS 10
 
 /* function prototypes */
 ngsParams *readParams(int, char**);
@@ -51,10 +48,6 @@ extern int optind, opterr, optopt;
 int
 main(int argc, char **argv)
 {
-	int ifd;
-	int iifd;
-	int ofd;
-	int oofd;
 	ngsParams *p;
 
 	if (argc < 2)
@@ -66,115 +59,34 @@ main(int argc, char **argv)
 		switch (p->func)
 		{
 			case FA2FQ:
-				ifd = open(p->seqFile1, O_RDONLY);
-				iifd = open(p->seqFile2, O_RDONLY);
-#ifdef _MSC_VER
-				ofd = open(p->outFile1, _O_WRONLY | _O_CREAT | _O_TRUNC, _S_IREAD | _S_IWRITE);
-#else
-				ofd = open(p->outFile1, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-#endif
-				if ((ifd == -1) || (iifd == -1))
-					perror("Opening input files failed.");
-				if (ofd == -1)
-					perror("Opening output file failed.");
-				ngs_fa2fq(ifd, iifd, ofd);
-				close(ifd);
-				close(iifd);
-				close(ofd);
+				ngs_fa2fq(p);
+				break;
+			case FQ2FA:
+				ngs_fq2fa(p);
 				break;
 			case PAIR:
-				ifd = open(p->seqFile1, O_RDONLY);
-				iifd = open(p->seqFile2, O_RDONLY);
-#ifdef _MSC_VER
-				ofd = open(p->outFile1, _O_WRONLY | _O_CREAT | _O_TRUNC, _S_IREAD | _S_IWRITE);
-				oofd = open(p->outFile2, _O_WRONLY | _O_CREAT | _O_TRUNC, _S_IREAD | _S_IWRITE);
-#else
-				ofd = open(p->outFile1, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-				oofd = open(p->outFile2, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-#endif
-				if ((ifd == -1) || (iifd == -1))
-					perror("Opening input files failed.");
-				if ((ofd == -1) || (oofd == -1))
-					perror("Opening output files failed.");
-				ngs_pair(ifd, iifd, ofd, oofd);
-				close(ifd);
-				close(iifd);
-				close(ofd);
-				close(oofd);
+				ngs_pair(p);
 				break;
 			case CONVERT:
-				ifd = open(p->seqFile1, O_RDONLY);
-#ifdef _MSC_VER
-				ofd = open(p->outFile1, _O_WRONLY | _O_CREAT | _O_TRUNC, _S_IREAD | _S_IWRITE);
-#else
-				ofd = open(p->outFile1, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-#endif
-				if (ifd == -1)
-					perror("Opening input file failed.");
-				if (ofd == -1)
-					perror("Opening output file failed.");
-				ngs_convert(ifd, ofd, p->flag);
-				close(ifd);
-				close(ofd);
+				ngs_convert(p);
 				break;
 			case CLEAN:
-				ifd = open(p->seqFile1, O_RDONLY);
-#ifdef _MSC_VER
-				ofd = open(p->outFile1, _O_WRONLY | _O_CREAT | _O_TRUNC, _S_IREAD | _S_IWRITE);
-#else
-				ofd = open(p->outFile1, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-#endif
-				if (ifd == -1)
-					perror("Opening input file failed.");
-				if (ofd == -1)
-					perror("Opening output file failed.");
-				ngs_clean(ifd, ofd);
-				close(ifd);
-				close(ofd);
+				ngs_clean(p);
 				break;
 			case BYPOS:
-				ifd = open(p->seqFile1, O_RDONLY);
-				if (ifd == -1)
-					perror("Opening input file failed.");
-				ngs_bypos(ifd);
-				close(ifd);
+				ngs_bypos(p);
 				break;
 			case SORT:
-				ifd = open(p->seqFile1, O_RDONLY);
-#ifdef _MSC_VER
-				ofd = open(p->outFile1, _O_WRONLY | _O_CREAT | _O_TRUNC, _S_IREAD | _S_IWRITE);
-#else
-				ofd = open(p->outFile1, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-#endif
-				if (ifd == -1)
-					perror("Opening input file failed.");
-				if (ofd == -1)
-					perror("Opening output file failed.");
-				ngs_sort(ifd, ofd);
-				close(ifd);
-				close(ofd);
+				ngs_sort(p);
 				break;
 			case REVCOM:
-				ifd = open(p->seqFile1, O_RDONLY);
-#ifdef _MSC_VER
-				ofd = open(p->outFile1, _O_WRONLY | _O_CREAT | _O_TRUNC, _S_IREAD | _S_IWRITE);
-#else
-				ofd = open(p->outFile1, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-#endif
-				if (ifd == -1)
-					perror("Opening input file failed.");
-				if (ofd == -1)
-					perror("Opening output file failed.");
-				ngs_revcom(ifd, ofd);
-				close(ifd);
-				close(ofd);
+				ngs_revcom(p);
 				break;
 			case KMER:
-				ifd = open(p->seqFile1, O_RDONLY);
-				if (ifd == -1)
-					perror("Opening input file failed.");
-				ngs_kmer(ifd);
-				close(ifd);
+				ngs_kmer(p);
+				break;
+			case INDEX:
+				ngs_index(p);
 				break;
 			default:
 				return mainUsage();
@@ -213,6 +125,8 @@ readParams(int argc, char **argv)
 	/* assign the function */
 	if (strcmp(argv[1], "fa2fq") == 0)
 		p->func = FA2FQ;
+	else if (strcmp(argv[1], "fq2fa") == 0)
+		p->func = FQ2FA;
 	else if (strcmp(argv[1], "pair") == 0)
 		p->func = PAIR;
 	else if (strcmp(argv[1], "convert") == 0)
@@ -227,6 +141,8 @@ readParams(int argc, char **argv)
 		p->func = REVCOM;
 	else if (strcmp(argv[1], "kmer") == 0)
 		p->func = KMER;
+	else if (strcmp(argv[1], "index") == 0)
+		p->func = INDEX;
 	else
 	{
 		printf("\n\nError: the function \"%s\" is not recognized\n", argv[1]);
@@ -252,7 +168,7 @@ readParams(int argc, char **argv)
 				{
 					strcpy(p->outFile1, p->outFilePrefix);
 					strcpy(p->qualFile, p->outFilePrefix);
-					strcat(p->outFile1, ".fq.gz");
+					strcat(p->outFile1, ".fa.gz");
 					strcat(p->qualFile, ".qual.gz");
 				}
 				else if (p->func == PAIR)
@@ -347,7 +263,8 @@ mainUsage(void)
 	puts("                 bypos      show average quality by sequence position");
 	puts("                 sort       lexical sort of reads by identifier string");
 	puts("                 revcom     reverse complement bases in fastQ file");
-	puts("                 kmer       count number of unique k-mers in fastQ file\n");
+	puts("                 kmer       count number of unique k-mers in fastQ file");
+	puts("                 index      create index of either read identifiers or sequences\n");
 	return 1;
 }
 

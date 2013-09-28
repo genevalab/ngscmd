@@ -25,7 +25,7 @@
 /* reverse complement the bases in a fastQ file */
 
 int
-ngs_revcom(int ifd, int ofd)
+ngs_revcom(ngsParams *p)
 {
 	int i = 0;
 	char **seqLine;
@@ -34,16 +34,16 @@ ngs_revcom(int ifd, int ofd)
 
 
 	/* open sequence input file */
-	if ((seq = gzdopen(ifd, "r")) == NULL)
+	if ((seq = gzopen(p->seqFile1, "rb")) == NULL)
 	{
-		fputs("\n\nError: cannot open the input fastq sequence file.\n\n", stderr);
+		fputs("\n\nError: cannot open the input fastQ sequence file.\n\n", stderr);
 		exit(EXIT_FAILURE);
 	}
 
 	/* open sequence output file */
-	if ((out = gzdopen(ofd, "w")) == NULL)
+	if ((out = gzopen(p->outFile1, "wb")) == NULL)
 	{
-		fputs("\n\nError: cannot open the output fastq sequence file.\n\n", stderr);
+		fputs("\n\nError: cannot open the output fastQ sequence file.\n\n", stderr);
 		exit(EXIT_FAILURE);
 	}
 
@@ -90,8 +90,8 @@ ngs_revcom(int ifd, int ofd)
 			int j = i % 4;
 			if ((j == 1) || (j == 3))
 			{
-				STR_TRIM(seqLine[i]);
-				STR_REVERSE(seqLine[i]);
+				chomp(seqLine[i]);
+				strrev(seqLine[i]);
 				if (j == 1)
 				{
 					size_t k = 0;
