@@ -52,7 +52,9 @@ int
 main(int argc, char **argv)
 {
 	int ifd;
+	int iifd;
 	int ofd;
+	int oofd;
 	ngsParams *p;
 
 	if (argc < 2)
@@ -64,26 +66,101 @@ main(int argc, char **argv)
 		switch (p->func)
 		{
 			case FA2FQ:
-				ngs_fa2fq(p);
+				ifd = open(p->seqFile1, O_RDONLY);
+				iifd = open(p->seqFile2, O_RDONLY);
+#ifdef _MSC_VER
+				ofd = open(p->outFile1, _O_WRONLY | _O_CREAT | _O_TRUNC, _S_IREAD | _S_IWRITE);
+#else
+				ofd = open(p->outFile1, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+#endif
+				if ((ifd == -1) || (iifd == -1))
+					perror("Opening input files failed.");
+				if (ofd == -1)
+					perror("Opening output file failed.");
+				ngs_fa2fq(ifd, iifd, ofd);
+				close(ifd);
+				close(iifd);
+				close(ofd);
 				break;
 			case PAIR:
-				ngs_pair(p);
+				ifd = open(p->seqFile1, O_RDONLY);
+				iifd = open(p->seqFile2, O_RDONLY);
+#ifdef _MSC_VER
+				ofd = open(p->outFile1, _O_WRONLY | _O_CREAT | _O_TRUNC, _S_IREAD | _S_IWRITE);
+				oofd = open(p->outFile2, _O_WRONLY | _O_CREAT | _O_TRUNC, _S_IREAD | _S_IWRITE);
+#else
+				ofd = open(p->outFile1, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+				oofd = open(p->outFile2, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+#endif
+				if ((ifd == -1) || (iifd == -1))
+					perror("Opening input files failed.");
+				if ((ofd == -1) || (oofd == -1))
+					perror("Opening output files failed.");
+				ngs_pair(ifd, iifd, ofd, oofd);
+				close(ifd);
+				close(iifd);
+				close(ofd);
+				close(oofd);
 				break;
 			case CONVERT:
-				ngs_convert(p);
+				ifd = open(p->seqFile1, O_RDONLY);
+#ifdef _MSC_VER
+				ofd = open(p->outFile1, _O_WRONLY | _O_CREAT | _O_TRUNC, _S_IREAD | _S_IWRITE);
+#else
+				ofd = open(p->outFile1, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+#endif
+				if (ifd == -1)
+					perror("Opening input file failed.");
+				if (ofd == -1)
+					perror("Opening output file failed.");
+				ngs_convert(ifd, ofd);
+				close(ifd);
+				close(ofd);
 				break;
 			case CLEAN:
-				ngs_clean(p);
+				ifd = open(p->seqFile1, O_RDONLY);
+#ifdef _MSC_VER
+				ofd = open(p->outFile1, _O_WRONLY | _O_CREAT | _O_TRUNC, _S_IREAD | _S_IWRITE);
+#else
+				ofd = open(p->outFile1, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+#endif
+				if (ifd == -1)
+					perror("Opening input file failed.");
+				if (ofd == -1)
+					perror("Opening output file failed.");
+				ngs_clean(ifd, ofd);
+				close(ifd);
+				close(ofd);
 				break;
 			case BYPOS:
-				ngs_bypos(p);
+				ifd = open(p->seqFile1, O_RDONLY);
+				if (ifd == -1)
+					perror("Opening input file failed.");
+				ngs_bypos(ifd);
+				close(ifd);
 				break;
 			case SORT:
-				ngs_sort(p);
+				ifd = open(p->seqFile1, O_RDONLY);
+#ifdef _MSC_VER
+				ofd = open(p->outFile1, _O_WRONLY | _O_CREAT | _O_TRUNC, _S_IREAD | _S_IWRITE);
+#else
+				ofd = open(p->outFile1, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+#endif
+				if (ifd == -1)
+					perror("Opening input file failed.");
+				if (ofd == -1)
+					perror("Opening output file failed.");
+				ngs_sort(ifd, ofd);
+				close(ifd);
+				close(ofd);
 				break;
 			case REVCOM:
 				ifd = open(p->seqFile1, O_RDONLY);
+#ifdef _MSC_VER
+				ofd = open(p->outFile1, _O_WRONLY | _O_CREAT | _O_TRUNC, _S_IREAD | _S_IWRITE);
+#else
 				ofd = open(p->outFile1, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+#endif
 				if (ifd == -1)
 					perror("Opening input file failed.");
 				if (ofd == -1)
@@ -93,11 +170,14 @@ main(int argc, char **argv)
 				close(ofd);
 				break;
 			case KMER:
-				ngs_kmer(p);
+				ifd = open(p->seqFile1, O_RDONLY);
+				if (ifd == -1)
+					perror("Opening input file failed.");
+				ngs_kmer(ifd);
+				close(ifd);
 				break;
 			default:
-				mainUsage();
-				return 1;
+				return mainUsage();
 		}
 	}
 
@@ -268,7 +348,7 @@ mainUsage(void)
 	puts("                 sort       lexical sort of reads by identifier string");
 	puts("                 revcom     reverse complement bases in fastQ file");
 	puts("                 kmer       count number of unique k-mers in fastQ file\n");
-	return 0;
+	return 1;
 }
 
 
@@ -279,48 +359,49 @@ functionUsage(int f)
 	switch(f)
 	{
 		case FA2FQ:
-			puts("\n\nUsage: NGSutils fa2fq [options] <fasta/q input file> <quality file>");
-			puts("Options:        -o         prefix string for name of fastq/fasta/quality output files\n");
+			puts("\n\nUsage: NGSutils fa2fq [options] <fastA/Q input file> <quality file>");
+			puts("Options:        -o         prefix string for name of fastQ/fastQ/quality output files\n");
 			break;
 		case FQ2FA:
-			puts("\n\nUsage: NGSutils fq2fa [options] <fastq file>");
-			puts("Options:        -o         prefix string for name of fasta and quality file output file\n");
+			puts("\n\nUsage: NGSutils fq2fa [options] <fastQ file>");
+			puts("Options:        -o         prefix string for name of fastA and quality file output file\n");
 			break;
 		case PAIR:
-			puts("\n\nUsage: NGSutils pair [options] <fastq_mate1> <fastq_mate2>");
+			puts("\n\nUsage: NGSutils pair [options] <fastQ_mate1> <fastQ_mate2>");
 			puts("Options:        -o         prefix string for naming both output files\n");
 			break;
 		case CONVERT:
-			puts("\n\nUsage: NGSutils convert [options] <fastq file>");
-			puts("Options:        -o         prefix string for name of fastq output file");
+			puts("\n\nUsage: NGSutils convert [options] <fastQ file>");
+			puts("Options:        -o         prefix string for name of fastQ output file");
 			puts("                -s         convert from 33-126 scale to 64-126 scale");
 			puts("                           default: 64-126 to 33-126 scale");
 			puts("                -a         convert from numerical scores to ASCII");
 			puts("                -n         convert from ASCII scores to numerical\n");
 			break;
 		case CLEAN:
-			puts("\n\nUsage: NGSutils clean [options] <fastq file>");
-			puts("Options:        -o         prefix string for name of fastq output file\n");
+			puts("\n\nUsage: NGSutils clean [options] <fastQ file>");
+			puts("Options:        -o         prefix string for name of fastQ output file\n");
 			break;
 		case BYPOS:
-			puts("\n\nUsage: NGSutils bypos <fastq file>");
+			puts("\n\nUsage: NGSutils bypos <fastQ file>");
 			puts("Note: bypos writes all output to STDOUT\n");
 			break;
 		case SORT:
-			puts("\n\nUsage: NGSutils sort [options] <fastq file>");
-			puts("Options:        -o         prefix string for name of fastq output file\n");
+			puts("\n\nUsage: NGSutils sort [options] <fastQ file>");
+			puts("Options:        -o         prefix string for name of fastQ output file\n");
 			break;
 		case REVCOM:
-			puts("\n\nUsage: NGSutils revcom [options] <fastq file>");
-			puts("Options:        -o         prefix string for name of fastq output file\n");
+			puts("\n\nUsage: NGSutils revcom [options] <fastQ file>");
+			puts("Options:        -o         prefix string for name of fastQ output file\n");
 			break;
 		case KMER:
-			puts("\n\nUsage: NGSutils kmer [options] <fastq file>\n");
-			puts("Options:        -n         k-mer size       [ default: 31 ]\n");
+			puts("\n\nUsage: NGSutils kmer [options] <fastQ file>\n");
+			puts("Options:        -n         k-mer size       [ default: 31 ]");
+			puts("Note: kmer writes all output to STDOUT\n");
 			break;
 		default:
 			puts("\n\nError: cannot determine specified function\n");
 			exit(EXIT_FAILURE);
 	}
-	return 0;
+	return 1;
 }

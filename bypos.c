@@ -25,7 +25,7 @@
 /* calculates the average quality score by base position in read */
 
 int
-ngs_bypos(ngsParams *p)
+ngs_bypos(int ifd)
 {
 	int i = 0;
 	int max_pos = 0;
@@ -35,7 +35,7 @@ ngs_bypos(ngsParams *p)
 	gzFile seq;
 
 	/* open sequence file */
-	if ((seq = gzopen(p->seqFile1, "rb")) == NULL)
+	if ((seq = gzdopen(ifd, "r")) == NULL)
 	{
 		fputs("\n\nError: cannot open the input fastq sequence file.\n\n", stderr);
 		exit(EXIT_FAILURE);

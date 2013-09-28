@@ -25,7 +25,7 @@
 /* transform Phred-scaled quality scores in a fastQ file */
 
 int
-ngs_convert(ngsParams *p)
+ngs_convert(int ifd, int ofd)
 {
 	int i = 0;
 	char **seqLine;
@@ -33,14 +33,14 @@ ngs_convert(ngsParams *p)
 	gzFile out;
 
 	/* open sequence file */
-	if ((seq = gzopen(p->seqFile1, "rb")) == NULL)
+	if ((seq = gzdopen(ifd, "r")) == NULL)
 	{
 		fputs("\n\nError: cannot open the input fastq sequence file.\n\n", stderr);
 		exit(EXIT_FAILURE);
 	}
 
 	/* open output fastq stream */
-	if ((out = gzopen(p->outFile1, "wb")) == NULL)
+	if ((out = gzdopen(ofd, "w")) == NULL)
 	{
 		fputs("\n\nError: cannot open the output fastq sequence file.\n\n", stderr);
 		exit(EXIT_FAILURE);

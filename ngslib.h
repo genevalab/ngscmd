@@ -85,14 +85,14 @@ enum FUNC {FA2FQ, FQ2FA, PAIR, CONVERT, CLEAN, BYPOS, SORT, REVCOM, KMER};
 }
 
 /* function prototypes */
-extern int  ngs_fa2fq(ngsParams*);
-extern int  ngs_convert(ngsParams*);
-extern int  ngs_pair(ngsParams*);
-extern int  ngs_clean(ngsParams*);
-extern int  ngs_bypos(ngsParams*);
-extern int  ngs_sort(ngsParams*);
+extern int  ngs_fa2fq(int, int, int);
+extern int  ngs_convert(int, int);
+extern int  ngs_pair(int, int, int, int);
+extern int  ngs_clean(int, int);
+extern int  ngs_bypos(int);
+extern int  ngs_sort(int, int);
 extern int  ngs_revcom(int, int);
-extern int  ngs_kmer(ngsParams*);
+extern int  ngs_kmer(int);
 extern void INThandler(int);
 
 #ifdef __cplusplus

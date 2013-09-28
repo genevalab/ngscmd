@@ -25,7 +25,7 @@
 /* join fastA and quality files into a single fastQ file */
 
 int
-ngs_fa2fq(ngsParams *p)
+ngs_fa2fq(int ifd, int iifd, int ofd)
 {
 	int i = 0;
 	char **seqLine;
@@ -35,21 +35,21 @@ ngs_fa2fq(ngsParams *p)
 	gzFile out;
 
 	/* open the sequence file */
-	if ((seq = gzopen(p->seqFile1, "rb")) == NULL)
+	if ((seq = gzdopen(ifd, "r")) == NULL)
 	{
 		fputs("\n\nError: cannot open the input fasta sequence file.\n\n", stderr);
 		exit(EXIT_FAILURE);
 	}
 
 	/* open the quality file */
-	if ((qual = gzopen(p->qualFile, "rb")) == NULL)
+	if ((qual = gzdopen(iifd, "r")) == NULL)
 	{
 			fputs("\n\nError: cannot open the input fasta quality file.\n\n", stderr);
 			exit(EXIT_FAILURE);
 	}
 
 	/* open the fastq output stream */
-	if ((out = gzopen(p->outFile1, "wb")) == NULL)
+	if ((out = gzdopen(ofd, "w")) == NULL)
 	{
 		fputs("\n\nError: cannot open the output fastq sequence file.\n", stderr);
 		exit(EXIT_FAILURE);

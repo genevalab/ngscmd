@@ -25,7 +25,7 @@
 /* lexical sort of reads in a fastQ file by the identifier strings */
 
 int
-ngs_sort(ngsParams *p)
+ngs_sort(int ifd, int ofd)
 {
 	int i = 0;
 	char **seqLine;
@@ -33,14 +33,14 @@ ngs_sort(ngsParams *p)
 	gzFile out;
 
 	/* open sequence input file */
-	if ((seq = gzopen(p->seqFile1, "rb")) == NULL)
+	if ((seq = gzdopen(ifd, "r")) == NULL)
 	{
 		fputs("\n\nError: cannot open the input fastq sequence file.\n\n", stderr);
 		exit(EXIT_FAILURE);
 	}
 
 	/* open sequence output file */
-	if ((out = gzopen(p->outFile1, "wb")) == NULL)
+	if ((out = gzdopen(ofd, "w")) == NULL)
 	{
 		fputs("\n\nError: cannot open the output fastq sequence file.\n\n", stderr);
 		exit(EXIT_FAILURE);

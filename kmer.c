@@ -25,7 +25,7 @@
 /* counts the number of unique k-mers in a fastQ file */
 
 int
-ngs_kmer(ngsParams *p)
+ngs_kmer(int ifd)
 {
 	int i = 0;
 	char **seqLine;
@@ -33,7 +33,7 @@ ngs_kmer(ngsParams *p)
 
 
 	/* open sequence file */
-	if ((seq = gzopen(p->seqFile1, "rb")) == NULL)
+	if ((seq = gzdopen(ifd, "rb")) == NULL)
 	{
 		fputs("\n\nError: cannot open the input fastq sequence file.\n\n", stderr);
 		exit(EXIT_FAILURE);
