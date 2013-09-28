@@ -113,7 +113,7 @@ main(int argc, char **argv)
 					perror("Opening input file failed.");
 				if (ofd == -1)
 					perror("Opening output file failed.");
-				ngs_convert(ifd, ofd);
+				ngs_convert(ifd, ofd, p->flag);
 				close(ifd);
 				close(ofd);
 				break;

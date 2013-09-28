@@ -86,7 +86,7 @@ enum FUNC {FA2FQ, FQ2FA, PAIR, CONVERT, CLEAN, BYPOS, SORT, REVCOM, KMER};
 
 /* function prototypes */
 extern int  ngs_fa2fq(int, int, int);
-extern int  ngs_convert(int, int);
+extern int  ngs_convert(int, int, int);
 extern int  ngs_pair(int, int, int, int);
 extern int  ngs_clean(int, int);
 extern int  ngs_bypos(int);

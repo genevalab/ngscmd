@@ -25,7 +25,7 @@
 /* transform Phred-scaled quality scores in a fastQ file */
 
 int
-ngs_convert(int ifd, int ofd)
+ngs_convert(int ifd, int ofd, int flag)
 {
 	int i = 0;
 	char **seqLine;
@@ -86,7 +86,7 @@ ngs_convert(int ifd, int ofd)
 			{
 				size_t j = 0;
 				size_t len = strlen(seqLine[i]) - 1;
-				if (p->flag & CONVERT_REV)
+				if (flag & CONVERT_REV)
 				{
 					/* only do Sanger to Illumina conversion */
 					while (j < len)
@@ -103,7 +103,7 @@ ngs_convert(int ifd, int ofd)
 					}
 					gzputc(out, '\n');
 
-					if (p->flag & CONVERT_NUM)
+					if (flag & CONVERT_NUM)
 					{
 						/* do both numerical and Sanger to Illumina conversion here */
 						const char delim = ' ';
@@ -139,7 +139,7 @@ ngs_convert(int ifd, int ofd)
 					}
 					gzputc(out, '\n');
 
-					if (p->flag & CONVERT_NUM)
+					if (flag & CONVERT_NUM)
 					{
 						/* do both numerical and Illumina to Sanger conversion here */
 						const char delim = ' ';

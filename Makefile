@@ -1,16 +1,15 @@
 CC = gcc
 AR = ar
 PROG = NGSutils
-LIB = libngs.a
-LIB_SRC = fa2fq.c pair.c convert.c clean.c bypos.c sort.c revcom.c kmer.c
+LIB_SRC = fa2fq.c fq2fa.c pair.c convert.c clean.c bypos.c sort.c revcom.c kmer.c
 SRC = ngsutils.c
 CFLAGS = -Wall -std=c99 -g -Wextra -pedantic
+LIBPATH = -L .
 LIBFLAGS = -lz -lngs
 LOBJS = $(LIB_SRC:%.c=%.o)
 OBJS = $(SRC:%.c=%.o)
 
 .SUFFIXES:.c .o
-.PHONY all lib
 
 %.o : %.c
 	$(CC) -c $(CFLAGS) $< -o $@
@@ -18,7 +17,7 @@ OBJS = $(SRC:%.c=%.o)
 all : $(PROG)
 
 $(PROG) : $(OBJS)
-	$(CC) -o $@ $(OBJS) $(LIBFLAGS)
+	$(CC) $(LIBPATH) -o $@ $(OBJS)  $(LIBFLAGS)
 
 .PHONY : all lib clean
 
@@ -28,4 +27,4 @@ libngs.a:$(LOBJS)
 	$(AR) -csru $@ $(LOBJS)
 
 clean :
-	rm $(PROG) $(OBJS)
+	rm $(PROG) $(OBJS) $(LOBJS)
