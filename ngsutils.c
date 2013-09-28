@@ -21,7 +21,6 @@
 */
 
 #include "ngslib.h"
-
 #ifdef _MSC_VER
 #include "getopt.h"
 #include <io.h>
@@ -52,8 +51,8 @@ extern int optind, opterr, optopt;
 int
 main(int argc, char **argv)
 {
-	int id;
-	int od;
+	int ifd;
+	int ofd;
 	ngsParams *p;
 
 	if (argc < 2)
@@ -83,11 +82,15 @@ main(int argc, char **argv)
 				ngs_sort(p);
 				break;
 			case REVCOM:
-				id = open(p->seqFile1, O_RDONLY);
-				od = open(p->outFile1, O_WRONLY);
-				ngs_revcom(id, od);
-				close(id);
-				close(od);
+				ifd = open(p->seqFile1, O_RDONLY);
+				ofd = open(p->outFile1, O_WRONLY | O_CREAT | O_TRUNC, S_IWRITE);
+				if (ifd == -1)
+					perror("Opening input file failed.");
+				if (ofd == -1)
+					perror("Opening output file failed.");
+				ngs_revcom(ifd, ofd);
+				close(ifd);
+				close(ofd);
 				break;
 			case KMER:
 				ngs_kmer(p);

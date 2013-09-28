@@ -33,6 +33,7 @@
 #include <limits.h>
 #include <ctype.h>
 #include <fcntl.h>
+#include <sys/stat.h>
 #include <zlib.h>
 
 #ifdef __cplusplus
@@ -63,20 +64,23 @@ enum FUNC {FA2FQ, FQ2FA, PAIR, CONVERT, CLEAN, BYPOS, SORT, REVCOM, KMER};
 /* inline functions */
 #define STR_TRIM(s)                                                     \
 {                                                                       \
-	char *ptr = NULL;                                                   \
-	for (ptr = s + strlen(s) - 1; (ptr >= s) && isspace(*ptr); --ptr);  \
+	char *ptr = s + strlen(s) - 1;                                      \
+	while ((ptr >= s) && isspace(*ptr))                                 \
+		--ptr);                                                         \
 	ptr[1] = '\0';                                                      \
 }
 
 #define STR_REVERSE(s)                                                  \
 {                                                                       \
-	char *p1 = NULL;                                                    \
-	char *p2 = NULL;                                                    \
-	for (p1=s, p2=s+strlen(s)-1; p2 > p1; ++p1, --p2)                   \
+	char *p1 = s;                                                       \
+	char *p2 = s + strlen(s) - 1;                                       \
+	while (p2 > p1)                                                     \
 	{                                                                   \
 		*p1 ^= *p2;                                                     \
 		*p2 ^= *p1;                                                     \
 		*p1 ^= *p2;                                                     \
+		++p1;                                                           \
+		--p2;                                                           \
 	}                                                                   \
 }
 
