@@ -318,7 +318,7 @@ readParams(int argc, char **argv)
 			exit(EXIT_FAILURE);
 		}
 	}
-	
+
 	return p;
 }
 
