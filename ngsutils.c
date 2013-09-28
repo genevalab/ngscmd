@@ -83,7 +83,7 @@ main(int argc, char **argv)
 				break;
 			case REVCOM:
 				ifd = open(p->seqFile1, O_RDONLY);
-				ofd = open(p->outFile1, O_WRONLY | O_CREAT | O_TRUNC, S_IWRITE);
+				ofd = open(p->outFile1, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 				if (ifd == -1)
 					perror("Opening input file failed.");
 				if (ofd == -1)

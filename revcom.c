@@ -90,39 +90,30 @@ ngs_revcom(int ifd, int ofd)
 			int j = i % 4;
 			if ((j == 1) || (j == 3))
 			{
-				char *rev;
-				rev = (char*) malloc(MAX_LINE_LENGTH * sizeof(char));
-				if (rev == NULL)
-				{
-					fputs("Memory allocation failure for rev\n", stderr);
-					exit (EXIT_FAILURE);
-				}
-				strcpy(rev, seqLine[i]);
-				STR_TRIM(rev);
-				STR_REVERSE(rev);
+				STR_TRIM(seqLine[i]);
+				STR_REVERSE(seqLine[i]);
 				if (j == 1)
 				{
 					size_t k = 0;
-					size_t len = strlen(rev);
+					size_t len = strlen(seqLine[i]);
 					while (k < len)
 					{
-						if (rev[k] == 'A')
+						if (seqLine[i][k] == 'A')
 							gzputc(out, 'T');
-						else if (rev[k] == 'C')
+						else if (seqLine[i][k] == 'C')
 							gzputc(out, 'G');
-						else if (rev[k] == 'G')
+						else if (seqLine[i][k] == 'G')
 							gzputc(out, 'C');
-						else if (rev[k] == 'T')
+						else if (seqLine[i][k] == 'T')
 							gzputc(out, 'A');
 						else
-							gzputc(out, rev[k]);
+							gzputc(out, seqLine[i][k]);
 						++k;
 					}
 				}
 				else
-					gzputs(out, rev);
+					gzputs(out, seqLine[i]);
 				gzputc(out, '\n');
-				free(rev);
 			}
 			else
 				gzputs(out, seqLine[i]);
