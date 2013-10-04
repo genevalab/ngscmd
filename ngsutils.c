@@ -30,6 +30,7 @@
 /* constants */
 #define VERSION 0.1
 #define NFUNCTIONS 10
+enum FUNC {FA2FQ, FQ2FA, PAIR, CONVERT, CLEAN, BYPOS, SORT, REVCOM, KMER, INDEX, COUNT};
 
 /* function prototypes */
 ngsParams *readParams(int, char**);
@@ -88,6 +89,9 @@ main(int argc, char **argv)
 			case INDEX:
 				ngs_index(p);
 				break;
+			case COUNT:
+				ngs_count(p);
+				break;
 			default:
 				return mainUsage();
 		}
@@ -143,6 +147,8 @@ readParams(int argc, char **argv)
 		p->func = KMER;
 	else if (strcmp(argv[1], "index") == 0)
 		p->func = INDEX;
+	else if (strcmp(argv[1], "count") == 0)
+		p->func = COUNT;
 	else
 	{
 		printf("\n\nError: the function \"%s\" is not recognized\n", argv[1]);
@@ -264,7 +270,8 @@ mainUsage(void)
 	puts("                 sort       lexical sort of reads by identifier string");
 	puts("                 revcom     reverse complement bases in fastQ file");
 	puts("                 kmer       count number of unique k-mers in fastQ file");
-	puts("                 index      create index of either read identifiers or sequences\n");
+	puts("                 index      create index of either read identifiers or sequences");
+	puts("                 count      count the number of reads in a fastQ file\n");
 	return 1;
 }
 
@@ -315,6 +322,14 @@ functionUsage(int f)
 			puts("\n\nUsage: NGSutils kmer [options] <fastQ file>\n");
 			puts("Options:        -n         k-mer size       [ default: 31 ]");
 			puts("Note: kmer writes all output to STDOUT\n");
+			break;
+		case INDEX:
+			puts("\n\nUsage: NGSutils index [options] <fastQ file>");
+			puts("Options:        -o         prefix string for name of indexed output file\n");
+			break;
+		case COUNT:
+			puts("\n\nUsage: NGSutils count <fastQ file>");
+			puts("Note: count writes all output to STDOUT\n");
 			break;
 		default:
 			puts("\n\nError: cannot determine specified function\n");

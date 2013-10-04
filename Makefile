@@ -1,7 +1,7 @@
 CC= gcc
 AR= ar
 PROG= NGSutils
-LIB= libngs.a
+LIB= libngs
 LIB_SRC = fa2fq.c fq2fa.c pair.c convert.c clean.c bypos.c sort.c revcom.c kmer.c index.c
 SRC = ngsutils.c
 CFLAGS = -Wall -std=c99 -g -Wextra -pedantic
@@ -13,7 +13,7 @@ OBJS = $(SRC:%.c=%.o)
 all: $(LIB) $(PROG)
 
 $(LIB): $(LOBJS)
-	$(AR) -csru $@ $(LOBJS)
+	$(AR) -csru libngs.a $(LOBJS)
 
 $(PROG): $(OBJS)
 	$(CC) $(LIBPATH) -o $@ $(OBJS)  $(LIBFLAGS)

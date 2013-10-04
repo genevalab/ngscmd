@@ -57,7 +57,6 @@ typedef struct _ngsParams
 #define CONVERT_REV 0x1
 #define CONVERT_NUM 0x2
 #define CONVERT_ASCII 0x4
-enum FUNC {FA2FQ, FQ2FA, PAIR, CONVERT, CLEAN, BYPOS, SORT, REVCOM, KMER, INDEX};
 
 /* inline functions */
 #define chomp(s)                                     \
@@ -104,6 +103,8 @@ extern int  ngs_revcom(ngsParams*);
 extern int  ngs_kmer(ngsParams*);
 
 extern int ngs_index(ngsParams*);
+
+extern int ngs_count(ngsParams*);
 
 extern void INThandler(int sig);
 
