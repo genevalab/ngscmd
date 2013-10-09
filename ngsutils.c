@@ -232,7 +232,12 @@ readParams(int argc, char **argv)
 	if ((p->func == FA2FQ) || (p->func == PAIR))
 	{
 		if (argv[optind + 1])
-			strcpy(p->seqFile2, argv[optind + 1]);
+		{
+			if (p->func == FA2FQ)
+				strcpy(p->qualFile, argv[optind + 1]);
+			else
+				strcpy(p->seqFile2, argv[optind + 1]);
+		}
 		else
 		{
 			puts("\n\nError: need the name of the second input fastQ sequence as a mandatory argument.\n\n");

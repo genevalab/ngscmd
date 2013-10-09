@@ -22,8 +22,5 @@ $(PROG): $(OBJS)
 	$(CC) -c $(CFLAGS) $< -o $@
 
 clean :
-	rm $(PROG) $(OBJS)
-
-libclean :
-	rm libngs.a $(LOBJS)
+	rm $(PROG) $(OBJS) libngs.a $(LOBJS)
 
