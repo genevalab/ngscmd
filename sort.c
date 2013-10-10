@@ -20,7 +20,14 @@
 	Daniel Garrigan    dgarriga@bio.rochester.edu
 */
 
+#include <db.h>
 #include "ngslib.h"
+
+struct dbdata
+{
+	char *seq;
+	char *qual;
+};
 
 /* lexical sort of reads in a fastQ file by the identifier strings */
 
@@ -28,9 +35,24 @@ int
 ngs_sort(ngsParams *p)
 {
 	int i = 0;
+	int ret;
+	unsigned int flags;
 	char **seqLine;
+	struct dbdata record;
+	struct dbdata *buf;
+	DB *dbp;
+	DBT key, val;
 	gzFile seq;
 	gzFile out;
+
+	/* Initialize the database structure */
+	ret = db_create(&dbp, NULL, 0);
+	if (ret != 0)
+	{
+		fputs("\n\nError: cannot create database for sequences.\n\n", stderr);
+		exit(EXIT_FAILURE);
+	}
+	flags = DB_CREATE;
 
 	/* open sequence input file */
 	if ((seq = gzopen(p->seqFile1, "rb")) == NULL)
@@ -43,6 +65,16 @@ ngs_sort(ngsParams *p)
 	if ((out = gzopen(p->outFile1, "wb")) == NULL)
 	{
 		fputs("\n\nError: cannot open the output fastQ sequence file.\n\n", stderr);
+		exit(EXIT_FAILURE);
+	}
+
+	/* open the database */
+	ret = dbp->open(dbp, NULL, "tmp.db", NULL, DB_BTREE, flags, 0);
+	if (ret != 0)
+	{
+		fputs("\n\nError: cannot open database.\n\n", stderr);
+		dbp->err(dbp, ret, "tmp.db");
+		dbp->close(dbp, 0);
 		exit(EXIT_FAILURE);
 	}
 
@@ -66,6 +98,20 @@ ngs_sort(ngsParams *p)
 		}
 	}
 
+	/* allocate memory for the database records */
+	record.seq = (char*) malloc(MAX_LINE_LENGTH * sizeof(char));
+	if (record.seq == NULL)
+	{
+		fputs("Memory allocation failure for record.seq.\n", stderr);
+		exit(EXIT_FAILURE);
+	}
+	record.qual = (char*) malloc(MAX_LINE_LENGTH * sizeof(char));
+	if (record.qual == NULL)
+	{
+		fputs("Memory allocation failure for record.qual.\n", stderr);
+		exit(EXIT_FAILURE);
+	}
+
 	/* read through input sequence file */
 	while (1)
 	{
@@ -86,7 +132,39 @@ ngs_sort(ngsParams *p)
 		/* tally scores along each position in the sequence */
 		for (i = 0; i < buffCount; ++i)
 		{
-			/* TODO: add code to sort the sequences here */
+			int j = i % 4;
+			int l = 0;
+			switch (j)
+			{
+				case 0:
+					memset(&key, 0, sizeof(DBT));
+					key.data = seqLine[i] + 1;
+					key.size = strlen(seqLine[i] + 1);
+					continue;
+				case 1:
+					l = strlen(seqLine[i]);
+					memset(&record, 0, sizeof(struct dbdata));
+					strncpy(record.seq, seqLine[i], l - 1);
+					continue;
+				case 2:
+					continue;
+				case 3:
+					l = strlen(seqLine[i]);
+					memset(&val, 0, sizeof(DBT));
+					strncpy(record.qual, seqLine[i], l - 1);
+					val.data = &record;
+					val.size = sizeof(record);
+					val.flags = DB_DBT_USERMEM;
+					break;
+				default:
+					continue;
+			}
+			ret = dbp->put(dbp, NULL, &key, &val, 0);
+			if (ret != 0)
+			{
+				dbp->err(dbp, ret, "DB->put");
+				exit(EXIT_FAILURE);
+			}
 		}
 
 		/* if we are at the end of the file */
@@ -94,16 +172,30 @@ ngs_sort(ngsParams *p)
 			break;
 	}
 
+	/* walk through the b-tree and print records */
+	while ((ret = dbp->get(dbp, NULL, &key, &val, DB_NEXT)) == 0)
+	{
+		buf = val.data;
+		printf("@%s\n%s\n+\n%s\n", (char*)key.data, buf->seq, buf->qual);
+	}
+	if (ret != DB_NOTFOUND)
+		dbp->err(dbp, ret, "DBcursor->get");
+
 	/* close sequence input stream */
 	gzclose(seq);
 
 	/* close sequence output stream */
 	gzclose(out);
 
+	/* close the database */
+	dbp->close(dbp, 0);
+
 	/* take out the garbage */
 	for (i = 0; i < BUFFSIZE; ++i)
 		free(seqLine[i]);
 	free(seqLine);
+	free(record.seq);
+	free(record.qual);
 
 	return 0;
 }
