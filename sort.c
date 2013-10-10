@@ -41,6 +41,7 @@ ngs_sort(ngsParams *p)
 	struct dbdata record;
 	struct dbdata *buf;
 	DB *dbp;
+	DBC *dbcp;
 	DBT key, val;
 	gzFile seq;
 	gzFile out;
@@ -141,11 +142,17 @@ ngs_sort(ngsParams *p)
 			break;
 	}
 
+	if ((ret = dbp->cursor(dbp, NULL, &dbcp, 0)) != 0)
+	{
+		dbp->err(dbp, ret, "DB->cursor");
+		exit(EXIT_FAILURE);
+	}
+
 	/* walk through the b-tree and print records */
-	while ((ret = dbp->get(dbp, NULL, &key, &val, 0)) == 0)
+	while ((ret = dbcp->c_get(dbcp, &key, &val, DB_NEXT)) == 0)
 	{
 		buf = (struct dbdata*)val.data;
-		printf("@%s\n%s\n+\n%s\n", (char*)key.data, buf->seq, buf->qual);
+		gzprintf(out, "@%s%s\n+\n%s\n", (char*)key.data, buf->seq, buf->qual);
 	}
 	if (ret != DB_NOTFOUND)
 		dbp->err(dbp, ret, "DBcursor->get");
@@ -157,6 +164,7 @@ ngs_sort(ngsParams *p)
 	gzclose(out);
 
 	/* close the database */
+	dbcp->c_close(dbcp);
 	dbp->close(dbp, 0);
 
 	return 0;
