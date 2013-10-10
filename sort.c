@@ -25,8 +25,8 @@
 
 struct dbdata
 {
-	char *seq;
-	char *qual;
+	char seq[MAX_LINE_LENGTH];
+	char qual[MAX_LINE_LENGTH];
 };
 
 /* lexical sort of reads in a fastQ file by the identifier strings */
@@ -37,7 +37,7 @@ ngs_sort(ngsParams *p)
 	int i = 0;
 	int ret;
 	unsigned int flags;
-	char **seqLine;
+	char seqLine[BUFFSIZE][MAX_LINE_LENGTH];
 	struct dbdata record;
 	struct dbdata *buf;
 	DB *dbp;
@@ -81,36 +81,6 @@ ngs_sort(ngsParams *p)
 	/* set up interrupt trap */
 	signal(SIGINT, INThandler);
 
-	/* allocate memory for buffer */
-	seqLine = (char**) malloc(BUFFSIZE * sizeof(char*));
-	if (seqLine == NULL)
-	{
-		fputs("Memory allocation failure for seqLine.1\n", stderr);
-		exit (EXIT_FAILURE);
-	}
-	for (i = 0; i < BUFFSIZE; ++i)
-	{
-		seqLine[i] = (char*) malloc(MAX_LINE_LENGTH * sizeof(char));
-		if (seqLine[i] == NULL)
-		{
-			fputs("Memory allocation failure for seqLine.2\n", stderr);
-			exit (EXIT_FAILURE);
-		}
-	}
-
-	/* allocate memory for the database records */
-	record.seq = (char*) malloc(MAX_LINE_LENGTH * sizeof(char));
-	if (record.seq == NULL)
-	{
-		fputs("Memory allocation failure for record.seq.\n", stderr);
-		exit(EXIT_FAILURE);
-	}
-	record.qual = (char*) malloc(MAX_LINE_LENGTH * sizeof(char));
-	if (record.qual == NULL)
-	{
-		fputs("Memory allocation failure for record.qual.\n", stderr);
-		exit(EXIT_FAILURE);
-	}
 
 	/* read through input sequence file */
 	while (1)
@@ -144,17 +114,16 @@ ngs_sort(ngsParams *p)
 				case 1:
 					l = strlen(seqLine[i]);
 					memset(&record, 0, sizeof(struct dbdata));
-					strncpy(record.seq, seqLine[i], l - 1);
+					memcpy(record.seq, seqLine[i], l - 1);
 					continue;
 				case 2:
 					continue;
 				case 3:
 					l = strlen(seqLine[i]);
 					memset(&val, 0, sizeof(DBT));
-					strncpy(record.qual, seqLine[i], l - 1);
+					memcpy(record.qual, seqLine[i], l - 1);
 					val.data = &record;
 					val.size = sizeof(record);
-					val.flags = DB_DBT_USERMEM;
 					break;
 				default:
 					continue;
@@ -173,9 +142,9 @@ ngs_sort(ngsParams *p)
 	}
 
 	/* walk through the b-tree and print records */
-	while ((ret = dbp->get(dbp, NULL, &key, &val, DB_NEXT)) == 0)
+	while ((ret = dbp->get(dbp, NULL, &key, &val, 0)) == 0)
 	{
-		buf = val.data;
+		buf = (struct dbdata*)val.data;
 		printf("@%s\n%s\n+\n%s\n", (char*)key.data, buf->seq, buf->qual);
 	}
 	if (ret != DB_NOTFOUND)
@@ -189,13 +158,6 @@ ngs_sort(ngsParams *p)
 
 	/* close the database */
 	dbp->close(dbp, 0);
-
-	/* take out the garbage */
-	for (i = 0; i < BUFFSIZE; ++i)
-		free(seqLine[i]);
-	free(seqLine);
-	free(record.seq);
-	free(record.qual);
 
 	return 0;
 }
