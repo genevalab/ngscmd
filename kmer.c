@@ -20,7 +20,7 @@
 	Daniel Garrigan    dgarriga@bio.rochester.edu
 */
 
-#include "ngslib.h"
+#include "ngscmd.h"
 
 /* counts the number of unique k-mers in a fastQ file */
 

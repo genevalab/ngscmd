@@ -20,7 +20,7 @@
 	Daniel Garrigan    dgarriga@bio.rochester.edu
 */
 
-#include "ngslib.h"
+#include "ngscmd.h"
 
 /* filters reads and bases in a fastQ file according to quality scores */
 

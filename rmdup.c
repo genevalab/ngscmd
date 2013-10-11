@@ -20,55 +20,41 @@
 	Daniel Garrigan    dgarriga@bio.rochester.edu
 */
 
-#include "ngslib.h"
+#include "ngscmd.h"
 
-/* join fastA and quality files into a single fastQ file */
+/* reverse complement the bases in a fastQ file */
 
 int
-ngs_fa2fq(ngsParams *p)
+ngs_rmdup(ngsParams *p)
 {
 	int i = 0;
 	char **seqLine;
-	char **qualLine;
 	gzFile seq;
-	gzFile qual;
 	gzFile out;
 
-	/* open the sequence file */
-	if ((seq = gzopen(p->seqFile1, "r")) == NULL)
+
+	/* open sequence input file */
+	if ((seq = gzopen(p->seqFile1, "rb")) == NULL)
 	{
-		fprintf(stderr, "\n\nError: cannot open the input fastA sequence file: %s.\n\n", p->seqFile1);
+		fputs("\n\nError: cannot open the input fastQ sequence file.\n\n", stderr);
 		exit(EXIT_FAILURE);
 	}
 
-	/* open the quality file */
-	if ((qual = gzopen(p->qualFile, "r")) == NULL)
+	/* open sequence output file */
+	if ((out = gzopen(p->outFile1, "wb")) == NULL)
 	{
-			fprintf(stderr, "\n\nError: cannot open the input fastA quality file: %s.\n\n", p->qualFile);
-			exit(EXIT_FAILURE);
-	}
-
-	/* open the fastq output stream */
-	if ((out = gzopen(p->outFile1, "w")) == NULL)
-	{
-		fprintf(stderr, "\n\nError: cannot open the output fastq sequence file: %s.\n", p->outFile1);
+		fputs("\n\nError: cannot open the output fastQ sequence file.\n\n", stderr);
 		exit(EXIT_FAILURE);
 	}
 
-	/* set up the interrupt trap */
+	/* set up interrupt trap */
 	signal(SIGINT, INThandler);
 
-	/* allocate memory for the two buffers */
+	/* allocate memory for buffer */
 	seqLine = (char**) malloc(BUFFSIZE * sizeof(char*));
 	if (seqLine == NULL)
 	{
 		fputs("Memory allocation failure for seqLine.1\n", stderr);
-		exit (EXIT_FAILURE);
-	}
-	qualLine = (char**) malloc(BUFFSIZE * sizeof(char*));
-	if (qualLine == NULL)
-	{
-		fputs("Memory allocation failure for qualLine.1\n", stderr);
 		exit (EXIT_FAILURE);
 	}
 	for (i = 0; i < BUFFSIZE; ++i)
@@ -79,15 +65,9 @@ ngs_fa2fq(ngsParams *p)
 			fputs("Memory allocation failure for seqLine.2\n", stderr);
 			exit (EXIT_FAILURE);
 		}
-		qualLine[i] = (char*) malloc(MAX_LINE_LENGTH * sizeof(char));
-		if (qualLine[i] == NULL)
-		{
-			fputs("Memory allocation failure for qualLine.2\n", stderr);
-			exit (EXIT_FAILURE);
-		}
 	}
 
-	/* read through both files */
+	/* read through input sequence file */
 	while (1)
 	{
 		/* initialize counter for the number of lines in the buffer */
@@ -100,28 +80,43 @@ ngs_fa2fq(ngsParams *p)
 			if (gzgets(seq, seqLine[buffCount], MAX_LINE_LENGTH) == Z_NULL)
 				break;
 
-			/* get line from quality file */
-			if (gzgets(qual, qualLine[buffCount], MAX_LINE_LENGTH) == Z_NULL)
-				break;
-
 			/* increment the counter for the number of lines currently in the buffer */
 			++buffCount;
 		}
 
-		/* dump the buffer to the output stream */
+		/* reverse complement bases and reverse quality scores */
 		for (i = 0; i < buffCount; ++i)
 		{
-			if (i % 2)
+			int j = i % 4;
+			if ((j == 1) || (j == 3))
 			{
-				gzputs(out, seqLine[i]);
-				gzputs(out, "+\n");
-				gzputs(out, qualLine[i]);
+				chomp(seqLine[i]);
+				strrev(seqLine[i]);
+				if (j == 1)
+				{
+					size_t k = 0;
+					size_t len = strlen(seqLine[i]);
+					while (k < len)
+					{
+						if (seqLine[i][k] == 'A')
+							gzputc(out, 'T');
+						else if (seqLine[i][k] == 'C')
+							gzputc(out, 'G');
+						else if (seqLine[i][k] == 'G')
+							gzputc(out, 'C');
+						else if (seqLine[i][k] == 'T')
+							gzputc(out, 'A');
+						else
+							gzputc(out, seqLine[i][k]);
+						++k;
+					}
+				}
+				else
+					gzputs(out, seqLine[i]);
+				gzputc(out, '\n');
 			}
 			else
-			{
-				gzputc(out, '@');
-				gzputs(out, seqLine[i] + 1);
-			}
+				gzputs(out, seqLine[i]);
 		}
 
 		/* if we are at the end of the file */
@@ -132,20 +127,13 @@ ngs_fa2fq(ngsParams *p)
 	/* close sequence input stream */
 	gzclose(seq);
 
-	/* close quality input stream */
-	gzclose(qual);
-
-	/* close the output stream */
+	/* close sequence output stream */
 	gzclose(out);
 
 	/* take out the garbage */
 	for (i = 0; i < BUFFSIZE; ++i)
-	{
 		free(seqLine[i]);
-		free(qualLine[i]);
-	}
 	free(seqLine);
-	free(qualLine);
 
 	return 0;
 }

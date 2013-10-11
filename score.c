@@ -20,27 +20,26 @@
 	Daniel Garrigan    dgarriga@bio.rochester.edu
 */
 
-#include "ngslib.h"
+#include "ngscmd.h"
 
-/* reverse complement the bases in a fastQ file */
+/* transform Phred-scaled quality scores in a fastQ file */
 
 int
-ngs_revcom(ngsParams *p)
+ngs_score(ngsParams *p)
 {
 	int i = 0;
 	char **seqLine;
 	gzFile seq;
 	gzFile out;
 
-
-	/* open sequence input file */
+	/* open sequence file */
 	if ((seq = gzopen(p->seqFile1, "rb")) == NULL)
 	{
 		fputs("\n\nError: cannot open the input fastQ sequence file.\n\n", stderr);
 		exit(EXIT_FAILURE);
 	}
 
-	/* open sequence output file */
+	/* open output fastq stream */
 	if ((out = gzopen(p->outFile1, "wb")) == NULL)
 	{
 		fputs("\n\nError: cannot open the output fastQ sequence file.\n\n", stderr);
@@ -67,70 +66,114 @@ ngs_revcom(ngsParams *p)
 		}
 	}
 
-	/* read through input sequence file */
+	/* read through fastQ input sequence file */
 	while (1)
 	{
-		/* initialize counter for the number of lines in the buffer */
 		int buffCount = 0;
 
 		/* fill up the buffer */
 		while (buffCount < BUFFSIZE)
 		{
-			/* get line from sequence file */
 			if (gzgets(seq, seqLine[buffCount], MAX_LINE_LENGTH) == Z_NULL)
 				break;
-
-			/* increment the counter for the number of lines currently in the buffer */
 			++buffCount;
 		}
 
-		/* reverse complement bases and reverse quality scores */
+		/* dump the buffer to the output stream */
 		for (i = 0; i < buffCount; ++i)
 		{
-			int j = i % 4;
-			if ((j == 1) || (j == 3))
+			if (i % 4 == 3)
 			{
-				chomp(seqLine[i]);
-				strrev(seqLine[i]);
-				if (j == 1)
+				size_t j = 0;
+				size_t len = strlen(seqLine[i]) - 1;
+				if (p->flag & CONVERT_REV)
 				{
-					size_t k = 0;
-					size_t len = strlen(seqLine[i]);
-					while (k < len)
+					/* only do Sanger to Illumina conversion */
+					while (j < len)
 					{
-						if (seqLine[i][k] == 'A')
-							gzputc(out, 'T');
-						else if (seqLine[i][k] == 'C')
-							gzputc(out, 'G');
-						else if (seqLine[i][k] == 'G')
-							gzputc(out, 'C');
-						else if (seqLine[i][k] == 'T')
-							gzputc(out, 'A');
+						int score = seqLine[i][j] + 31;
+						if (score > SCHAR_MAX)
+						{
+							fputs("\n\nError: the original Phred scores are not in standard Sanger format.\n\n", stderr);
+							exit(EXIT_FAILURE);
+						}
 						else
-							gzputc(out, seqLine[i][k]);
-						++k;
+							gzputc(out, score);
+						++j;
+					}
+					gzputc(out, '\n');
+
+					if (p->flag & CONVERT_NUM)
+					{
+						/* do both numerical and Sanger to Illumina conversion here */
+						const char delim = ' ';
+						char *tok;
+						int score;
+						tok = strtok(seqLine[i], &delim);
+						score = atoi(tok);
+						gzputc(out, score);
+						while (tok != NULL)
+						{
+							tok = strtok(NULL, &delim);
+							score = atoi(tok);
+							gzputc(out, score + 31);
+						}
+						gzputc(out, '\n');
 					}
 				}
 				else
-					gzputs(out, seqLine[i]);
-				gzputc(out, '\n');
+				{
+					/* only do Illumina to Sanger conversion */
+					while (j < len)
+					{
+						int score;
+						score = seqLine[i][j] - 31;
+						if ((score > SCHAR_MAX) || (score < 33))
+						{
+							fputs("\n\nError: the original Phred scores are not in Illumina format.\n\n", stderr);
+							exit(EXIT_FAILURE);
+						}
+						else
+							gzputc(out, seqLine[i][j] - 31);
+						++j;
+					}
+					gzputc(out, '\n');
+
+					if (p->flag & CONVERT_NUM)
+					{
+						/* do both numerical and Illumina to Sanger conversion here */
+						const char delim = ' ';
+						char *tok;
+						int score;
+						tok = strtok(seqLine[i], &delim);
+						score = atoi(tok);
+						gzputc(out, score);
+						while (tok != NULL)
+						{
+							tok = strtok(NULL, &delim);
+							score = atoi(tok);
+							gzputc(out, score - 31);
+						}
+						gzputc(out, '\n');
+					}
+				}
 			}
 			else
 				gzputs(out, seqLine[i]);
 		}
 
-		/* if we are at the end of the file */
+		/* If we are at the end of the file */
 		if (buffCount < BUFFSIZE)
 			break;
 	}
 
-	/* close sequence input stream */
+	/* Close fastq input sequence file stream */
 	gzclose(seq);
 
-	/* close sequence output stream */
+	/* Close fastq output sequence file stream */
 	gzclose(out);
 
-	/* take out the garbage */
+	/* Take out the garbage */
 	for (i = 0; i < BUFFSIZE; ++i)
 		free(seqLine[i]);
 	free(seqLine);

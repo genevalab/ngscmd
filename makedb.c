@@ -22,11 +22,10 @@
 
 #include "ngscmd.h"
 
-
 /* lexical sort of reads in a fastQ file by the identifier strings */
 
 int
-ngs_sort(ngsParams *p)
+ngs_makedb(ngsParams *p)
 {
 	int i, j, k;
 	int buffCount = 0;

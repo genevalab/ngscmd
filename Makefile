@@ -1,27 +1,18 @@
-CC= gcc
-AR= ar
-PROG= NGSutils
-LIB= libngs
-LIB_SRC = fa2fq.c fq2fa.c pair.c convert.c clean.c bypos.c sort.c revcom.c kmer.c index.c count.c
-SRC = ngsutils.c
+CC?= gcc
+PROG= ngscmd
+SRC = ngscmd.c makedb.c sort.c pair.c score.c format.c clean.c rmdup.c kmer.c
 CFLAGS = -Wall -D_BSD_SOURCE -std=c99 -g -Wextra -pedantic
-LIBPATH = -L.
-LIBFLAGS = -lz -lngs -ldb
-LOBJS = $(LIB_SRC:%.c=%.o)
+LIBFLAGS = -lz -ldb
 OBJS = $(SRC:%.c=%.o)
 
-all: $(LIB) $(PROG)
-
-$(LIB): $(LOBJS)
-	$(AR) -csru libngs.a $(LOBJS)
-	ranlib libngs.a
+all: $(PROG)
 
 $(PROG): $(OBJS)
-	$(CC) $(LIBPATH) -o $@ $(OBJS)  $(LIBFLAGS)
+	$(CC) -o $@ $(OBJS)  $(LIBFLAGS)
 
 %.o: %.c
 	$(CC) -c $(CFLAGS) $< -o $@
 
 clean :
-	rm $(PROG) $(OBJS) libngs.a $(LOBJS)
+	rm $(PROG) $(OBJS)
 

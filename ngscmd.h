@@ -33,10 +33,19 @@
 #include <limits.h>
 #include <ctype.h>
 #include <zlib.h>
+#include <db.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/* constants */
+#define BUFFSIZE 2000
+#define MAX_LINE_LENGTH 400
+#define CONVERT_REV 0x1
+#define CONVERT_NUM 0x2
+#define CONVERT_ASCII 0x4
+
 
 typedef struct _ngsParams
 {
@@ -51,12 +60,13 @@ typedef struct _ngsParams
 	char outFile2[FILENAME_MAX];
 } ngsParams;
 
-/* constants */
-#define BUFFSIZE 2000
-#define MAX_LINE_LENGTH 400
-#define CONVERT_REV 0x1
-#define CONVERT_NUM 0x2
-#define CONVERT_ASCII 0x4
+
+typedef struct _dbdata
+{
+	char seq[MAX_LINE_LENGTH];
+	char qual[MAX_LINE_LENGTH];
+} DBdata;
+
 
 /* inline functions */
 #define chomp(s)                                     \
@@ -82,30 +92,14 @@ typedef struct _ngsParams
 }
 
 /* function prototypes */
-
-
-extern int  ngs_fa2fq(ngsParams*);
-
-extern int  ngs_fq2fa(ngsParams*);
-
-extern int  ngs_convert(ngsParams*);
-
-extern int  ngs_pair(ngsParams*);
-
-extern int  ngs_clean(ngsParams*);
-
-extern int  ngs_bypos(ngsParams*);
-
+extern int  ngs_makedb(ngsParams*);
 extern int  ngs_sort(ngsParams*);
-
-extern int  ngs_revcom(ngsParams*);
-
+extern int  ngs_pair(ngsParams*);
+extern int ngs_score(ngsParams*);
+extern int  ngs_format(ngsParams*);
+extern int  ngs_clean(ngsParams*);
+extern int  ngs_rmdup(ngsParams*);
 extern int  ngs_kmer(ngsParams*);
-
-extern int ngs_index(ngsParams*);
-
-extern int ngs_count(ngsParams*);
-
 extern void INThandler(int sig);
 
 #ifdef __cplusplus

@@ -20,7 +20,7 @@
 	Daniel Garrigan    dgarriga@bio.rochester.edu
 */
 
-#include "ngslib.h"
+#include "ngscmd.h"
 
 /* aligned mated pairs in two fastq files */ 
 
