@@ -155,7 +155,7 @@ readParams(int argc, char **argv)
 		{
 			case 'o':
 				strcpy(p->outFilePrefix, optarg);
-				if (p->func == FQ2FA)
+				if (p->func == MAKEDB)
 				{
 					strcpy(p->outFile1, p->outFilePrefix);
 					strcpy(p->qualFile, p->outFilePrefix);
@@ -179,7 +179,7 @@ readParams(int argc, char **argv)
 				p->flag |= CONVERT_NUM;
 				break;
 			case 'n':
-				if (p->func == CONVERT)
+				if (p->func == SCORE)
 					p->flag |= CONVERT_ASCII;
 				else if (p->func == KMER)
 					p->kmer_size = atoi(optarg);
