@@ -1,0 +1,22 @@
+# Makefile for ngscmd program
+CC?       = gcc
+PROG      = ngscmd
+CFLAGS    = -Wall -D_BSD_SOURCE -std=c99 -g -Wextra -pedantic
+LFLAGS     = -lz -ldb
+SRCDIR    := src
+SRCS      := ngscmd.c makedb.c sort.c pair.c score.c format.c clean.c rmdup.c kmer.c
+OBJS      := $(patsubst %.c, %.o, $(SRCS))
+
+all: $(PROG)
+
+$(PROG): $(OBJS)
+	$(CC) -o $@ $(OBJS) $(LFLAGS)
+
+%.o: $(SRCDIR)/%.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+.PHONY: clean
+
+clean :
+	rm $(OBJS) $(PROG)
+

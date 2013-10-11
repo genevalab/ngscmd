@@ -40,8 +40,10 @@ extern "C" {
 #endif
 
 /* constants */
-#define BUFFSIZE 2000
+#ifndef MAX_LINE_LENGTH
 #define MAX_LINE_LENGTH 400
+#endif
+#define BUFFSIZE 2000
 #define CONVERT_REV 0x1
 #define CONVERT_NUM 0x2
 #define CONVERT_ASCII 0x4
