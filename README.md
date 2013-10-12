@@ -24,6 +24,7 @@ of the individual databases. The "database map" file will be used
 as the input for the other 7 commands of `ngscmd`.
 
 All eight commands of the `ngscmd` program are
+
 Command | Description
 ------- | -----------
 makedb  | construct databases for further analysis
@@ -33,7 +34,7 @@ score   | manipulate or analyze Phred-scaled quality scores
 format  | convert between file formats
 clean   | perform a variety of cleaning procedures for reads
 rmdup   | remove duplicate reads
-kmer    | count number of unique k-mers in fastQ file\n");
+kmer    | count number of unique k-mers in fastQ file
 
 Although their are many programs with functionality that is
 similar to `ngscmd`, the motivation for developing this program
