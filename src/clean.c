@@ -28,7 +28,8 @@ int
 ngs_clean(ngsParams *p)
 {
 	int i = 0;
-	char **seqLine;
+	int buffCount = 0;
+	char iobuff[BUFFSIZE][MAX_LINE_LENGTH];
 	gzFile seq;
 	gzFile out;
 
@@ -49,34 +50,18 @@ ngs_clean(ngsParams *p)
 	/* set up interrupt trap */
 	signal(SIGINT, INThandler);
 
-	/* allocate memory for buffer */
-	seqLine = (char**) malloc(BUFFSIZE * sizeof(char*));
-	if (seqLine == NULL)
-	{
-		fputs("Memory allocation failure for seqLine.1\n", stderr);
-		exit (EXIT_FAILURE);
-	}
-	for (i = 0; i < BUFFSIZE; ++i)
-	{
-		seqLine[i] = (char*) malloc(MAX_LINE_LENGTH * sizeof(char));
-		if (seqLine[i] == NULL)
-		{
-			fputs("Memory allocation failure for seqLine.2\n", stderr);
-			exit (EXIT_FAILURE);
-		}
-	}
 
 	/* read through input sequence file */
 	while (1)
 	{
 		/* initialize counter for the number of lines in the buffer */
-		int buffCount = 0;
+		buffCount = 0;
 
 		/* fill up the buffer */
 		while (buffCount < BUFFSIZE)
 		{
 			/* get line from sequence file */
-			if (gzgets(seq, seqLine[buffCount], MAX_LINE_LENGTH) == Z_NULL)
+			if (gzgets(seq, iobuff[buffCount], MAX_LINE_LENGTH) == Z_NULL)
 				break;
 
 			/* increment the counter for the number of lines currently in the buffer */
@@ -96,11 +81,6 @@ ngs_clean(ngsParams *p)
 
 	/* close sequence input stream */
 	gzclose(seq);
-
-	/* take out the garbage */
-	for (i = 0; i < BUFFSIZE; ++i)
-		free(seqLine[i]);
-	free(seqLine);
 
 	return 0;
 }

@@ -44,9 +44,15 @@ extern "C" {
 #define MAX_LINE_LENGTH 400
 #endif
 #define BUFFSIZE 2000
-#define CONVERT_REV 0x1
-#define CONVERT_NUM 0x2
-#define CONVERT_ASCII 0x4
+#define FORMAT_REVCOM 0x1
+#define FORMAT_MERGE 0x2
+#define FORMAT_SPLIT 0x4
+#define SCORE_NUM 0x8
+#define SCORE_ASCII 0x10
+#define SCORE_ILLUMINA 0x20
+#define SCORE_DIST 0x40
+#define CLEAN_TRIM 0x80
+#define CLEAN_REMOVE 0x100
 
 
 typedef struct _ngsParams
@@ -55,6 +61,7 @@ typedef struct _ngsParams
 	int kmer_size;
 	int func;
 	char outFilePrefix[FILENAME_MAX - 5];
+	char dbfile[FILENAME_MAX];
 	char seqFile1[FILENAME_MAX];
 	char seqFile2[FILENAME_MAX];
 	char qualFile[FILENAME_MAX];

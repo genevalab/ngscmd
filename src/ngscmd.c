@@ -28,8 +28,8 @@
 #endif
 
 /* constants */
-#define VERSION 0.1
-#define NFUNCTIONS 10
+#define VERSION 0.2
+#define NFUNCTIONS 8
 enum FUNC {MAKEDB, SORT, PAIR, SCORE, FORMAT, CLEAN, RMDUP, KMER};
 
 /* function prototypes */
@@ -50,7 +50,7 @@ int
 main(int argc, char **argv)
 {
 	ngsParams *p;
-enum FUNC {MAKEDB, SORT, PAIR, SCORE, FORMAT, CLEAN, RMDUP, KMER};
+
 	if (argc < 2)
 		return mainUsage();
 	else
@@ -111,7 +111,7 @@ readParams(int argc, char **argv)
 		exit (EXIT_FAILURE);
 	}
 
-	/* initialize some variables to default values */
+	/* initialize user parameters to their default values */
 	opterr = 0;
 	p->flag = 0;
 	p->kmer_size = 31;
@@ -149,7 +149,7 @@ readParams(int argc, char **argv)
 		functionUsage(p->func);
 
    /* read the command line options */
-	while ((c = getopt(argc, argv, "anso:")) != -1)
+	while ((c = getopt(argc, argv, "ansdmrt:u:o:")) != -1)
 	{
 		switch(c)
 		{
@@ -157,12 +157,10 @@ readParams(int argc, char **argv)
 				strcpy(p->outFilePrefix, optarg);
 				if (p->func == MAKEDB)
 				{
-					strcpy(p->outFile1, p->outFilePrefix);
-					strcpy(p->qualFile, p->outFilePrefix);
-					strcat(p->outFile1, ".fa.gz");
-					strcat(p->qualFile, ".qual.gz");
+					strcpy(p->dbfile, p->outFilePrefix);
+					strcat(p->dbfile, ".dbmap");
 				}
-				else if (p->func == PAIR)
+				else if (p->func == FORMAT)
 				{
 					strcpy(p->outFile1, p->outFilePrefix);
 					strcpy(p->outFile2, p->outFilePrefix);
@@ -172,22 +170,24 @@ readParams(int argc, char **argv)
 				else
 				{
 					strcpy(p->outFile1, p->outFilePrefix);
-					strcat(p->outFile1, ".fq.gz");
+					strcpy(p->outFile2, p->outFilePrefix);
+					strcat(p->outFile1, ".1.gz");
+					strcat(p->outFile2, ".2.gz");
 				}
 				break;
 			case 'a':
-				p->flag |= CONVERT_NUM;
+				p->flag |= SCORE_ASCII;
 				break;
 			case 'n':
 				if (p->func == SCORE)
-					p->flag |= CONVERT_ASCII;
+					p->flag |= SCORE_NUM;
 				else if (p->func == KMER)
 					p->kmer_size = atoi(optarg);
 				else
 					break;
 				break;
 			case 's':
-				p->flag |= CONVERT_REV;
+				p->flag |= SCORE_ILLUMINA;
 				break;
 			case '?':
 				if (optopt == 'o')
@@ -271,40 +271,46 @@ functionUsage(int f)
 	switch(f)
 	{
 		case MAKEDB:
-			puts("\n\nUsage: ngscmd makedb [options] <fastA/Q input file> <quality file>");
-			puts("Options:        -o         prefix string for name of fastQ/fastQ/quality output files\n");
+			puts("\n\nUsage: ngscmd makedb [options] <fastQ_mate1> [fastq_mate2]");
+			puts("Options:        -o   STR      prefix string for the name of the database map file\n");
 			break;
 		case SORT:
-			puts("\n\nUsage: ngscmd sort [options] <fastQ file>");
-			puts("Options:        -o         prefix string for name of fastA and quality file output file\n");
+			puts("\n\nUsage: ngscmd sort [options] <database map file>");
+			puts("Options:        -o   STR      prefix string for the names of the sorted fastQ output files\n");
 			break;
 		case PAIR:
-			puts("\n\nUsage: ngscmd pair [options] <fastQ_mate1> <fastQ_mate2>");
-			puts("Options:        -o         prefix string for naming both output files\n");
+			puts("\n\nUsage: ngscmd pair [options] <database map file>");
+			puts("Options:        -o   STR      prefix string for the names of the paired fastQ output files\n");
 			break;
 		case SCORE:
-			puts("\n\nUsage: ngscmd score [options] <fastQ file>");
-			puts("Options:        -o         prefix string for name of fastQ output file");
-			puts("                -s         convert from 33-126 scale to 64-126 scale");
-			puts("                           default: 64-126 to 33-126 scale");
-			puts("                -a         convert from numerical scores to ASCII");
-			puts("                -n         convert from ASCII scores to numerical\n");
+			puts("\n\nUsage: ngscmd score [options] <database map file>");
+			puts("Options:        -o   STR      prefix string for the names of the fastQ output files");
+			puts("                -s            convert from 33-126 scale to 64-126 scale");
+			puts("                                default: 64-126 to 33-126 scale");
+			puts("                -a            convert from numerical scores to ASCII");
+			puts("                -n            convert from ASCII scores to numerical");
+			puts("                -d            get distribution of Phred scores by position\n");
 			break;
 		case FORMAT:
-			puts("\n\nUsage: ngscmd format [options] <fastA/Q input file> <quality file>");
-			puts("Options:        -o         prefix string for name of fastQ/fastQ/quality output files\n");
+			puts("\n\nUsage: ngscmd format [options] <database map file>");
+			puts("Options:        -o   STR      prefix string for the names of fastQ/fastA/quality output files");
+			puts("                -m            merge fastA and quality files");
+			puts("                -s            split fastQ file into fastA and quality files");
+			puts("                -r            reverse complement sequences\n");
 			break;
 		case CLEAN:
-			puts("\n\nUsage: ngscmd clean [options] <fastQ file>");
-			puts("Options:        -o         prefix string for name of fastQ output file\n");
+			puts("\n\nUsage: ngscmd clean [options] <database map file>");
+			puts("Options:        -o   STR      prefix string for the names of the fastQ output files");
+			puts("                -t   INT      trim ends of sequences to minimum length");
+			puts("                -u   FLT      remove sequences with greater than this proportion of bases with N\n");
 			break;
 		case RMDUP:
-			puts("\n\nUsage: ngscmd rmdup [options] <fastQ file>");
-			puts("Options:        -o         prefix string for name of fastQ output file\n");
+			puts("\n\nUsage: ngscmd rmdup [options] <database map file>");
+			puts("Options:        -o   STR      prefix string for the names of the fastQ output files\n");
 			break;
 		case KMER:
-			puts("\n\nUsage: ngscmd kmer [options] <fastQ file>\n");
-			puts("Options:        -n         k-mer size       [ default: 31 ]");
+			puts("\n\nUsage: ngscmd kmer [options] <database map file>");
+			puts("Options:        -n   INT      k-mer size       [ default: 31 ]");
 			puts("Note: kmer writes all output to STDOUT\n");
 			break;
 		default:

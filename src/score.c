@@ -28,7 +28,8 @@ int
 ngs_score(ngsParams *p)
 {
 	int i = 0;
-	char **seqLine;
+	int buffCount = 0;
+	char iobuff[BUFFSIZE][MAX_LINE_LENGTH];
 	gzFile seq;
 	gzFile out;
 
@@ -49,32 +50,16 @@ ngs_score(ngsParams *p)
 	/* set up interrupt trap */
 	signal(SIGINT, INThandler);
 
-	/* allocate memory for buffer */
-	seqLine = (char**) malloc(BUFFSIZE * sizeof(char*));
-	if (seqLine == NULL)
-	{
-		fputs("Memory allocation failure for seqLine.1\n", stderr);
-		exit (EXIT_FAILURE);
-	}
-	for (i = 0; i < BUFFSIZE; ++i)
-	{
-		seqLine[i] = (char*) malloc(MAX_LINE_LENGTH * sizeof(char));
-		if (seqLine[i] == NULL)
-		{
-			fputs("Memory allocation failure for seqLine.2\n", stderr);
-			exit (EXIT_FAILURE);
-		}
-	}
 
 	/* read through fastQ input sequence file */
 	while (1)
 	{
-		int buffCount = 0;
+		buffCount = 0;
 
 		/* fill up the buffer */
 		while (buffCount < BUFFSIZE)
 		{
-			if (gzgets(seq, seqLine[buffCount], MAX_LINE_LENGTH) == Z_NULL)
+			if (gzgets(seq, iobuff[buffCount], MAX_LINE_LENGTH) == Z_NULL)
 				break;
 			++buffCount;
 		}
@@ -85,13 +70,13 @@ ngs_score(ngsParams *p)
 			if (i % 4 == 3)
 			{
 				size_t j = 0;
-				size_t len = strlen(seqLine[i]) - 1;
-				if (p->flag & CONVERT_REV)
+				size_t len = strlen(iobuff[i]) - 1;
+				if (p->flag & SCORE_ILLUMINA)
 				{
 					/* only do Sanger to Illumina conversion */
 					while (j < len)
 					{
-						int score = seqLine[i][j] + 31;
+						int score = iobuff[i][j] + 31;
 						if (score > SCHAR_MAX)
 						{
 							fputs("\n\nError: the original Phred scores are not in standard Sanger format.\n\n", stderr);
@@ -103,13 +88,13 @@ ngs_score(ngsParams *p)
 					}
 					gzputc(out, '\n');
 
-					if (p->flag & CONVERT_NUM)
+					if (p->flag & SCORE_ASCII)
 					{
 						/* do both numerical and Sanger to Illumina conversion here */
 						const char delim = ' ';
 						char *tok;
 						int score;
-						tok = strtok(seqLine[i], &delim);
+						tok = strtok(iobuff[i], &delim);
 						score = atoi(tok);
 						gzputc(out, score);
 						while (tok != NULL)
@@ -127,25 +112,25 @@ ngs_score(ngsParams *p)
 					while (j < len)
 					{
 						int score;
-						score = seqLine[i][j] - 31;
+						score = iobuff[i][j] - 31;
 						if ((score > SCHAR_MAX) || (score < 33))
 						{
 							fputs("\n\nError: the original Phred scores are not in Illumina format.\n\n", stderr);
 							exit(EXIT_FAILURE);
 						}
 						else
-							gzputc(out, seqLine[i][j] - 31);
+							gzputc(out, iobuff[i][j] - 31);
 						++j;
 					}
 					gzputc(out, '\n');
 
-					if (p->flag & CONVERT_NUM)
+					if (p->flag & SCORE_ASCII)
 					{
 						/* do both numerical and Illumina to Sanger conversion here */
 						const char delim = ' ';
 						char *tok;
 						int score;
-						tok = strtok(seqLine[i], &delim);
+						tok = strtok(iobuff[i], &delim);
 						score = atoi(tok);
 						gzputc(out, score);
 						while (tok != NULL)
@@ -159,7 +144,7 @@ ngs_score(ngsParams *p)
 				}
 			}
 			else
-				gzputs(out, seqLine[i]);
+				gzputs(out, iobuff[i]);
 		}
 
 		/* If we are at the end of the file */
@@ -172,11 +157,6 @@ ngs_score(ngsParams *p)
 
 	/* Close fastq output sequence file stream */
 	gzclose(out);
-
-	/* Take out the garbage */
-	for (i = 0; i < BUFFSIZE; ++i)
-		free(seqLine[i]);
-	free(seqLine);
 
 	return 0;
 }
