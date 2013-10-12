@@ -6,13 +6,18 @@ A C program to manipulate next-generation sequence data files
 
 The `ngscmd` program depends on the zlib compression library and
 the Berkeley DB API. To compile the `ngscmd` program:
+
 	./configure
+
 followed by
+
 	make
 
 The first step in using `ngscmd` is making the database files. This
 can be done by running the makedb command
+
 	./ngscmd makedb -o mydata mydata.1.fq.gz mydata.2.fq.gz
+
 in which mydata.1.fq.gz and mydata.2.fq.gz are fastQ formatted
 mate pair sequences. However, it should be noted that `ngscmd` can
 work on a single fastQ input file, as well as mate pair files.
