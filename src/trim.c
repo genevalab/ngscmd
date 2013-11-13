@@ -31,12 +31,19 @@ ngs_trim(ngsParams *p)
 	int buffCount = 0;
 	char iobuff[BUFFSIZE][MAX_LINE_LENGTH];
 	gzFile seq;
+	gzFile out;
 
 
 	/* open sequence file */
 	if ((seq = gzopen(p->seqFile1, "rb")) == NULL)
 	{
-		fputs("\n\nError: cannot open the input fastQ sequence file.\n\n", stderr);
+		fprintf(stderr, "\n\nError: cannot open the input fastQ file: %s.\n\n", p->seqFile1);
+		exit(EXIT_FAILURE);
+	}
+
+	if ((out = gzopen(p->outFile1, "wb")) == NULL)
+	{
+		fprintf(stderr, "\n\nError: cannot open the output fastQ file: %s.\n", p->outFile1);
 		exit(EXIT_FAILURE);
 	}
 
@@ -75,5 +82,8 @@ ngs_trim(ngsParams *p)
 	/* close sequence input stream */
 	gzclose(seq);
 
+	/* close sequence output stream */
+	gzclose(out);
+	
 	return 0;
 }

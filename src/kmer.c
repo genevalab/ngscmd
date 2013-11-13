@@ -36,7 +36,7 @@ ngs_kmer(ngsParams *p)
 	/* open sequence file */
 	if ((seq = gzopen(p->seqFile1, "rb")) == NULL)
 	{
-		fputs("\n\nError: cannot open the input fastQ sequence file.\n\n", stderr);
+		fprintf(stderr, "\n\nError: cannot open the input fastQ file: %s.\n\n", p->seqFile1);
 		exit(EXIT_FAILURE);
 	}
 

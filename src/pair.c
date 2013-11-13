@@ -29,6 +29,8 @@ ngs_pair(ngsParams *p)
 {
 	int i = 0;
 	int buffCount = 0;
+	char iobuff1[BUFFSIZE][MAX_LINE_LENGTH];
+	char iobuff2[BUFFSIZE][MAX_LINE_LENGTH];
 	gzFile seq1;
 	gzFile seq2;
 	gzFile out1;
@@ -37,28 +39,28 @@ ngs_pair(ngsParams *p)
 	/* open sequence file 1 */
 	if ((seq1 = gzopen(p->seqFile1, "rb")) == NULL)
 	{
-		fputs("\n\nError: cannot open the first input fastQ sequence file.\n\n", stderr);
+		fprintf(stderr, "\n\nError: cannot open the input fastQ file: %s.\n\n", p->seqFile1);
 		exit(EXIT_FAILURE);
 	}
 
 	/* open sequence file 2 */
 	if ((seq2 = gzopen(p->seqFile2, "rb")) == NULL)
 	{
-			fputs("\n\nError: cannot open the second input fastQ sequence file.\n\n", stderr);
+			fprintf(stderr, "\n\nError: cannot open the second input fastQ file: %s.\n\n", p->seqFile2);
 			exit(EXIT_FAILURE);
 	}
 
 	/* open the first fastQ output stream */
 	if ((out1 = gzopen(p->outFile1, "wb")) == NULL)
 	{
-		fputs("\n\nError: cannot open the output stream for the first fastQ sequence file.\n\n", stderr);
+		fprintf(stderr, "\n\nError: cannot open the output fastQ file: %s.\n", p->outFile1);
 		exit(EXIT_FAILURE);
 	}
 
 	/* open the second fastA output stream */
 	if ((out2 = gzopen(p->outFile2, "wb")) == NULL)
 	{
-		fputs("\n\nError: cannot open the output stream for the second fastQ sequence file.\n\n", stderr);
+		fprintf(stderr, "\n\nError: cannot open the second output fastQ file: %s.\n", p->outFile2);
 		exit(EXIT_FAILURE);
 	}
 
@@ -78,9 +80,6 @@ ngs_pair(ngsParams *p)
 
 	/* close the output 1 stream */
 	gzclose(out2);
-
-	/* take out the garbage */
-
 
 	return 0;
 }

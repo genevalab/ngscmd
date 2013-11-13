@@ -36,14 +36,14 @@ ngs_score(ngsParams *p)
 	/* open sequence file */
 	if ((seq = gzopen(p->seqFile1, "rb")) == NULL)
 	{
-		fputs("\n\nError: cannot open the input fastQ sequence file.\n\n", stderr);
+		fprintf(stderr, "\n\nError: cannot open the input fastQ file: %s.\n\n", p->seqFile1);
 		exit(EXIT_FAILURE);
 	}
 
 	/* open output fastq stream */
 	if ((out = gzopen(p->outFile1, "wb")) == NULL)
 	{
-		fputs("\n\nError: cannot open the output fastQ sequence file.\n\n", stderr);
+		fprintf(stderr, "\n\nError: cannot open the output fastQ file: %s.\n", p->outFile1);
 		exit(EXIT_FAILURE);
 	}
 

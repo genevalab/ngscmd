@@ -39,7 +39,7 @@ ngs_filter(ngsParams *p)
 	/* open the fastQ mate 1 file */
 	if ((seq1 = gzopen(p->seqFile1, "r")) == NULL)
 	{
-		fprintf(stderr, "\n\nError: cannot open the input fastA sequence file: %s.\n\n", p->seqFile1);
+		fprintf(stderr, "\n\nError: cannot open the input fastQ file: %s.\n\n", p->seqFile1);
 		exit(EXIT_FAILURE);
 	}
 
@@ -48,7 +48,7 @@ ngs_filter(ngsParams *p)
 		/* open the fastQ mate 2 file */
 		if ((seq2 = gzopen(p->seqFile2, "r")) == NULL)
 		{
-				fprintf(stderr, "\n\nError: cannot open the input fastA quality file: %s.\n\n", p->seqFile2);
+				fprintf(stderr, "\n\nError: cannot open the second input fastQ file: %s.\n\n", p->seqFile2);
 				exit(EXIT_FAILURE);
 		}
 	}
@@ -56,7 +56,7 @@ ngs_filter(ngsParams *p)
 	/* open the fastq mate 1 output stream */
 	if ((out1 = gzopen(p->outFile1, "w")) == NULL)
 	{
-		fprintf(stderr, "\n\nError: cannot open the output fastq sequence file: %s.\n", p->outFile1);
+		fprintf(stderr, "\n\nError: cannot open the output fastQ file: %s.\n", p->outFile1);
 		exit(EXIT_FAILURE);
 	}
 
@@ -65,7 +65,7 @@ ngs_filter(ngsParams *p)
 		/* open the fastq mate 2 output stream */
 		if ((out2 = gzopen(p->outFile1, "w")) == NULL)
 		{
-			fprintf(stderr, "\n\nError: cannot open the output fastq sequence file: %s.\n", p->outFile2);
+			fprintf(stderr, "\n\nError: cannot open the second output fastQ file: %s.\n", p->outFile2);
 			exit(EXIT_FAILURE);
 		}
 	}

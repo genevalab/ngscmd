@@ -32,23 +32,46 @@ ngs_rmdup(ngsParams *p)
 	int buffCount = 0;
 	size_t k = 0;
 	size_t len = 0;
-	char iobuff[BUFFSIZE][MAX_LINE_LENGTH];
-	gzFile seq;
-	gzFile out;
+	char iobuff1[BUFFSIZE][MAX_LINE_LENGTH];
+	char iobuff2[BUFFSIZE][MAX_LINE_LENGTH];
+	gzFile seq1;
+	gzFile seq2;
+	gzFile out1;
+	gzFile out2;
 
 
 	/* open sequence input file */
-	if ((seq = gzopen(p->seqFile1, "rb")) == NULL)
+	if ((seq1 = gzopen(p->seqFile1, "rb")) == NULL)
 	{
-		fputs("\n\nError: cannot open the input fastQ sequence file.\n\n", stderr);
+		fprintf(stderr, "\n\nError: cannot open the input fastQ file: %s.\n\n", p->seqFile1);
 		exit(EXIT_FAILURE);
 	}
 
-	/* open sequence output file */
-	if ((out = gzopen(p->outFile1, "wb")) == NULL)
+	if (p->flag & TWO_INPUTS)
 	{
-		fputs("\n\nError: cannot open the output fastQ sequence file.\n\n", stderr);
+		/* open the fastQ mate 2 file */
+		if ((seq2 = gzopen(p->seqFile2, "r")) == NULL)
+		{
+				fprintf(stderr, "\n\nError: cannot open the second input fastQ file: %s.\n\n", p->seqFile2);
+				exit(EXIT_FAILURE);
+		}
+	}
+
+	/* open sequence output file */
+	if ((out1 = gzopen(p->outFile1, "wb")) == NULL)
+	{
+		fprintf(stderr, "\n\nError: cannot open the output fastQ file: %s.\n", p->outFile1);
 		exit(EXIT_FAILURE);
+	}
+
+	if (p->flag & TWO_INPUTS)
+	{
+		/* open the fastq mate 2 output stream */
+		if ((out2 = gzopen(p->outFile1, "w")) == NULL)
+		{
+			fprintf(stderr, "\n\nError: cannot open the second output fastQ file: %s.\n", p->outFile2);
+			exit(EXIT_FAILURE);
+		}
 	}
 
 	/* set up interrupt trap */
@@ -64,8 +87,15 @@ ngs_rmdup(ngsParams *p)
 		while (buffCount < BUFFSIZE)
 		{
 			/* get line from sequence file */
-			if (gzgets(seq, iobuff[buffCount], MAX_LINE_LENGTH) == Z_NULL)
+			if (gzgets(seq1, iobuff1[buffCount], MAX_LINE_LENGTH) == Z_NULL)
 				break;
+
+			if (p->flag & TWO_INPUTS)
+			{
+				/* get line from fastQ mate 2 file */
+				if (gzgets(seq2, iobuff2[buffCount], MAX_LINE_LENGTH) == Z_NULL)
+					break;
+			}
 
 			/* increment the counter for the number of lines currently in the buffer */
 			++buffCount;
@@ -74,37 +104,7 @@ ngs_rmdup(ngsParams *p)
 		/* reverse complement bases and reverse quality scores */
 		for (i = 0; i < buffCount; ++i)
 		{
-			j = i % 4;
-			if ((j == 1) || (j == 3))
-			{
-				chomp(iobuff[i]);
-				strrev(iobuff[i]);
-				if (j == 1)
-				{
-					k = 0;
-					len = strlen(iobuff[i]);
-
-					while (k < len)
-					{
-						if (iobuff[i][k] == 'A')
-							gzputc(out, 'T');
-						else if (iobuff[i][k] == 'C')
-							gzputc(out, 'G');
-						else if (iobuff[i][k] == 'G')
-							gzputc(out, 'C');
-						else if (iobuff[i][k] == 'T')
-							gzputc(out, 'A');
-						else
-							gzputc(out, iobuff[i][k]);
-						++k;
-					}
-				}
-				else
-					gzputs(out, iobuff[i]);
-				gzputc(out, '\n');
-			}
-			else
-				gzputs(out, iobuff[i]);
+			/* TODO: Remove duplicates here */
 		}
 
 		/* if we are at the end of the file */
@@ -112,11 +112,20 @@ ngs_rmdup(ngsParams *p)
 			break;
 	}
 
-	/* close sequence input stream */
-	gzclose(seq);
+	/* close fastQ mate 1 input stream */
+	gzclose(seq1);
 
-	/* close sequence output stream */
-	gzclose(out);
+	/* close the output mate 1 stream */
+	gzclose(out1);
+
+	if (p->flag & TWO_INPUTS)
+	{
+		/* close fastQ mate 2 input stream */
+		gzclose(seq2);
+
+		/* close the output mate 2 stream */
+		gzclose(out2);
+	}
 
 	return 0;
 }
