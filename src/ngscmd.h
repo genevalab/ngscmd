@@ -52,6 +52,7 @@ extern "C" {
 typedef struct _ngsParams
 {
 	int flag;
+	int num_ambig;
 	int kmer_size;
 	int func;
 	char outFilePrefix[FILENAME_MAX - 5];

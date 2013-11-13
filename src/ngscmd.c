@@ -108,6 +108,7 @@ readParams(int argc, char **argv)
 	p->flag = 0;
 	p->kmer_size = 31;
 	p->func = -1;
+	p->num_ambig = 0;
 
 	/* assign the function */
 	if (strcmp(argv[1], "filter") == 0)
@@ -166,6 +167,8 @@ readParams(int argc, char **argv)
 					p->flag |= SCORE_NUM;
 				else if (p->func == KMER)
 					p->kmer_size = atoi(optarg);
+				else if (p->func == FILTER)
+					p->num_ambig = atoi(optarg);
 				else
 					break;
 				break;
@@ -252,7 +255,8 @@ functionUsage(int f)
 	{
 		case FILTER:
 			puts("\n\nUsage: ngscmd filter [options] <fastQ_mate1> <fastQ_mate2");
-			puts("Options:        -o         prefix string for name of fastQ/fastQ/quality output files\n");
+			puts("Options:        -o         prefix string for name of fastQ/fastQ/quality output files");
+			puts("                -n   INT   number of ambiguous characters to tolerate in a sequence [ default: 0 ]\n");
 			break;
 		case TRIM:
 			puts("\n\nUsage: ngscmd trim [options] <fastQ file>");
