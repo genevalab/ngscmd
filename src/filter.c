@@ -121,22 +121,31 @@ ngs_filter(ngsParams *p)
 						count_N2 += (iobuff2[i][j] == 'N');
 				}
 
-				if ((count_N1 <= p->num_ambig) || (count_N2 <= p->num_ambig))
+				if (p->flag & TWO_INPUTS)
 				{
-					gzputs(out1, iobuff1[i-1]);
-					gzputs(out1, iobuff1[i]);
-					gzputs(out1, iobuff1[i+1]);
-					gzputs(out1, iobuff1[i+2]);
-					if (p->flag & TWO_INPUTS)
+					if ((count_N1 <= p->num_ambig) && (count_N2 <= p->num_ambig))
 					{
+						gzputs(out1, iobuff1[i-1]);
+						gzputs(out1, iobuff1[i]);
+						gzputs(out1, iobuff1[i+1]);
+						gzputs(out1, iobuff1[i+2]);
 						gzputs(out2, iobuff2[i-1]);
 						gzputs(out2, iobuff2[i]);
 						gzputs(out2, iobuff2[i+1]);
 						gzputs(out2, iobuff2[i+2]);
 					}
 				}
+				else
+				{
+					if (count_N1 <= p->num_ambig)
+					{
+						gzputs(out1, iobuff1[i-1]);
+						gzputs(out1, iobuff1[i]);
+						gzputs(out1, iobuff1[i+1]);
+						gzputs(out1, iobuff1[i+2]);
+					}
+				}
 			}
-
 		}
 
 		/* if we are at the end of the file */
