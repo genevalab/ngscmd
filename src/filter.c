@@ -22,7 +22,8 @@
 
 #include "ngscmd.h"
 
-/* filters out low quality reads from either one fastQ or two mated fastQ files */
+/* ngs_filter() -- filters out low quality reads from either 
+ * one fastQ or two mated fastQ files */
 
 int
 ngs_filter(ngsParams *p)
@@ -42,7 +43,7 @@ ngs_filter(ngsParams *p)
 	gzFile out2;
 
 	/* open the first fastQ input stream */
-	if ((seq1 = gzopen(p->seqFile1, "r")) == NULL)
+	if ((seq1 = gzopen(p->seqFile1, "r")) == Z_NULL)
 	{
 		fprintf(stderr, "\n\nError: cannot open the input fastQ file: %s.\n\n", p->seqFile1);
 		exit(EXIT_FAILURE);
@@ -51,7 +52,7 @@ ngs_filter(ngsParams *p)
 	/* if specified-- open the second fastQ input stream */
 	if (p->flag & TWO_INPUTS)
 	{
-		if ((seq2 = gzopen(p->seqFile2, "r")) == NULL)
+		if ((seq2 = gzopen(p->seqFile2, "r")) == Z_NULL)
 		{
 				fprintf(stderr, "\n\nError: cannot open the second input fastQ file: %s.\n\n", p->seqFile2);
 				exit(EXIT_FAILURE);
@@ -59,7 +60,7 @@ ngs_filter(ngsParams *p)
 	}
 
 	/* open the first fastQ output stream */
-	if ((out1 = gzopen(p->outFile1, "w")) == NULL)
+	if ((out1 = gzopen(p->outFile1, "w")) == Z_NULL)
 	{
 		fprintf(stderr, "\n\nError: cannot open the output fastQ file: %s.\n", p->outFile1);
 		exit(EXIT_FAILURE);
@@ -68,7 +69,7 @@ ngs_filter(ngsParams *p)
 	/* if specified-- open the second fastQ output stream */
 	if (p->flag & TWO_INPUTS)
 	{
-		if ((out2 = gzopen(p->outFile2, "w")) == NULL)
+		if ((out2 = gzopen(p->outFile2, "w")) == Z_NULL)
 		{
 			fprintf(stderr, "\n\nError: cannot open the second output fastQ file: %s.\n", p->outFile2);
 			exit(EXIT_FAILURE);
@@ -95,38 +96,51 @@ ngs_filter(ngsParams *p)
 			if (p->flag & TWO_INPUTS)
 				r2 = gzgets(seq2, iobuff2[buffCount], MAX_LINE_LENGTH);
 
-			if ((r1 == Z_NULL) && (r2 == Z_NULL))
-				break;
-			else if (((r1 == Z_NULL) && (r2 != Z_NULL)) || ((r1 != Z_NULL) && (r2 == Z_NULL)))
+			/* determine whether gzgets was successful */
+			if (p->flag & TWO_INPUTS)
 			{
-				fputs("Error processing paired fastQ sequences. Are these files properly paired?", stderr);
-				exit(EXIT_FAILURE);
+				/* both gzgets calls return null-- we are at the end of the file */
+				if ((r1 == Z_NULL) && (r2 == Z_NULL))
+					break;
+				/* one or the other gzgets calls returns null-- unequal number of records */
+				else if (((r1 == Z_NULL) && (r2 != Z_NULL)) || ((r1 != Z_NULL) && (r2 == Z_NULL)))
+				{
+					fputs("Error processing paired fastQ sequences. Are these files properly paired?", stderr);
+					exit(EXIT_FAILURE);
+				}
 			}
+			else if (r1 == Z_NULL)
+				break;
 
-			/* increment the counter for the number of lines currently in the buffer */
+			/* increment the counter for the number of lines
+			 * currently in the buffer */
 			++buffCount;
 		}
 
-		/* screen each sequence for number of ambiguous characters */
-		/* if record passes filter-- write to the output streams */
+		/* screen each sequence for number of ambiguous characters
+		 * if record passes filter-- write to the output streams */
 		for (i = 0; i < buffCount; ++i)
 		{
 			if (i % 4 == 1)
 			{
+				/* reset ambiguous character counters to zero */
 				count_N1 = 0;
 				count_N2 = 0;
 
-				/* count number of ambiguous characters in the first fastQ entry */
+				/* count the number of ambiguous characters 
+				 * in the first fastQ entry */
 				for (j = 0; iobuff1[i][j]; j++)
 					count_N1 += (iobuff1[i][j] == 'N');
 
-				/* if specified-- count number of ambiguous characters in the second fastQ entry */
+				/* if specified-- count the number of ambiguous characters 
+				 *in the second fastQ entry */
 				if (p->flag & TWO_INPUTS)
-				{
 					for (j = 0; iobuff2[i][j]; j++)
 						count_N2 += (iobuff2[i][j] == 'N');
-				}
 
+				/* if two fastQ input streams are specified and both sequences 
+				 * pass the for ambiguous characters, then write to both fastQ 
+				 * output streams */
 				if (p->flag & TWO_INPUTS)
 				{
 					if ((count_N1 <= p->num_ambig) && (count_N2 <= p->num_ambig))
