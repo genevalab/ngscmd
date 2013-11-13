@@ -84,6 +84,6 @@ ngs_trim(ngsParams *p)
 
 	/* close sequence output stream */
 	gzclose(out);
-	
+
 	return 0;
 }

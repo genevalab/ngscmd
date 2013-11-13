@@ -22,7 +22,7 @@
 
 #include "ngscmd.h"
 
-/* aligned mated pairs in two fastq files */ 
+/* aligned mated pairs in two fastq files */
 
 int
 ngs_pair(ngsParams *p)
