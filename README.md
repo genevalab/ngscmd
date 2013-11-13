@@ -4,8 +4,8 @@ ngscmd
 A C program to manipulate next-generation sequence data files
 -------------------------------------------------------------
 
-The `ngscmd` program depends on the zlib compression library and
-the Berkeley DB API. To compile the `ngscmd` program:
+The `ngscmd` program depends on the zlib compression library.
+To compile the `ngscmd` program:
 
 	./configure
 
@@ -13,33 +13,20 @@ followed by
 
 	make
 
-The first step in using `ngscmd` is making the database files. This
-can be done by running the `makedb` command
+The `ngscmd` program can work on a single fastQ input file, as well 
+as mate pair files. The fastQ files can be input into the `ngscmd` 
+program in either compressed or uncompressed form. 
 
-	./ngscmd makedb -o mydata mydata.1.fq.gz mydata.2.fq.gz
-
-in which `mydata.1.fq.gz` and `mydata.2.fq.gz` are fastQ formatted
-mate pair sequences. However, it should be noted that `ngscmd` can
-work on a single fastQ input file, as well as mate pair files.
-The fastQ files can be input into the `ngscmd` program in either 
-compressed or uncompressed form. The `ngscmd` program will then 
-make several database files for each fastQ input file and it will
-make a "database map" file that contains information on the layout
-of the individual databases. The "database map" file will be used
-as the input for the other seven commands of `ngscmd`.
-
-All eight commands of the `ngscmd` program are
+All six commands of the `ngscmd` program are
 
 Command | Description
 ------- | -----------
-makedb  | construct databases for further analysis
-sort    | lexical sort of reads by identifier string
-pair    | aligned mated pairs in two fastQ files
-score   | manipulate or analyze Phred-scaled quality scores
-format  | convert between file formats
-clean   | perform a variety of cleaning procedures for reads
-rmdup   | remove duplicate reads
-kmer    | count number of unique k-mers in fastQ file
+filter  |   remove low quality reads
+trim    |   trim ends of reads
+pair    |   align mated pairs in two fastQ files
+score   |   convert Phred-scaled quality scores
+rmdup   |   remove duplicate reads
+kmer    |   count number of unique k-mers in fastQ file
 
 Although their are many programs with functionality that is
 similar to `ngscmd`, the motivation for developing this program

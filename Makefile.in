@@ -1,10 +1,10 @@
 # Makefile for ngscmd program
-CC?       = gcc
+CC        = gcc
 PROG      = ngscmd
 CFLAGS    = -Wall -D _BSD_SOURCE -D MAX_LINE_LENGTH=300 -std=c99 -g -Wextra -pedantic
 LFLAGS     = -lz -ldb
 SRCDIR    := src
-SRCS      := ngscmd.c makedb.c sort.c pair.c score.c format.c clean.c rmdup.c kmer.c
+SRCS      := ngscmd.c filter.c trim.c pair.c score.c rmdup.c kmer.c
 OBJS      := $(patsubst %.c, %.o, $(SRCS))
 
 all: $(PROG)
