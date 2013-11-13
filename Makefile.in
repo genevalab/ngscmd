@@ -2,7 +2,7 @@
 CC        = gcc
 PROG      = ngscmd
 CFLAGS    = -Wall -D _BSD_SOURCE -D MAX_LINE_LENGTH=300 -std=c99 -g -Wextra -pedantic
-LFLAGS     = -lz -ldb
+LFLAGS     = -lz
 SRCDIR    := src
 SRCS      := ngscmd.c filter.c trim.c pair.c score.c rmdup.c kmer.c
 OBJS      := $(patsubst %.c, %.o, $(SRCS))
