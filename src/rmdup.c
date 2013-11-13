@@ -27,12 +27,18 @@
 int
 ngs_rmdup(ngsParams *p)
 {
+<<<<<<< HEAD
 	int i = 0;
 	int j = 0;
 	int buffCount = 0;
 	size_t k = 0;
 	size_t len = 0;
 	char **seqLine;
+=======
+	int i, j;
+	int buffCount = 0;
+	char iobuff[BUFFSIZE][MAX_LINE_LENGTH];
+>>>>>>> 1d4343d0315645e10717853a2f64217068cb111e
 	gzFile seq;
 	gzFile out;
 
@@ -54,23 +60,6 @@ ngs_rmdup(ngsParams *p)
 	/* set up interrupt trap */
 	signal(SIGINT, INThandler);
 
-	/* allocate memory for buffer */
-	seqLine = (char**) malloc(BUFFSIZE * sizeof(char*));
-	if (seqLine == NULL)
-	{
-		fputs("Memory allocation failure for seqLine.1\n", stderr);
-		exit (EXIT_FAILURE);
-	}
-	for (i = 0; i < BUFFSIZE; ++i)
-	{
-		seqLine[i] = (char*) malloc(MAX_LINE_LENGTH * sizeof(char));
-		if (seqLine[i] == NULL)
-		{
-			fputs("Memory allocation failure for seqLine.2\n", stderr);
-			exit (EXIT_FAILURE);
-		}
-	}
-
 	/* read through input sequence file */
 	while (1)
 	{
@@ -81,7 +70,7 @@ ngs_rmdup(ngsParams *p)
 		while (buffCount < BUFFSIZE)
 		{
 			/* get line from sequence file */
-			if (gzgets(seq, seqLine[buffCount], MAX_LINE_LENGTH) == Z_NULL)
+			if (gzgets(seq, iobuff[buffCount], MAX_LINE_LENGTH) == Z_NULL)
 				break;
 
 			/* increment the counter for the number of lines currently in the buffer */
@@ -94,33 +83,38 @@ ngs_rmdup(ngsParams *p)
 			j = i % 4;
 			if ((j == 1) || (j == 3))
 			{
-				chomp(seqLine[i]);
-				strrev(seqLine[i]);
+				chomp(iobuff[i]);
+				strrev(iobuff[i]);
 				if (j == 1)
 				{
+<<<<<<< HEAD
 					k = 0;
 					len = strlen(seqLine[i]);
+=======
+					size_t k = 0;
+					size_t len = strlen(iobuff[i]);
+>>>>>>> 1d4343d0315645e10717853a2f64217068cb111e
 					while (k < len)
 					{
-						if (seqLine[i][k] == 'A')
+						if (iobuff[i][k] == 'A')
 							gzputc(out, 'T');
-						else if (seqLine[i][k] == 'C')
+						else if (iobuff[i][k] == 'C')
 							gzputc(out, 'G');
-						else if (seqLine[i][k] == 'G')
+						else if (iobuff[i][k] == 'G')
 							gzputc(out, 'C');
-						else if (seqLine[i][k] == 'T')
+						else if (iobuff[i][k] == 'T')
 							gzputc(out, 'A');
 						else
-							gzputc(out, seqLine[i][k]);
+							gzputc(out, iobuff[i][k]);
 						++k;
 					}
 				}
 				else
-					gzputs(out, seqLine[i]);
+					gzputs(out, iobuff[i]);
 				gzputc(out, '\n');
 			}
 			else
-				gzputs(out, seqLine[i]);
+				gzputs(out, iobuff[i]);
 		}
 
 		/* if we are at the end of the file */
@@ -133,11 +127,6 @@ ngs_rmdup(ngsParams *p)
 
 	/* close sequence output stream */
 	gzclose(out);
-
-	/* take out the garbage */
-	for (i = 0; i < BUFFSIZE; ++i)
-		free(seqLine[i]);
-	free(seqLine);
 
 	return 0;
 }
