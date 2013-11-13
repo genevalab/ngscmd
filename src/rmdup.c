@@ -22,7 +22,7 @@
 
 #include "ngscmd.h"
 
-/* reverse complement the bases in a fastQ file */
+/* remove duplicate sequences in one or two fastQ input files */
 
 int
 ngs_rmdup(ngsParams *p)
@@ -40,16 +40,16 @@ ngs_rmdup(ngsParams *p)
 	gzFile out2;
 
 
-	/* open sequence input file */
+	/* open the first fastQ input stream */
 	if ((seq1 = gzopen(p->seqFile1, "rb")) == NULL)
 	{
 		fprintf(stderr, "\n\nError: cannot open the input fastQ file: %s.\n\n", p->seqFile1);
 		exit(EXIT_FAILURE);
 	}
 
+	/* if specified-- open the second fastQ input stream */
 	if (p->flag & TWO_INPUTS)
 	{
-		/* open the fastQ mate 2 file */
 		if ((seq2 = gzopen(p->seqFile2, "r")) == NULL)
 		{
 				fprintf(stderr, "\n\nError: cannot open the second input fastQ file: %s.\n\n", p->seqFile2);
@@ -57,16 +57,16 @@ ngs_rmdup(ngsParams *p)
 		}
 	}
 
-	/* open sequence output file */
+	/* open the first fastQ output stream */
 	if ((out1 = gzopen(p->outFile1, "wb")) == NULL)
 	{
 		fprintf(stderr, "\n\nError: cannot open the output fastQ file: %s.\n", p->outFile1);
 		exit(EXIT_FAILURE);
 	}
 
+	/* if specified-- open the second fastQ output stream */
 	if (p->flag & TWO_INPUTS)
 	{
-		/* open the fastq mate 2 output stream */
 		if ((out2 = gzopen(p->outFile1, "w")) == NULL)
 		{
 			fprintf(stderr, "\n\nError: cannot open the second output fastQ file: %s.\n", p->outFile2);
@@ -77,7 +77,7 @@ ngs_rmdup(ngsParams *p)
 	/* set up interrupt trap */
 	signal(SIGINT, INThandler);
 
-	/* read through input sequence file */
+	/* read through input fastQ files */
 	while (1)
 	{
 		/* initialize counter for the number of lines in the buffer */
@@ -86,13 +86,13 @@ ngs_rmdup(ngsParams *p)
 		/* fill up the buffer */
 		while (buffCount < BUFFSIZE)
 		{
-			/* get line from sequence file */
+			/* get line from first fastQ input stream */
 			if (gzgets(seq1, iobuff1[buffCount], MAX_LINE_LENGTH) == Z_NULL)
 				break;
 
+			/* get line from second fastQ input stream */
 			if (p->flag & TWO_INPUTS)
 			{
-				/* get line from fastQ mate 2 file */
 				if (gzgets(seq2, iobuff2[buffCount], MAX_LINE_LENGTH) == Z_NULL)
 					break;
 			}
@@ -112,18 +112,14 @@ ngs_rmdup(ngsParams *p)
 			break;
 	}
 
-	/* close fastQ mate 1 input stream */
+	/* close the first fastQ input and output streams */
 	gzclose(seq1);
-
-	/* close the output mate 1 stream */
 	gzclose(out1);
 
+	/* if specified-- close the second fastQ input and output streams */
 	if (p->flag & TWO_INPUTS)
 	{
-		/* close fastQ mate 2 input stream */
 		gzclose(seq2);
-
-		/* close the output mate 2 stream */
 		gzclose(out2);
 	}
 

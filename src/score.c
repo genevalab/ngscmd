@@ -22,7 +22,7 @@
 
 #include "ngscmd.h"
 
-/* transform Phred-scaled quality scores in a fastQ file */
+/* transform Phred-scaled quality scores in a fastQ input file */
 
 int
 ngs_score(ngsParams *p)
@@ -33,14 +33,14 @@ ngs_score(ngsParams *p)
 	gzFile seq;
 	gzFile out;
 
-	/* open sequence file */
+	/* open the fastQ input stream */
 	if ((seq = gzopen(p->seqFile1, "rb")) == NULL)
 	{
 		fprintf(stderr, "\n\nError: cannot open the input fastQ file: %s.\n\n", p->seqFile1);
 		exit(EXIT_FAILURE);
 	}
 
-	/* open output fastq stream */
+	/* open the fastQ output stream */
 	if ((out = gzopen(p->outFile1, "wb")) == NULL)
 	{
 		fprintf(stderr, "\n\nError: cannot open the output fastQ file: %s.\n", p->outFile1);
@@ -49,7 +49,6 @@ ngs_score(ngsParams *p)
 
 	/* set up interrupt trap */
 	signal(SIGINT, INThandler);
-
 
 	/* read through fastQ input sequence file */
 	while (1)
@@ -147,15 +146,13 @@ ngs_score(ngsParams *p)
 				gzputs(out, iobuff[i]);
 		}
 
-		/* If we are at the end of the file */
+		/* if we are at the end of the file */
 		if (buffCount < BUFFSIZE)
 			break;
 	}
 
-	/* Close fastq input sequence file stream */
+	/* close the fastQ input and output streams */
 	gzclose(seq);
-
-	/* Close fastq output sequence file stream */
 	gzclose(out);
 
 	return 0;

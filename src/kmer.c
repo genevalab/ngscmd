@@ -22,7 +22,9 @@
 
 #include "ngscmd.h"
 
-/* counts the number of unique k-mers in a fastQ file */
+/* counts the number of unique k-mers in a single fastQ input file
+ * writes output of kmer counts to STDOUT
+ */
 
 int
 ngs_kmer(ngsParams *p)
@@ -33,7 +35,7 @@ ngs_kmer(ngsParams *p)
 	gzFile seq;
 
 
-	/* open sequence file */
+	/* open the first fastQ input stream */
 	if ((seq = gzopen(p->seqFile1, "rb")) == NULL)
 	{
 		fprintf(stderr, "\n\nError: cannot open the input fastQ file: %s.\n\n", p->seqFile1);
@@ -52,7 +54,7 @@ ngs_kmer(ngsParams *p)
 		/* fill up the buffer */
 		while (buffCount < BUFFSIZE)
 		{
-			/* get line from sequence file */
+			/* get line from the fastQ input stream */
 			if (gzgets(seq, iobuff[buffCount], MAX_LINE_LENGTH) == Z_NULL)
 				break;
 
@@ -71,7 +73,7 @@ ngs_kmer(ngsParams *p)
 			break;
 	}
 
-	/* close sequence input stream */
+	/* close the fastQ input stream */
 	gzclose(seq);
 
 	return 0;

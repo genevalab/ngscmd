@@ -22,7 +22,7 @@
 
 #include "ngscmd.h"
 
-/* aligned mated pairs in two fastq files */
+/* aligned mated pairs in two fastQ input files */
 
 int
 ngs_pair(ngsParams *p)
@@ -36,14 +36,14 @@ ngs_pair(ngsParams *p)
 	gzFile out1;
 	gzFile out2;
 
-	/* open sequence file 1 */
+	/* open the first fastQ input stream */
 	if ((seq1 = gzopen(p->seqFile1, "rb")) == NULL)
 	{
 		fprintf(stderr, "\n\nError: cannot open the input fastQ file: %s.\n\n", p->seqFile1);
 		exit(EXIT_FAILURE);
 	}
 
-	/* open sequence file 2 */
+	/* open the second fastQ input stream */
 	if ((seq2 = gzopen(p->seqFile2, "rb")) == NULL)
 	{
 			fprintf(stderr, "\n\nError: cannot open the second input fastQ file: %s.\n\n", p->seqFile2);
@@ -57,28 +57,24 @@ ngs_pair(ngsParams *p)
 		exit(EXIT_FAILURE);
 	}
 
-	/* open the second fastA output stream */
+	/* open the second fastQ output stream */
 	if ((out2 = gzopen(p->outFile2, "wb")) == NULL)
 	{
 		fprintf(stderr, "\n\nError: cannot open the second output fastQ file: %s.\n", p->outFile2);
 		exit(EXIT_FAILURE);
 	}
 
-	/* TODO: implement merging algorithm here */
-
 	/* set up interrupt trap */
 	signal(SIGINT, INThandler);
 
-	/* close fastq 1 input stream */
-	gzclose(seq1);
+	/* TODO: implement merging algorithm here */
 
-	/* close fastq 2 input stream */
+	/* close the fastQ input streams */
+	gzclose(seq1);
 	gzclose(seq2);
 
-	/* close the output 1 stream */
+	/* close the fastQ output streams */
 	gzclose(out1);
-
-	/* close the output 1 stream */
 	gzclose(out2);
 
 	return 0;

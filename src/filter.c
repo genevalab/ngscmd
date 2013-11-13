@@ -22,13 +22,16 @@
 
 #include "ngscmd.h"
 
-/* filters out low quality reads from two mated fastQ files */
+/* filters out low quality reads from either one fastQ or two mated fastQ files */
 
 int
 ngs_filter(ngsParams *p)
 {
 	int i = 0;
+	int j = 0;
 	int buffCount = 0;
+	int count_N1 = 0;
+	int count_N2 = 0;
 	char iobuff1[BUFFSIZE][MAX_LINE_LENGTH];
 	char iobuff2[BUFFSIZE][MAX_LINE_LENGTH];
 	gzFile seq1;
@@ -36,16 +39,16 @@ ngs_filter(ngsParams *p)
 	gzFile out1;
 	gzFile out2;
 
-	/* open the fastQ mate 1 file */
+	/* open the first fastQ input stream */
 	if ((seq1 = gzopen(p->seqFile1, "r")) == NULL)
 	{
 		fprintf(stderr, "\n\nError: cannot open the input fastQ file: %s.\n\n", p->seqFile1);
 		exit(EXIT_FAILURE);
 	}
 
+	/* if specified-- open the second fastQ input stream */
 	if (p->flag & TWO_INPUTS)
 	{
-		/* open the fastQ mate 2 file */
 		if ((seq2 = gzopen(p->seqFile2, "r")) == NULL)
 		{
 				fprintf(stderr, "\n\nError: cannot open the second input fastQ file: %s.\n\n", p->seqFile2);
@@ -53,16 +56,16 @@ ngs_filter(ngsParams *p)
 		}
 	}
 
-	/* open the fastq mate 1 output stream */
+	/* open the first fastQ output stream */
 	if ((out1 = gzopen(p->outFile1, "w")) == NULL)
 	{
 		fprintf(stderr, "\n\nError: cannot open the output fastQ file: %s.\n", p->outFile1);
 		exit(EXIT_FAILURE);
 	}
 
+	/* if specified-- open the second fastQ output stream */
 	if (p->flag & TWO_INPUTS)
 	{
-		/* open the fastq mate 2 output stream */
 		if ((out2 = gzopen(p->outFile1, "w")) == NULL)
 		{
 			fprintf(stderr, "\n\nError: cannot open the second output fastQ file: %s.\n", p->outFile2);
@@ -83,13 +86,13 @@ ngs_filter(ngsParams *p)
 		/* fill up the buffer */
 		while (buffCount < BUFFSIZE)
 		{
-			/* get line from fastQ mate 1 file */
+			/* get line from the first fastQ input stream */
 			if (gzgets(seq1, iobuff1[buffCount], MAX_LINE_LENGTH) == Z_NULL)
 				break;
 
+			/* if specified-- get line from the second fastQ input stream */
 			if (p->flag & TWO_INPUTS)
 			{
-				/* get line from fastQ mate 2 file */
 				if (gzgets(seq2, iobuff2[buffCount], MAX_LINE_LENGTH) == Z_NULL)
 					break;
 			}
@@ -98,10 +101,42 @@ ngs_filter(ngsParams *p)
 			++buffCount;
 		}
 
-		/* dump the buffer to the output stream */
+		/* screen each sequence for number of ambiguous characters */
+		/* if record passes filter-- write to the output streams */
 		for (i = 0; i < buffCount; ++i)
 		{
-			/* TODO: Something here */
+			if (i % 4 == 1)
+			{
+				count_N1 = 0;
+				count_N2 = 0;
+
+				/* count number of ambiguous characters in the first fastQ entry */
+				for (j = 0; iobuff1[i][j]; j++)
+					count_N1 += (iobuff1[i][j] == 'N');
+
+				/* if specified-- count number of ambiguous characters in the second fastQ entry */
+				if (p->flag & TWO_INPUTS)
+				{
+					for (j = 0; iobuff2[i][j]; j++)
+						count_N2 += (iobuff2[i][j] == 'N');
+				}
+
+				if ((count_N1 <= p->num_ambig) || (count_N2 <= p->num_ambig))
+				{
+					gzputs(out1, iobuff1[i-1]);
+					gzputs(out1, iobuff1[i]);
+					gzputs(out1, iobuff1[i+1]);
+					gzputs(out1, iobuff1[i+2]);
+					if (p->flag & TWO_INPUTS)
+					{
+						gzputs(out2, iobuff2[i-1]);
+						gzputs(out2, iobuff2[i]);
+						gzputs(out2, iobuff2[i+1]);
+						gzputs(out2, iobuff2[i+2]);
+					}
+				}
+			}
+
 		}
 
 		/* if we are at the end of the file */
@@ -109,18 +144,14 @@ ngs_filter(ngsParams *p)
 			break;
 	}
 
-	/* close fastQ mate 1 input stream */
+	/* close the first fastQ input and output streams */
 	gzclose(seq1);
-
-	/* close the output mate 1 stream */
 	gzclose(out1);
 
+	/* if specified-- close the second fastQ input and output streams */
 	if (p->flag & TWO_INPUTS)
 	{
-		/* close fastQ mate 2 input stream */
 		gzclose(seq2);
-
-		/* close the output mate 2 stream */
 		gzclose(out2);
 	}
 

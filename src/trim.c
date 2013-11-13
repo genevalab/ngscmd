@@ -22,7 +22,7 @@
 
 #include "ngscmd.h"
 
-/* trims the end of reads in a single fastQ file */
+/* trims the end of reads in a single fastQ input file */
 
 int
 ngs_trim(ngsParams *p)
@@ -34,13 +34,14 @@ ngs_trim(ngsParams *p)
 	gzFile out;
 
 
-	/* open sequence file */
+	/* open the fastQ input stream */
 	if ((seq = gzopen(p->seqFile1, "rb")) == NULL)
 	{
 		fprintf(stderr, "\n\nError: cannot open the input fastQ file: %s.\n\n", p->seqFile1);
 		exit(EXIT_FAILURE);
 	}
 
+	/* open the fastQ output stream */
 	if ((out = gzopen(p->outFile1, "wb")) == NULL)
 	{
 		fprintf(stderr, "\n\nError: cannot open the output fastQ file: %s.\n", p->outFile1);
@@ -51,7 +52,7 @@ ngs_trim(ngsParams *p)
 	signal(SIGINT, INThandler);
 
 
-	/* read through input sequence file */
+	/* read through fastQ input sequence file */
 	while (1)
 	{
 		/* initialize counter for the number of lines in the buffer */
@@ -60,7 +61,7 @@ ngs_trim(ngsParams *p)
 		/* fill up the buffer */
 		while (buffCount < BUFFSIZE)
 		{
-			/* get line from sequence file */
+			/* get line from the fastQ input stream */
 			if (gzgets(seq, iobuff[buffCount], MAX_LINE_LENGTH) == Z_NULL)
 				break;
 
@@ -79,10 +80,8 @@ ngs_trim(ngsParams *p)
 			break;
 	}
 
-	/* close sequence input stream */
+	/* close the fastQ input and output streams */
 	gzclose(seq);
-
-	/* close sequence output stream */
 	gzclose(out);
 
 	return 0;
