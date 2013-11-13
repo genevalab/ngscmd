@@ -1,5 +1,5 @@
-/*  ngsutils.h -- interface of the 'ngslib' library for handling next-generation sequences in fastQ format
-	version 0.1, September 27, 2013
+/*  ngscmd.h -- Handling next-generation sequence data in fastQ format
+	version 0.2, November 13, 2013
 
 	Copyright (c) 2013 Daniel Garrigan
 
@@ -33,7 +33,6 @@
 #include <limits.h>
 #include <ctype.h>
 #include <zlib.h>
-#include <db.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -44,9 +43,10 @@ extern "C" {
 #define MAX_LINE_LENGTH 400
 #endif
 #define BUFFSIZE 2000
-#define CONVERT_REV 0x1
-#define CONVERT_NUM 0x2
-#define CONVERT_ASCII 0x4
+#define TWO_INPUTS 0x1
+#define CONVERT_REV 0x2
+#define CONVERT_NUM 0x4
+#define CONVERT_ASCII 0x8
 
 
 typedef struct _ngsParams
@@ -57,7 +57,6 @@ typedef struct _ngsParams
 	char outFilePrefix[FILENAME_MAX - 5];
 	char seqFile1[FILENAME_MAX];
 	char seqFile2[FILENAME_MAX];
-	char qualFile[FILENAME_MAX];
 	char outFile1[FILENAME_MAX];
 	char outFile2[FILENAME_MAX];
 } ngsParams;
@@ -94,12 +93,10 @@ typedef struct _dbdata
 }
 
 /* function prototypes */
-extern int  ngs_makedb(ngsParams*);
-extern int  ngs_sort(ngsParams*);
+extern int  ngs_filter(ngsParams*);
+extern int  ngs_trim(ngsParams*);
 extern int  ngs_pair(ngsParams*);
-extern int ngs_score(ngsParams*);
-extern int  ngs_format(ngsParams*);
-extern int  ngs_clean(ngsParams*);
+extern int  ngs_score(ngsParams*);
 extern int  ngs_rmdup(ngsParams*);
 extern int  ngs_kmer(ngsParams*);
 extern void INThandler(int sig);

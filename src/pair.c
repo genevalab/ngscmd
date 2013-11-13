@@ -27,6 +27,8 @@
 int
 ngs_pair(ngsParams *p)
 {
+	int i = 0;
+	int buffCount = 0;
 	gzFile seq1;
 	gzFile seq2;
 	gzFile out1;

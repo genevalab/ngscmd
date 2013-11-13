@@ -28,6 +28,7 @@ int
 ngs_score(ngsParams *p)
 {
 	int i = 0;
+	int buffCount = 0;
 	char **seqLine;
 	gzFile seq;
 	gzFile out;
@@ -69,7 +70,7 @@ ngs_score(ngsParams *p)
 	/* read through fastQ input sequence file */
 	while (1)
 	{
-		int buffCount = 0;
+		buffCount = 0;
 
 		/* fill up the buffer */
 		while (buffCount < BUFFSIZE)

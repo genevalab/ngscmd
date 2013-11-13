@@ -28,9 +28,9 @@
 #endif
 
 /* constants */
-#define VERSION 0.1
-#define NFUNCTIONS 10
-enum FUNC {MAKEDB, SORT, PAIR, SCORE, FORMAT, CLEAN, RMDUP, KMER};
+#define VERSION 0.2
+#define NFUNCTIONS 6
+enum FUNC {FILTER, TRIM, PAIR, SCORE, RMDUP, KMER};
 
 /* function prototypes */
 ngsParams *readParams(int, char**);
@@ -43,14 +43,11 @@ extern int getopt (int, char *const *, const char*);
 extern char *optarg;
 extern int optind, opterr, optopt;
 
-
-/* entry point for the NGSutils program */
-
 int
 main(int argc, char **argv)
 {
-	ngsParams *p;
-enum FUNC {MAKEDB, SORT, PAIR, SCORE, FORMAT, CLEAN, RMDUP, KMER};
+	ngsParams *p = NULL;
+
 	if (argc < 2)
 		return mainUsage();
 	else
@@ -59,23 +56,17 @@ enum FUNC {MAKEDB, SORT, PAIR, SCORE, FORMAT, CLEAN, RMDUP, KMER};
 
 		switch (p->func)
 		{
-			case MAKEDB:
-				ngs_makedb(p);
+			case FILTER:
+				ngs_filter(p);
 				break;
-			case SORT:
-				ngs_sort(p);
+			case TRIM:
+				ngs_trim(p);
 				break;
 			case PAIR:
 				ngs_pair(p);
 				break;
 			case SCORE:
 				ngs_score(p);
-				break;
-			case FORMAT:
-				ngs_format(p);
-				break;
-			case CLEAN:
-				ngs_clean(p);
 				break;
 			case RMDUP:
 				ngs_rmdup(p);
@@ -118,18 +109,14 @@ readParams(int argc, char **argv)
 	p->func = -1;
 
 	/* assign the function */
-	if (strcmp(argv[1], "makedb") == 0)
-		p->func = MAKEDB;
-	else if (strcmp(argv[1], "sort") == 0)
-		p->func = SORT;
+	if (strcmp(argv[1], "filter") == 0)
+		p->func = FILTER;
+	else if (strcmp(argv[1], "trim") == 0)
+		p->func = TRIM;
 	else if (strcmp(argv[1], "pair") == 0)
 		p->func = PAIR;
 	else if (strcmp(argv[1], "score") == 0)
 		p->func = SCORE;
-	else if (strcmp(argv[1], "format") == 0)
-		p->func = FORMAT;
-	else if (strcmp(argv[1], "clean") == 0)
-		p->func = CLEAN;
 	else if (strcmp(argv[1], "rmdup") == 0)
 		p->func = RMDUP;
 	else if (strcmp(argv[1], "kmer") == 0)
@@ -155,14 +142,7 @@ readParams(int argc, char **argv)
 		{
 			case 'o':
 				strcpy(p->outFilePrefix, optarg);
-				if (p->func == MAKEDB)
-				{
-					strcpy(p->outFile1, p->outFilePrefix);
-					strcpy(p->qualFile, p->outFilePrefix);
-					strcat(p->outFile1, ".fa.gz");
-					strcat(p->qualFile, ".qual.gz");
-				}
-				else if (p->func == PAIR)
+				if (p->func == PAIR)
 				{
 					strcpy(p->outFile1, p->outFilePrefix);
 					strcpy(p->outFile2, p->outFilePrefix);
@@ -214,16 +194,14 @@ readParams(int argc, char **argv)
 	}
 
 	/* get the second non-optioned argument */
-	if ((p->func == MAKEDB) || (p->func == PAIR))
+	if ((p->func == FILTER) || (p->func == PAIR) || (p->func == RMDUP))
 	{
 		if (argv[optind + 1])
 		{
-			if (p->func == MAKEDB)
-				strcpy(p->qualFile, argv[optind + 1]);
-			else
-				strcpy(p->seqFile2, argv[optind + 1]);
+			strcpy(p->seqFile2, argv[optind + 1]);
+			p->flag |= TWO_INPUTS;
 		}
-		else
+		else if (p->func == RMDUP)
 		{
 			puts("\n\nError: need the name of the second input fastQ sequence as a mandatory argument.\n\n");
 			functionUsage(p->func);
@@ -233,6 +211,7 @@ readParams(int argc, char **argv)
 
 	return p;
 }
+
 
 /* handler for an interrupt signal */
 
@@ -250,13 +229,11 @@ INThandler(int sig)
 int
 mainUsage(void)
 {
-	puts("\n\nUsage: ngscmd <function> [options] <infile> ...\n");
-	puts("Functions:       makedb     construct databases for further analysis");
-	puts("                 sort       lexical sort of reads by identifier string");
+	puts("\n\nUsage: ngscmd <function> [options] <fastq_mate1> <fastq_mate2>\n");
+	puts("Functions:       filter     remove low quality reads");
+	puts("                 trim       trim ends of reads");
 	puts("                 pair       aligned mated pairs in two fastQ files");
-	puts("                 score      manipulate or analyze Phred-scaled quality scores");
-	puts("                 format     convert between file formats");
-	puts("                 clean      perform a variety of cleaning procedures for reads");
+	puts("                 score      convert Phred-scaled quality scores");
 	puts("                 rmdup      remove duplicate reads");
 	puts("                 kmer       count number of unique k-mers in fastQ file\n");
 	return 1;
@@ -270,12 +247,12 @@ functionUsage(int f)
 {
 	switch(f)
 	{
-		case MAKEDB:
-			puts("\n\nUsage: ngscmd makedb [options] <fastA/Q input file> <quality file>");
+		case FILTER:
+			puts("\n\nUsage: ngscmd filter [options] <fastQ_mate1> <fastQ_mate2");
 			puts("Options:        -o         prefix string for name of fastQ/fastQ/quality output files\n");
 			break;
-		case SORT:
-			puts("\n\nUsage: ngscmd sort [options] <fastQ file>");
+		case TRIM:
+			puts("\n\nUsage: ngscmd trim [options] <fastQ file>");
 			puts("Options:        -o         prefix string for name of fastA and quality file output file\n");
 			break;
 		case PAIR:
@@ -290,16 +267,8 @@ functionUsage(int f)
 			puts("                -a         convert from numerical scores to ASCII");
 			puts("                -n         convert from ASCII scores to numerical\n");
 			break;
-		case FORMAT:
-			puts("\n\nUsage: ngscmd format [options] <fastA/Q input file> <quality file>");
-			puts("Options:        -o         prefix string for name of fastQ/fastQ/quality output files\n");
-			break;
-		case CLEAN:
-			puts("\n\nUsage: ngscmd clean [options] <fastQ file>");
-			puts("Options:        -o         prefix string for name of fastQ output file\n");
-			break;
 		case RMDUP:
-			puts("\n\nUsage: ngscmd rmdup [options] <fastQ file>");
+			puts("\n\nUsage: ngscmd rmdup [options] <fastQ_mate1> <fastQ_mate2>");
 			puts("Options:        -o         prefix string for name of fastQ output file\n");
 			break;
 		case KMER:

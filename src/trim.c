@@ -22,27 +22,21 @@
 
 #include "ngscmd.h"
 
-/* filters reads and bases in a fastQ file according to quality scores */
+/* trims the end of reads in a single fastQ file */
 
 int
-ngs_clean(ngsParams *p)
+ngs_trim(ngsParams *p)
 {
 	int i = 0;
+	int buffCount = 0;
 	char **seqLine;
 	gzFile seq;
-	gzFile out;
 
-	/* open sequence input file */
+
+	/* open sequence file */
 	if ((seq = gzopen(p->seqFile1, "rb")) == NULL)
 	{
 		fputs("\n\nError: cannot open the input fastQ sequence file.\n\n", stderr);
-		exit(EXIT_FAILURE);
-	}
-
-	/* open sequence output file */
-	if ((out = gzopen(p->outFile1, "wb")) == NULL)
-	{
-		fputs("\n\nError: cannot open the output fastQ sequence file.\n", stderr);
 		exit(EXIT_FAILURE);
 	}
 
@@ -70,7 +64,7 @@ ngs_clean(ngsParams *p)
 	while (1)
 	{
 		/* initialize counter for the number of lines in the buffer */
-		int buffCount = 0;
+		buffCount = 0;
 
 		/* fill up the buffer */
 		while (buffCount < BUFFSIZE)
@@ -79,14 +73,14 @@ ngs_clean(ngsParams *p)
 			if (gzgets(seq, seqLine[buffCount], MAX_LINE_LENGTH) == Z_NULL)
 				break;
 
-			/* increment the counter for the number of lines currently in the buffer */
+			/* iterate the counter for the number of lines currently in the buffer */
 			++buffCount;
 		}
 
 		/* tally scores along each position in the sequence */
 		for (i = 0; i < buffCount; ++i)
 		{
-			/* TODO: add code to filter and trim sequences here */
+			/* TODO: implement trimming algorithm */
 		}
 
 		/* if we are at the end of the file */
@@ -96,6 +90,7 @@ ngs_clean(ngsParams *p)
 
 	/* close sequence input stream */
 	gzclose(seq);
+
 
 	/* take out the garbage */
 	for (i = 0; i < BUFFSIZE; ++i)

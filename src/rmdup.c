@@ -28,6 +28,10 @@ int
 ngs_rmdup(ngsParams *p)
 {
 	int i = 0;
+	int j = 0;
+	int buffCount = 0;
+	size_t k = 0;
+	size_t len = 0;
 	char **seqLine;
 	gzFile seq;
 	gzFile out;
@@ -71,7 +75,7 @@ ngs_rmdup(ngsParams *p)
 	while (1)
 	{
 		/* initialize counter for the number of lines in the buffer */
-		int buffCount = 0;
+		buffCount = 0;
 
 		/* fill up the buffer */
 		while (buffCount < BUFFSIZE)
@@ -87,15 +91,15 @@ ngs_rmdup(ngsParams *p)
 		/* reverse complement bases and reverse quality scores */
 		for (i = 0; i < buffCount; ++i)
 		{
-			int j = i % 4;
+			j = i % 4;
 			if ((j == 1) || (j == 3))
 			{
 				chomp(seqLine[i]);
 				strrev(seqLine[i]);
 				if (j == 1)
 				{
-					size_t k = 0;
-					size_t len = strlen(seqLine[i]);
+					k = 0;
+					len = strlen(seqLine[i]);
 					while (k < len)
 					{
 						if (seqLine[i][k] == 'A')

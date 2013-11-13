@@ -28,6 +28,7 @@ int
 ngs_kmer(ngsParams *p)
 {
 	int i = 0;
+	int buffCount = 0;
 	char **seqLine;
 	gzFile seq;
 
@@ -63,7 +64,7 @@ ngs_kmer(ngsParams *p)
 	while (1)
 	{
 		/* initialize counter for the number of lines in the buffer */
-		int buffCount = 0;
+		buffCount = 0;
 
 		/* fill up the buffer */
 		while (buffCount < BUFFSIZE)
