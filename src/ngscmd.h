@@ -52,23 +52,15 @@ extern "C" {
 typedef struct _ngsParams
 {
 	int flag;
+	int func;
 	int num_ambig;
 	int kmer_size;
-	int func;
 	char outFilePrefix[FILENAME_MAX - 5];
-	char dbfile[FILENAME_MAX];
 	char seqFile1[FILENAME_MAX];
 	char seqFile2[FILENAME_MAX];
 	char outFile1[FILENAME_MAX];
 	char outFile2[FILENAME_MAX];
 } ngsParams;
-
-
-typedef struct _dbdata
-{
-	char seq[MAX_LINE_LENGTH];
-	char qual[MAX_LINE_LENGTH];
-} DBdata;
 
 
 /* inline functions */
@@ -101,7 +93,7 @@ extern int  ngs_pair(ngsParams*);
 extern int  ngs_score(ngsParams*);
 extern int  ngs_rmdup(ngsParams*);
 extern int  ngs_kmer(ngsParams*);
-extern void INThandler(int sig);
+extern void INThandler(int);
 
 #ifdef __cplusplus
 }
