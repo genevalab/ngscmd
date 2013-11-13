@@ -29,11 +29,7 @@ ngs_kmer(ngsParams *p)
 {
 	int i = 0;
 	int buffCount = 0;
-<<<<<<< HEAD
-	char **seqLine;
-=======
 	char iobuff[BUFFSIZE][MAX_LINE_LENGTH];
->>>>>>> 1d4343d0315645e10717853a2f64217068cb111e
 	gzFile seq;
 
 

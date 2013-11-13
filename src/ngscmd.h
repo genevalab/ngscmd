@@ -43,22 +43,10 @@ extern "C" {
 #define MAX_LINE_LENGTH 400
 #endif
 #define BUFFSIZE 2000
-<<<<<<< HEAD
 #define TWO_INPUTS 0x1
-#define CONVERT_REV 0x2
-#define CONVERT_NUM 0x4
-#define CONVERT_ASCII 0x8
-=======
-#define FORMAT_REVCOM 0x1
-#define FORMAT_MERGE 0x2
-#define FORMAT_SPLIT 0x4
 #define SCORE_NUM 0x8
 #define SCORE_ASCII 0x10
 #define SCORE_ILLUMINA 0x20
-#define SCORE_DIST 0x40
-#define CLEAN_TRIM 0x80
-#define CLEAN_REMOVE 0x100
->>>>>>> 1d4343d0315645e10717853a2f64217068cb111e
 
 
 typedef struct _ngsParams

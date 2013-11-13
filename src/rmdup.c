@@ -27,18 +27,12 @@
 int
 ngs_rmdup(ngsParams *p)
 {
-<<<<<<< HEAD
 	int i = 0;
 	int j = 0;
 	int buffCount = 0;
 	size_t k = 0;
 	size_t len = 0;
-	char **seqLine;
-=======
-	int i, j;
-	int buffCount = 0;
 	char iobuff[BUFFSIZE][MAX_LINE_LENGTH];
->>>>>>> 1d4343d0315645e10717853a2f64217068cb111e
 	gzFile seq;
 	gzFile out;
 
@@ -87,13 +81,9 @@ ngs_rmdup(ngsParams *p)
 				strrev(iobuff[i]);
 				if (j == 1)
 				{
-<<<<<<< HEAD
 					k = 0;
-					len = strlen(seqLine[i]);
-=======
-					size_t k = 0;
-					size_t len = strlen(iobuff[i]);
->>>>>>> 1d4343d0315645e10717853a2f64217068cb111e
+					len = strlen(iobuff[i]);
+
 					while (k < len)
 					{
 						if (iobuff[i][k] == 'A')

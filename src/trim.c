@@ -29,11 +29,7 @@ ngs_trim(ngsParams *p)
 {
 	int i = 0;
 	int buffCount = 0;
-<<<<<<< HEAD:src/trim.c
-	char **seqLine;
-=======
 	char iobuff[BUFFSIZE][MAX_LINE_LENGTH];
->>>>>>> 1d4343d0315645e10717853a2f64217068cb111e:src/clean.c
 	gzFile seq;
 
 
@@ -79,14 +75,5 @@ ngs_trim(ngsParams *p)
 	/* close sequence input stream */
 	gzclose(seq);
 
-<<<<<<< HEAD:src/trim.c
-
-	/* take out the garbage */
-	for (i = 0; i < BUFFSIZE; ++i)
-		free(seqLine[i]);
-	free(seqLine);
-
-=======
->>>>>>> 1d4343d0315645e10717853a2f64217068cb111e:src/clean.c
 	return 0;
 }
