@@ -29,8 +29,8 @@ ngs_filter(ngsParams *p)
 {
 	int i = 0;
 	int buffCount = 0;
-	char **seqLine1 = NULL;
-	char **seqLine2 = NULL;
+	char iobuff1[BUFFSIZE][MAX_LINE_LENGTH];
+	char iobuff2[BUFFSIZE][MAX_LINE_LENGTH];
 	gzFile seq1;
 	gzFile seq2;
 	gzFile out1;
@@ -73,43 +73,6 @@ ngs_filter(ngsParams *p)
 	/* set up the interrupt trap */
 	signal(SIGINT, INThandler);
 
-	/* allocate memory for the I/O buffers */
-	seqLine1 = (char**) malloc(BUFFSIZE * sizeof(char*));
-	if (seqLine1 == NULL)
-	{
-		fputs("Memory allocation failure for seqLine.1\n", stderr);
-		exit (EXIT_FAILURE);
-	}
-
-	if (p->flag & TWO_INPUTS)
-	{
-		seqLine2 = (char**) malloc(BUFFSIZE * sizeof(char*));
-		if (seqLine2 == NULL)
-		{
-			fputs("Memory allocation failure for qualLine.1\n", stderr);
-			exit (EXIT_FAILURE);
-		}
-	}
-
-	for (i = 0; i < BUFFSIZE; ++i)
-	{
-		seqLine1[i] = (char*) malloc(MAX_LINE_LENGTH * sizeof(char));
-		if (seqLine1[i] == NULL)
-		{
-			fputs("Memory allocation failure for seqLine.2\n", stderr);
-			exit (EXIT_FAILURE);
-		}
-
-		if (p->flag & TWO_INPUTS)
-		{
-			seqLine2[i] = (char*) malloc(MAX_LINE_LENGTH * sizeof(char));
-			if (seqLine2[i] == NULL)
-			{
-				fputs("Memory allocation failure for qualLine.2\n", stderr);
-				exit (EXIT_FAILURE);
-			}
-		}
-	}
 
 	/* read through both files */
 	while (1)
@@ -121,13 +84,13 @@ ngs_filter(ngsParams *p)
 		while (buffCount < BUFFSIZE)
 		{
 			/* get line from fastQ mate 1 file */
-			if (gzgets(seq1, seqLine1[buffCount], MAX_LINE_LENGTH) == Z_NULL)
+			if (gzgets(seq1, iobuff1[buffCount], MAX_LINE_LENGTH) == Z_NULL)
 				break;
 
 			if (p->flag & TWO_INPUTS)
 			{
 				/* get line from fastQ mate 2 file */
-				if (gzgets(seq2, seqLine2[buffCount], MAX_LINE_LENGTH) == Z_NULL)
+				if (gzgets(seq2, iobuff2[buffCount], MAX_LINE_LENGTH) == Z_NULL)
 					break;
 			}
 
@@ -160,17 +123,6 @@ ngs_filter(ngsParams *p)
 		/* close the output mate 2 stream */
 		gzclose(out2);
 	}
-
-	/* take out the garbage */
-	for (i = 0; i < BUFFSIZE; ++i)
-	{
-		free(seqLine1[i]);
-		if (p->flag & TWO_INPUTS)
-			free(seqLine2[i]);
-	}
-	free(seqLine1);
-	if (p->flag & TWO_INPUTS)
-		free(seqLine2);
 
 	return 0;
 }
