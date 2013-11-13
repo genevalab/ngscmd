@@ -32,6 +32,8 @@ ngs_filter(ngsParams *p)
 	int buffCount = 0;
 	int count_N1 = 0;
 	int count_N2 = 0;
+	char *r1 = NULL;
+	char *r2 = NULL;
 	char iobuff1[BUFFSIZE][MAX_LINE_LENGTH];
 	char iobuff2[BUFFSIZE][MAX_LINE_LENGTH];
 	gzFile seq1;
@@ -87,14 +89,18 @@ ngs_filter(ngsParams *p)
 		while (buffCount < BUFFSIZE)
 		{
 			/* get line from the first fastQ input stream */
-			if (gzgets(seq1, iobuff1[buffCount], MAX_LINE_LENGTH) == Z_NULL)
-				break;
+			r1 = gzgets(seq1, iobuff1[buffCount], MAX_LINE_LENGTH);
 
 			/* if specified-- get line from the second fastQ input stream */
 			if (p->flag & TWO_INPUTS)
+				r2 = gzgets(seq2, iobuff2[buffCount], MAX_LINE_LENGTH);
+
+			if ((r1 == Z_NULL) && (r2 == Z_NULL))
+				break;
+			else if (((r1 == Z_NULL) && (r2 != Z_NULL)) || ((r1 != Z_NULL) && (r2 == Z_NULL)))
 			{
-				if (gzgets(seq2, iobuff2[buffCount], MAX_LINE_LENGTH) == Z_NULL)
-					break;
+				fputs("Error processing paired fastQ sequences. Are these files properly paired?", stderr);
+				exit(EXIT_FAILURE);
 			}
 
 			/* increment the counter for the number of lines currently in the buffer */
