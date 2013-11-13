@@ -66,7 +66,7 @@ ngs_filter(ngsParams *p)
 	/* if specified-- open the second fastQ output stream */
 	if (p->flag & TWO_INPUTS)
 	{
-		if ((out2 = gzopen(p->outFile1, "w")) == NULL)
+		if ((out2 = gzopen(p->outFile2, "w")) == NULL)
 		{
 			fprintf(stderr, "\n\nError: cannot open the second output fastQ file: %s.\n", p->outFile2);
 			exit(EXIT_FAILURE);
