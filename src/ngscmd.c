@@ -170,6 +170,11 @@ read_params(int argc, char **argv)
 				break;
 			case 'm':
 				p->min_read_length = atoi(optarg);
+				if (p->min_read_length < 10)
+				{
+					fputs("Error: -m needs to be greater than 9", stderr);
+					exit(EXIT_FAILURE);
+				}
 				break;
 			case 'q':
 				p->trim_quality = atoi(optarg);
@@ -204,7 +209,7 @@ read_params(int argc, char **argv)
 	}
 
 	/* get the second non-optioned argument */
-	if ((p->func == FILTER) || (p->func == PAIR) || (p->func == TRIM) || (p->func == RMDUP))
+	if ((p->func == FILTER) || (p->func == PAIR) || (p->func == RMDUP))
 	{
 		if (argv[optind + 1])
 		{
@@ -263,8 +268,8 @@ function_usage(int f)
 			puts("                -n   INT      number of ambiguous characters tolerated in a read [ default: 0 ]\n");
 			break;
 		case TRIM:
-			puts("\n\nUsage: ngscmd trim [options] <fastQ_mate1> ... <fastQ_mate2>");
-			puts("Options:        -o  STR       prefix string for name of fastQ output file(s)");
+			puts("\n\nUsage: ngscmd trim [options] <fastQ_mate1>");
+			puts("Options:        -o  STR       prefix string for name of fastQ output file");
 			puts("                -m  INT       minimum read length after trimming  [ default: 25 ]");
 			puts("                -q  INT       quality parameter for read trimming [ default: 13 ]\n");
 			break;

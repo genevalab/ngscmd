@@ -28,6 +28,11 @@ int
 ngs_trim(ngsParams *p)
 {
 	int i = 0;
+	int s = 0;
+	int max = 0;
+	int max_length = 0;
+	size_t j = 0;
+	size_t length = 0;
 	int in_buffer_count = 0;
 	char in_buffer[BUFFSIZE][MAX_LINE_LENGTH];
 	gzFile in_fastq;
@@ -69,10 +74,35 @@ ngs_trim(ngsParams *p)
 			++in_buffer_count;
 		}
 
-		/* tally scores along each position in the sequence */
+		/* trim the ends of the read according to
+		 * argmax_x{\sum_{i=x+1}^l(INT-q_i)} */
 		for (i = 0; i < in_buffer_count; ++i)
 		{
-			/* TODO: implement trimming algorithm */
+			if (i % 4 == 3)
+			{
+				s = 0;
+				max = 0;
+				length = strlen(in_buffer[i]) - 1;
+				max_length = length;
+
+				for (j = length - 1; j >= (size_t)(p->min_read_length); --j)
+				{
+					s += p->trim_quality - (in_buffer[i][j] - 33);
+					if (s < 0)
+						break;
+					if (s > max)
+					{
+						max = s;
+						max_length = j;
+					}
+				}
+				in_buffer[i][max_length] = '\n';
+				in_buffer[i][max_length + 1] = '\0';
+				gzputs(out_fastq, in_buffer[i-3]);
+				gzputs(out_fastq, in_buffer[i-2]);
+				gzputs(out_fastq, in_buffer[i-1]);
+				gzputs(out_fastq, in_buffer[i]);
+			}
 		}
 
 		/* if we are at the end of the file */

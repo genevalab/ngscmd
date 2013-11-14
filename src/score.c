@@ -28,6 +28,8 @@ int
 ngs_score(ngsParams *p)
 {
 	int i = 0;
+	size_t j = 0;
+	size_t length = 0;
 	int in_buffer_count = 0;
 	char in_buffer[BUFFSIZE][MAX_LINE_LENGTH];
 	gzFile in_fastq;
@@ -68,12 +70,12 @@ ngs_score(ngsParams *p)
 		{
 			if (i % 4 == 3)
 			{
-				size_t j = 0;
-				size_t len = strlen(in_buffer[i]) - 1;
+				j = 0;
+				length = strlen(in_buffer[i]) - 1;
 				if (p->flag & SCORE_ILLUMINA)
 				{
 					/* only do Sanger to Illumina conversion */
-					while (j < len)
+					while (j < length)
 					{
 						int score = in_buffer[i][j] + 31;
 						if (score > SCHAR_MAX)
@@ -108,7 +110,7 @@ ngs_score(ngsParams *p)
 				else
 				{
 					/* only do Illumina to Sanger conversion */
-					while (j < len)
+					while (j < length)
 					{
 						int score;
 						score = in_buffer[i][j] - 31;
