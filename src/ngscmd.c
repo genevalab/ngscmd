@@ -34,9 +34,9 @@ enum FUNC {FILTER, TRIM, PAIR, SCORE, RMDUP, KMER};
 
 
 /* function prototypes */
-ngsParams *readParams(int, char**);
-int mainUsage(void);
-int functionUsage(int);
+ngsParams *read_params(int, char**);
+int main_usage(void);
+int function_usage(int);
 extern int getopt (int, char *const *, const char*);
 
 
@@ -50,10 +50,10 @@ main(int argc, char **argv)
 	ngsParams *p = NULL;
 
 	if (argc < 2)
-		return mainUsage();
+		return main_usage();
 	else
 	{
-		p = readParams(argc, argv);
+		p = read_params(argc, argv);
 
 		switch (p->func)
 		{
@@ -76,7 +76,7 @@ main(int argc, char **argv)
 				ngs_kmer(p);
 				break;
 			default:
-				return mainUsage();
+				return main_usage();
 		}
 	}
 
@@ -90,7 +90,7 @@ main(int argc, char **argv)
 /* read user-supplied command line parameters */
 
 ngsParams*
-readParams(int argc, char **argv)
+read_params(int argc, char **argv)
 {
 	int c = 0;
 	ngsParams *p = NULL;
@@ -126,7 +126,7 @@ readParams(int argc, char **argv)
 	else
 	{
 		printf("\n\nError: the function \"%s\" is not recognized\n", argv[1]);
-		mainUsage();
+		main_usage();
 		exit(EXIT_FAILURE);
 	}
 
@@ -135,7 +135,7 @@ readParams(int argc, char **argv)
 	++argv;
 
 	if (argv == NULL)
-		functionUsage(p->func);
+		function_usage(p->func);
 
    /* read the command line options */
 	while ((c = getopt(argc, argv, "ansdmrt:u:o:")) != -1)
@@ -184,7 +184,7 @@ readParams(int argc, char **argv)
 					printf("\n\nError: unknown option character '\\x%x'.\n\n", optopt);
 				exit(EXIT_FAILURE);
 			default:
-				functionUsage(p->func);
+				function_usage(p->func);
 				exit(EXIT_FAILURE);
 		}
 	}
@@ -195,7 +195,7 @@ readParams(int argc, char **argv)
 	else
 	{
 		puts("\n\nError: need the input fastQ sequence file name as mandatory argument.\n\n");
-		functionUsage(p->func);
+		function_usage(p->func);
 		exit(EXIT_FAILURE);
 	}
 
@@ -210,7 +210,7 @@ readParams(int argc, char **argv)
 		else if (p->func == RMDUP)
 		{
 			puts("\n\nError: need the name of the second input fastQ sequence as a mandatory argument.\n\n");
-			functionUsage(p->func);
+			function_usage(p->func);
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -233,7 +233,7 @@ INThandler(int sig)
 /* prints a usage message for the ngscmd program */
 
 int
-mainUsage(void)
+main_usage(void)
 {
 	puts("\n\nUsage: ngscmd <function> [options] <fastq_mate1> <fastq_mate2>\n");
 	puts("Functions:       filter     remove low quality reads");
@@ -249,7 +249,7 @@ mainUsage(void)
 /* prints a custom usage message for each function */
 
 int
-functionUsage(int f)
+function_usage(int f)
 {
 	switch(f)
 	{

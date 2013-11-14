@@ -28,37 +28,37 @@ int
 ngs_pair(ngsParams *p)
 {
 	int i = 0;
-	int buffCount = 0;
-	char iobuff1[BUFFSIZE][MAX_LINE_LENGTH];
-	char iobuff2[BUFFSIZE][MAX_LINE_LENGTH];
-	gzFile seq1;
-	gzFile seq2;
-	gzFile out1;
-	gzFile out2;
+	int in_buffer_count = 0;
+	char in_buffer1[BUFFSIZE][MAX_LINE_LENGTH];
+	char in_buffer2[BUFFSIZE][MAX_LINE_LENGTH];
+	gzFile in_fastq1;
+	gzFile in_fastq2;
+	gzFile out_fastq1;
+	gzFile out_fastq2;
 
 	/* open the first fastQ input stream */
-	if ((seq1 = gzopen(p->seqFile1, "rb")) == NULL)
+	if ((in_fastq1 = gzopen(p->seqFile1, "rb")) == Z_NULL)
 	{
 		fprintf(stderr, "\n\nError: cannot open the input fastQ file: %s.\n\n", p->seqFile1);
 		exit(EXIT_FAILURE);
 	}
 
 	/* open the second fastQ input stream */
-	if ((seq2 = gzopen(p->seqFile2, "rb")) == NULL)
+	if ((in_fastq2 = gzopen(p->seqFile2, "rb")) == Z_NULL)
 	{
 			fprintf(stderr, "\n\nError: cannot open the second input fastQ file: %s.\n\n", p->seqFile2);
 			exit(EXIT_FAILURE);
 	}
 
 	/* open the first fastQ output stream */
-	if ((out1 = gzopen(p->outFile1, "wb")) == NULL)
+	if ((out_fastq1 = gzopen(p->outFile1, "wb")) == Z_NULL)
 	{
 		fprintf(stderr, "\n\nError: cannot open the output fastQ file: %s.\n", p->outFile1);
 		exit(EXIT_FAILURE);
 	}
 
 	/* open the second fastQ output stream */
-	if ((out2 = gzopen(p->outFile2, "wb")) == NULL)
+	if ((out_fastq2 = gzopen(p->outFile2, "wb")) == Z_NULL)
 	{
 		fprintf(stderr, "\n\nError: cannot open the second output fastQ file: %s.\n", p->outFile2);
 		exit(EXIT_FAILURE);
@@ -70,12 +70,12 @@ ngs_pair(ngsParams *p)
 	/* TODO: implement merging algorithm here */
 
 	/* close the fastQ input streams */
-	gzclose(seq1);
-	gzclose(seq2);
+	gzclose(in_fastq1);
+	gzclose(in_fastq2);
 
 	/* close the fastQ output streams */
-	gzclose(out1);
-	gzclose(out2);
+	gzclose(out_fastq1);
+	gzclose(out_fastq2);
 
 	return 0;
 }

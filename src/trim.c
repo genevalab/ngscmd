@@ -28,21 +28,21 @@ int
 ngs_trim(ngsParams *p)
 {
 	int i = 0;
-	int buffCount = 0;
-	char iobuff[BUFFSIZE][MAX_LINE_LENGTH];
-	gzFile seq;
-	gzFile out;
+	int in_buffer_count = 0;
+	char in_buffer[BUFFSIZE][MAX_LINE_LENGTH];
+	gzFile in_fastq;
+	gzFile out_fastq;
 
 
 	/* open the fastQ input stream */
-	if ((seq = gzopen(p->seqFile1, "rb")) == NULL)
+	if ((in_fastq = gzopen(p->seqFile1, "rb")) == Z_NULL)
 	{
 		fprintf(stderr, "\n\nError: cannot open the input fastQ file: %s.\n\n", p->seqFile1);
 		exit(EXIT_FAILURE);
 	}
 
 	/* open the fastQ output stream */
-	if ((out = gzopen(p->outFile1, "wb")) == NULL)
+	if ((out_fastq = gzopen(p->outFile1, "wb")) == Z_NULL)
 	{
 		fprintf(stderr, "\n\nError: cannot open the output fastQ file: %s.\n", p->outFile1);
 		exit(EXIT_FAILURE);
@@ -56,33 +56,33 @@ ngs_trim(ngsParams *p)
 	while (1)
 	{
 		/* initialize counter for the number of lines in the buffer */
-		buffCount = 0;
+		in_buffer_count = 0;
 
 		/* fill up the buffer */
-		while (buffCount < BUFFSIZE)
+		while (in_buffer_count < BUFFSIZE)
 		{
 			/* get line from the fastQ input stream */
-			if (gzgets(seq, iobuff[buffCount], MAX_LINE_LENGTH) == Z_NULL)
+			if (gzgets(in_fastq, in_buffer[in_buffer_count], MAX_LINE_LENGTH) == Z_NULL)
 				break;
 
 			/* iterate the counter for the number of lines currently in the buffer */
-			++buffCount;
+			++in_buffer_count;
 		}
 
 		/* tally scores along each position in the sequence */
-		for (i = 0; i < buffCount; ++i)
+		for (i = 0; i < in_buffer_count; ++i)
 		{
 			/* TODO: implement trimming algorithm */
 		}
 
 		/* if we are at the end of the file */
-		if (buffCount < BUFFSIZE)
+		if (in_buffer_count < BUFFSIZE)
 			break;
 	}
 
 	/* close the fastQ input and output streams */
-	gzclose(seq);
-	gzclose(out);
+	gzclose(in_fastq);
+	gzclose(out_fastq);
 
 	return 0;
 }

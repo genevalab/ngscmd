@@ -30,20 +30,20 @@ ngs_filter(ngsParams *p)
 {
 	int i = 0;
 	int j = 0;
-	int buffCount = 0;
+	int in_buff_count = 0;
 	int count_N1 = 0;
 	int count_N2 = 0;
-	char *r1 = NULL;
-	char *r2 = NULL;
-	char iobuff1[BUFFSIZE][MAX_LINE_LENGTH];
-	char iobuff2[BUFFSIZE][MAX_LINE_LENGTH];
-	gzFile seq1;
-	gzFile seq2;
-	gzFile out1;
-	gzFile out2;
+	char *ret1 = NULL;
+	char *ret2 = NULL;
+	char in_buffer1[BUFFSIZE][MAX_LINE_LENGTH];
+	char in_buffer2[BUFFSIZE][MAX_LINE_LENGTH];
+	gzFile in_fastq1;
+	gzFile in_fastq2;
+	gzFile out_fastq1;
+	gzFile out_fastq2;
 
 	/* open the first fastQ input stream */
-	if ((seq1 = gzopen(p->seqFile1, "r")) == Z_NULL)
+	if ((in_fastq1 = gzopen(p->seqFile1, "r")) == Z_NULL)
 	{
 		fprintf(stderr, "\n\nError: cannot open the input fastQ file: %s.\n\n", p->seqFile1);
 		exit(EXIT_FAILURE);
@@ -52,7 +52,7 @@ ngs_filter(ngsParams *p)
 	/* if specified-- open the second fastQ input stream */
 	if (p->flag & TWO_INPUTS)
 	{
-		if ((seq2 = gzopen(p->seqFile2, "r")) == Z_NULL)
+		if ((in_fastq2 = gzopen(p->seqFile2, "r")) == Z_NULL)
 		{
 				fprintf(stderr, "\n\nError: cannot open the second input fastQ file: %s.\n\n", p->seqFile2);
 				exit(EXIT_FAILURE);
@@ -60,7 +60,7 @@ ngs_filter(ngsParams *p)
 	}
 
 	/* open the first fastQ output stream */
-	if ((out1 = gzopen(p->outFile1, "w")) == Z_NULL)
+	if ((out_fastq1 = gzopen(p->outFile1, "w")) == Z_NULL)
 	{
 		fprintf(stderr, "\n\nError: cannot open the output fastQ file: %s.\n", p->outFile1);
 		exit(EXIT_FAILURE);
@@ -69,7 +69,7 @@ ngs_filter(ngsParams *p)
 	/* if specified-- open the second fastQ output stream */
 	if (p->flag & TWO_INPUTS)
 	{
-		if ((out2 = gzopen(p->outFile2, "w")) == Z_NULL)
+		if ((out_fastq2 = gzopen(p->outFile2, "w")) == Z_NULL)
 		{
 			fprintf(stderr, "\n\nError: cannot open the second output fastQ file: %s.\n", p->outFile2);
 			exit(EXIT_FAILURE);
@@ -84,42 +84,42 @@ ngs_filter(ngsParams *p)
 	while (1)
 	{
 		/* initialize counter for the number of lines in the buffer */
-		buffCount = 0;
+		in_buff_count = 0;
 
 		/* fill up the buffer */
-		while (buffCount < BUFFSIZE)
+		while (in_buff_count < BUFFSIZE)
 		{
 			/* get line from the first fastQ input stream */
-			r1 = gzgets(seq1, iobuff1[buffCount], MAX_LINE_LENGTH);
+			ret1 = gzgets(in_fastq1, in_buffer1[in_buff_count], MAX_LINE_LENGTH);
 
 			/* if specified-- get line from the second fastQ input stream */
 			if (p->flag & TWO_INPUTS)
-				r2 = gzgets(seq2, iobuff2[buffCount], MAX_LINE_LENGTH);
+				ret2 = gzgets(in_fastq2, in_buffer2[in_buff_count], MAX_LINE_LENGTH);
 
 			/* determine whether gzgets was successful */
 			if (p->flag & TWO_INPUTS)
 			{
 				/* both gzgets calls return null-- we are at the end of the file */
-				if ((r1 == Z_NULL) && (r2 == Z_NULL))
+				if ((ret1 == Z_NULL) && (ret2 == Z_NULL))
 					break;
 				/* one or the other gzgets calls returns null-- unequal number of records */
-				else if (((r1 == Z_NULL) && (r2 != Z_NULL)) || ((r1 != Z_NULL) && (r2 == Z_NULL)))
+				else if (((ret1 == Z_NULL) && (ret2 != Z_NULL)) || ((ret1 != Z_NULL) && (ret2 == Z_NULL)))
 				{
 					fputs("Error processing paired fastQ sequences. Are these files properly paired?", stderr);
 					exit(EXIT_FAILURE);
 				}
 			}
-			else if (r1 == Z_NULL)
+			else if (ret1 == Z_NULL)
 				break;
 
 			/* increment the counter for the number of lines
 			 * currently in the buffer */
-			++buffCount;
+			++in_buff_count;
 		}
 
 		/* screen each sequence for number of ambiguous characters
 		 * if record passes filter-- write to the output streams */
-		for (i = 0; i < buffCount; ++i)
+		for (i = 0; i < in_buff_count; ++i)
 		{
 			if (i % 4 == 1)
 			{
@@ -129,14 +129,14 @@ ngs_filter(ngsParams *p)
 
 				/* count the number of ambiguous characters 
 				 * in the first fastQ entry */
-				for (j = 0; iobuff1[i][j]; j++)
-					count_N1 += (iobuff1[i][j] == 'N');
+				for (j = 0; in_buffer1[i][j]; j++)
+					count_N1 += (in_buffer1[i][j] == 'N');
 
 				/* if specified-- count the number of ambiguous characters 
 				 *in the second fastQ entry */
 				if (p->flag & TWO_INPUTS)
-					for (j = 0; iobuff2[i][j]; j++)
-						count_N2 += (iobuff2[i][j] == 'N');
+					for (j = 0; in_buffer2[i][j]; j++)
+						count_N2 += (in_buffer2[i][j] == 'N');
 
 				/* if two fastQ input streams are specified and both sequences 
 				 * pass the for ambiguous characters, then write to both fastQ 
@@ -145,43 +145,43 @@ ngs_filter(ngsParams *p)
 				{
 					if ((count_N1 <= p->num_ambig) && (count_N2 <= p->num_ambig))
 					{
-						gzputs(out1, iobuff1[i-1]);
-						gzputs(out1, iobuff1[i]);
-						gzputs(out1, iobuff1[i+1]);
-						gzputs(out1, iobuff1[i+2]);
-						gzputs(out2, iobuff2[i-1]);
-						gzputs(out2, iobuff2[i]);
-						gzputs(out2, iobuff2[i+1]);
-						gzputs(out2, iobuff2[i+2]);
+						gzputs(out_fastq1, in_buffer1[i-1]);
+						gzputs(out_fastq1, in_buffer1[i]);
+						gzputs(out_fastq1, in_buffer1[i+1]);
+						gzputs(out_fastq1, in_buffer1[i+2]);
+						gzputs(out_fastq2, in_buffer2[i-1]);
+						gzputs(out_fastq2, in_buffer2[i]);
+						gzputs(out_fastq2, in_buffer2[i+1]);
+						gzputs(out_fastq2, in_buffer2[i+2]);
 					}
 				}
 				else
 				{
 					if (count_N1 <= p->num_ambig)
 					{
-						gzputs(out1, iobuff1[i-1]);
-						gzputs(out1, iobuff1[i]);
-						gzputs(out1, iobuff1[i+1]);
-						gzputs(out1, iobuff1[i+2]);
+						gzputs(out_fastq1, in_buffer1[i-1]);
+						gzputs(out_fastq1, in_buffer1[i]);
+						gzputs(out_fastq1, in_buffer1[i+1]);
+						gzputs(out_fastq1, in_buffer1[i+2]);
 					}
 				}
 			}
 		}
 
 		/* if we are at the end of the file */
-		if (buffCount < BUFFSIZE)
+		if (in_buff_count < BUFFSIZE)
 			break;
 	}
 
 	/* close the first fastQ input and output streams */
-	gzclose(seq1);
-	gzclose(out1);
+	gzclose(in_fastq1);
+	gzclose(out_fastq1);
 
 	/* if specified-- close the second fastQ input and output streams */
 	if (p->flag & TWO_INPUTS)
 	{
-		gzclose(seq2);
-		gzclose(out2);
+		gzclose(in_fastq2);
+		gzclose(out_fastq2);
 	}
 
 	return 0;

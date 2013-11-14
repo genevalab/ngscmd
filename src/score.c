@@ -28,20 +28,20 @@ int
 ngs_score(ngsParams *p)
 {
 	int i = 0;
-	int buffCount = 0;
-	char iobuff[BUFFSIZE][MAX_LINE_LENGTH];
-	gzFile seq;
-	gzFile out;
+	int in_buffer_count = 0;
+	char in_buffer[BUFFSIZE][MAX_LINE_LENGTH];
+	gzFile in_fastq;
+	gzFile out_fastq;
 
 	/* open the fastQ input stream */
-	if ((seq = gzopen(p->seqFile1, "rb")) == NULL)
+	if ((in_fastq = gzopen(p->seqFile1, "rb")) == Z_NULL)
 	{
 		fprintf(stderr, "\n\nError: cannot open the input fastQ file: %s.\n\n", p->seqFile1);
 		exit(EXIT_FAILURE);
 	}
 
 	/* open the fastQ output stream */
-	if ((out = gzopen(p->outFile1, "wb")) == NULL)
+	if ((out_fastq = gzopen(p->outFile1, "wb")) == Z_NULL)
 	{
 		fprintf(stderr, "\n\nError: cannot open the output fastQ file: %s.\n", p->outFile1);
 		exit(EXIT_FAILURE);
@@ -53,39 +53,39 @@ ngs_score(ngsParams *p)
 	/* read through fastQ input sequence file */
 	while (1)
 	{
-		buffCount = 0;
+		in_buffer_count = 0;
 
 		/* fill up the buffer */
-		while (buffCount < BUFFSIZE)
+		while (in_buffer_count < BUFFSIZE)
 		{
-			if (gzgets(seq, iobuff[buffCount], MAX_LINE_LENGTH) == Z_NULL)
+			if (gzgets(in_fastq, in_buffer[in_buffer_count], MAX_LINE_LENGTH) == Z_NULL)
 				break;
-			++buffCount;
+			++in_buffer_count;
 		}
 
 		/* dump the buffer to the output stream */
-		for (i = 0; i < buffCount; ++i)
+		for (i = 0; i < in_buffer_count; ++i)
 		{
 			if (i % 4 == 3)
 			{
 				size_t j = 0;
-				size_t len = strlen(iobuff[i]) - 1;
+				size_t len = strlen(in_buffer[i]) - 1;
 				if (p->flag & SCORE_ILLUMINA)
 				{
 					/* only do Sanger to Illumina conversion */
 					while (j < len)
 					{
-						int score = iobuff[i][j] + 31;
+						int score = in_buffer[i][j] + 31;
 						if (score > SCHAR_MAX)
 						{
 							fputs("\n\nError: the original Phred scores are not in standard Sanger format.\n\n", stderr);
 							exit(EXIT_FAILURE);
 						}
 						else
-							gzputc(out, score);
+							gzputc(out_fastq, score);
 						++j;
 					}
-					gzputc(out, '\n');
+					gzputc(out_fastq, '\n');
 
 					if (p->flag & SCORE_ASCII)
 					{
@@ -93,16 +93,16 @@ ngs_score(ngsParams *p)
 						const char delim = ' ';
 						char *tok;
 						int score;
-						tok = strtok(iobuff[i], &delim);
+						tok = strtok(in_buffer[i], &delim);
 						score = atoi(tok);
-						gzputc(out, score);
+						gzputc(out_fastq, score);
 						while (tok != NULL)
 						{
 							tok = strtok(NULL, &delim);
 							score = atoi(tok);
-							gzputc(out, score + 31);
+							gzputc(out_fastq, score + 31);
 						}
-						gzputc(out, '\n');
+						gzputc(out_fastq, '\n');
 					}
 				}
 				else
@@ -111,17 +111,17 @@ ngs_score(ngsParams *p)
 					while (j < len)
 					{
 						int score;
-						score = iobuff[i][j] - 31;
+						score = in_buffer[i][j] - 31;
 						if ((score > SCHAR_MAX) || (score < 33))
 						{
 							fputs("\n\nError: the original Phred scores are not in Illumina format.\n\n", stderr);
 							exit(EXIT_FAILURE);
 						}
 						else
-							gzputc(out, iobuff[i][j] - 31);
+							gzputc(out_fastq, in_buffer[i][j] - 31);
 						++j;
 					}
-					gzputc(out, '\n');
+					gzputc(out_fastq, '\n');
 
 					if (p->flag & SCORE_ASCII)
 					{
@@ -129,31 +129,31 @@ ngs_score(ngsParams *p)
 						const char delim = ' ';
 						char *tok;
 						int score;
-						tok = strtok(iobuff[i], &delim);
+						tok = strtok(in_buffer[i], &delim);
 						score = atoi(tok);
-						gzputc(out, score);
+						gzputc(out_fastq, score);
 						while (tok != NULL)
 						{
 							tok = strtok(NULL, &delim);
 							score = atoi(tok);
-							gzputc(out, score - 31);
+							gzputc(out_fastq, score - 31);
 						}
-						gzputc(out, '\n');
+						gzputc(out_fastq, '\n');
 					}
 				}
 			}
 			else
-				gzputs(out, iobuff[i]);
+				gzputs(out_fastq, in_buffer[i]);
 		}
 
 		/* if we are at the end of the file */
-		if (buffCount < BUFFSIZE)
+		if (in_buffer_count < BUFFSIZE)
 			break;
 	}
 
 	/* close the fastQ input and output streams */
-	gzclose(seq);
-	gzclose(out);
+	gzclose(in_fastq);
+	gzclose(out_fastq);
 
 	return 0;
 }

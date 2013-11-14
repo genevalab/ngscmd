@@ -29,19 +29,19 @@ ngs_rmdup(ngsParams *p)
 {
 	int i = 0;
 	int j = 0;
-	int buffCount = 0;
+	int in_buffer_count = 0;
 	size_t k = 0;
 	size_t len = 0;
-	char iobuff1[BUFFSIZE][MAX_LINE_LENGTH];
-	char iobuff2[BUFFSIZE][MAX_LINE_LENGTH];
-	gzFile seq1;
-	gzFile seq2;
-	gzFile out1;
-	gzFile out2;
+	char in_buffer1[BUFFSIZE][MAX_LINE_LENGTH];
+	char in_buffer2[BUFFSIZE][MAX_LINE_LENGTH];
+	gzFile in_fastq1;
+	gzFile in_fastq2;
+	gzFile out_fastq1;
+	gzFile out_fastq2;
 
 
 	/* open the first fastQ input stream */
-	if ((seq1 = gzopen(p->seqFile1, "rb")) == NULL)
+	if ((in_fastq1 = gzopen(p->seqFile1, "rb")) == Z_NULL)
 	{
 		fprintf(stderr, "\n\nError: cannot open the input fastQ file: %s.\n\n", p->seqFile1);
 		exit(EXIT_FAILURE);
@@ -50,7 +50,7 @@ ngs_rmdup(ngsParams *p)
 	/* if specified-- open the second fastQ input stream */
 	if (p->flag & TWO_INPUTS)
 	{
-		if ((seq2 = gzopen(p->seqFile2, "r")) == NULL)
+		if ((in_fastq2 = gzopen(p->seqFile2, "r")) == Z_NULL)
 		{
 				fprintf(stderr, "\n\nError: cannot open the second input fastQ file: %s.\n\n", p->seqFile2);
 				exit(EXIT_FAILURE);
@@ -58,7 +58,7 @@ ngs_rmdup(ngsParams *p)
 	}
 
 	/* open the first fastQ output stream */
-	if ((out1 = gzopen(p->outFile1, "wb")) == NULL)
+	if ((out_fastq1 = gzopen(p->outFile1, "wb")) == Z_NULL)
 	{
 		fprintf(stderr, "\n\nError: cannot open the output fastQ file: %s.\n", p->outFile1);
 		exit(EXIT_FAILURE);
@@ -67,7 +67,7 @@ ngs_rmdup(ngsParams *p)
 	/* if specified-- open the second fastQ output stream */
 	if (p->flag & TWO_INPUTS)
 	{
-		if ((out2 = gzopen(p->outFile1, "w")) == NULL)
+		if ((out_fastq2 = gzopen(p->outFile1, "w")) == Z_NULL)
 		{
 			fprintf(stderr, "\n\nError: cannot open the second output fastQ file: %s.\n", p->outFile2);
 			exit(EXIT_FAILURE);
@@ -81,46 +81,46 @@ ngs_rmdup(ngsParams *p)
 	while (1)
 	{
 		/* initialize counter for the number of lines in the buffer */
-		buffCount = 0;
+		in_buffer_count = 0;
 
 		/* fill up the buffer */
-		while (buffCount < BUFFSIZE)
+		while (in_buffer_count < BUFFSIZE)
 		{
 			/* get line from first fastQ input stream */
-			if (gzgets(seq1, iobuff1[buffCount], MAX_LINE_LENGTH) == Z_NULL)
+			if (gzgets(in_fastq1, in_buffer1[in_buffer_count], MAX_LINE_LENGTH) == Z_NULL)
 				break;
 
 			/* get line from second fastQ input stream */
 			if (p->flag & TWO_INPUTS)
 			{
-				if (gzgets(seq2, iobuff2[buffCount], MAX_LINE_LENGTH) == Z_NULL)
+				if (gzgets(in_fastq2, in_buffer2[in_buffer_count], MAX_LINE_LENGTH) == Z_NULL)
 					break;
 			}
 
 			/* increment the counter for the number of lines currently in the buffer */
-			++buffCount;
+			++in_buffer_count;
 		}
 
 		/* reverse complement bases and reverse quality scores */
-		for (i = 0; i < buffCount; ++i)
+		for (i = 0; i < in_buffer_count; ++i)
 		{
 			/* TODO: Remove duplicates here */
 		}
 
 		/* if we are at the end of the file */
-		if (buffCount < BUFFSIZE)
+		if (in_buffer_count < BUFFSIZE)
 			break;
 	}
 
 	/* close the first fastQ input and output streams */
-	gzclose(seq1);
-	gzclose(out1);
+	gzclose(in_fastq1);
+	gzclose(out_fastq1);
 
 	/* if specified-- close the second fastQ input and output streams */
 	if (p->flag & TWO_INPUTS)
 	{
-		gzclose(seq2);
-		gzclose(out2);
+		gzclose(in_fastq2);
+		gzclose(out_fastq2);
 	}
 
 	return 0;
