@@ -109,6 +109,8 @@ read_params(int argc, char **argv)
 	p->kmer_size = 31;
 	p->func = -1;
 	p->num_ambig = 0;
+	p->min_read_length = 25;
+	p->trim_quality = 13;
 
 	/* assign the function */
 	if (strcmp(argv[1], "filter") == 0)
@@ -138,42 +140,44 @@ read_params(int argc, char **argv)
 		function_usage(p->func);
 
    /* read the command line options */
-	while ((c = getopt(argc, argv, "ansdmrt:u:o:")) != -1)
+	while ((c = getopt(argc, argv, "asro:n:m:q:")) != -1)
 	{
 		switch(c)
 		{
-			case 'o':
-				strcpy(p->outFilePrefix, optarg);
-				if (p->func == PAIR)
-				{
-					strcpy(p->outFile1, p->outFilePrefix);
-					strcpy(p->outFile2, p->outFilePrefix);
-					strcat(p->outFile1, ".1.gz");
-					strcat(p->outFile2, ".2.gz");
-				}
-				else
-				{
-					strcpy(p->outFile1, p->outFilePrefix);
-					strcpy(p->outFile2, p->outFilePrefix);
-					strcat(p->outFile1, ".1.gz");
-					strcat(p->outFile2, ".2.gz");
-				}
-				break;
 			case 'a':
 				p->flag |= SCORE_ASCII;
 				break;
+			case 's':
+				p->flag |= SCORE_ILLUMINA;
+				break;
+			case 'r':
+				p->flag |= SCORE_NUM;
+				break;
+			case 'o':
+				strcpy(p->outFilePrefix, optarg);
+				strcpy(p->outFile1, p->outFilePrefix);
+				strcpy(p->outFile2, p->outFilePrefix);
+				strcat(p->outFile1, ".1.gz");
+				strcat(p->outFile2, ".2.gz");
+				break;
 			case 'n':
-				if (p->func == SCORE)
-					p->flag |= SCORE_NUM;
-				else if (p->func == KMER)
+				if (p->func == KMER)
 					p->kmer_size = atoi(optarg);
 				else if (p->func == FILTER)
 					p->num_ambig = atoi(optarg);
 				else
 					break;
 				break;
-			case 's':
-				p->flag |= SCORE_ILLUMINA;
+			case 'm':
+				p->min_read_length = atoi(optarg);
+				break;
+			case 'q':
+				p->trim_quality = atoi(optarg);
+				if (p->trim_quality < 1)
+				{
+					fputs("Error: -q needs to be greater than 1", stderr);
+					exit(EXIT_FAILURE);
+				}
 				break;
 			case '?':
 				if (optopt == 'o')
@@ -200,14 +204,14 @@ read_params(int argc, char **argv)
 	}
 
 	/* get the second non-optioned argument */
-	if ((p->func == FILTER) || (p->func == PAIR) || (p->func == RMDUP))
+	if ((p->func == FILTER) || (p->func == PAIR) || (p->func == TRIM) || (p->func == RMDUP))
 	{
 		if (argv[optind + 1])
 		{
 			strcpy(p->seqFile2, argv[optind + 1]);
 			p->flag |= TWO_INPUTS;
 		}
-		else if (p->func == RMDUP)
+		else if ((p->func == RMDUP) || (p->func == PAIR))
 		{
 			puts("\n\nError: need the name of the second input fastQ sequence as a mandatory argument.\n\n");
 			function_usage(p->func);
@@ -235,9 +239,9 @@ INThandler(int sig)
 int
 main_usage(void)
 {
-	puts("\n\nUsage: ngscmd <function> [options] <fastq_mate1> <fastq_mate2>\n");
-	puts("Functions:       filter     remove low quality reads");
-	puts("                 trim       trim ends of reads");
+	puts("\n\nUsage: ngscmd <function> [options] <fastq_mate1> ... <fastq_mate2>\n");
+	puts("Functions:       filter     remove reads with ambiguous base calls");
+	puts("                 trim       trim ends of reads based on quality");
 	puts("                 pair       aligned mated pairs in two fastQ files");
 	puts("                 score      convert Phred-scaled quality scores");
 	puts("                 rmdup      remove duplicate reads");
@@ -254,38 +258,39 @@ function_usage(int f)
 	switch(f)
 	{
 		case FILTER:
-			puts("\n\nUsage: ngscmd filter [options] <fastQ_mate1> <fastQ_mate2");
-			puts("Options:        -o         prefix string for name of fastQ/fastQ/quality output files");
-			puts("                -n   INT   number of ambiguous characters to tolerate in a sequence [ default: 0 ]\n");
+			puts("\n\nUsage: ngscmd filter [options] <fastQ_mate1> ... <fastQ_mate2>");
+			puts("Options:        -o   STR      prefix string for name of fastQ output file(s)");
+			puts("                -n   INT      number of ambiguous characters tolerated in a read [ default: 0 ]\n");
 			break;
 		case TRIM:
-			puts("\n\nUsage: ngscmd trim [options] <fastQ file>");
-			puts("Options:        -o         prefix string for name of fastA and quality file output file\n");
+			puts("\n\nUsage: ngscmd trim [options] <fastQ_mate1> ... <fastQ_mate2>");
+			puts("Options:        -o  STR       prefix string for name of fastQ output file(s)");
+			puts("                -m  INT       minimum read length after trimming  [ default: 25 ]");
+			puts("                -q  INT       quality parameter for read trimming [ default: 13 ]\n");
 			break;
 		case PAIR:
-			puts("\n\nUsage: ngscmd pair [options] <database map file>");
-			puts("Options:        -o   STR      prefix string for the names of the paired fastQ output files\n");
+			puts("\n\nUsage: ngscmd pair [options] <fastQ_mate1> <fastQ_mate2>");
+			puts("Options:        -o   STR      prefix string for name of fastQ output files\n");
 			break;
 		case SCORE:
-			puts("\n\nUsage: ngscmd score [options] <database map file>");
-			puts("Options:        -o   STR      prefix string for the names of the fastQ output files");
+			puts("\n\nUsage: ngscmd score [options] <fastQ input file>");
+			puts("Options:        -o   STR      prefix string for the names of the fastQ output file");
 			puts("                -s            convert from 33-126 scale to 64-126 scale");
 			puts("                                default: 64-126 to 33-126 scale");
 			puts("                -a            convert from numerical scores to ASCII");
-			puts("                -n            convert from ASCII scores to numerical");
-			puts("                -d            get distribution of Phred scores by position\n");
+			puts("                -r            convert from ASCII scores to numerical");
 			break;
 		case RMDUP:
-			puts("\n\nUsage: ngscmd rmdup [options] <fastQ_mate1> <fastQ_mate2>");
-			puts("Options:        -o         prefix string for name of fastQ output file\n");
+			puts("\n\nUsage: ngscmd rmdup [options] <fastQ_mate1> ... <fastQ_mate2>");
+			puts("Options:        -o   STR      prefix string for name of fastQ output file(s)\n");
 			break;
 		case KMER:
-			puts("\n\nUsage: ngscmd kmer [options] <database map file>");
-			puts("Options:        -n   INT      k-mer size       [ default: 31 ]");
+			puts("\n\nUsage: ngscmd kmer [options] <fastQ input file>");
+			puts("Options:        -n   INT      k-mer size       [ default: 31 ]\n");
 			puts("Note: kmer writes all output to STDOUT\n");
 			break;
 		default:
-			puts("\n\nError: cannot determine specified function\n");
+			puts("\n\nError: unrecognized function\n");
 			exit(EXIT_FAILURE);
 	}
 	return 1;

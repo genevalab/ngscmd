@@ -54,6 +54,8 @@ typedef struct _ngsParams
 	int flag;
 	int func;
 	int num_ambig;
+	int min_read_length;
+	int trim_quality;
 	int kmer_size;
 	char outFilePrefix[FILENAME_MAX - 5];
 	char seqFile1[FILENAME_MAX];
