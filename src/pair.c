@@ -109,6 +109,8 @@ ngs_pair(ngsParams *p)
 			if (i % 4 == 3)
 			{
 				e = (entry*) malloc(sizeof(entry));
+				/* TODO: don't forget to chomp off the trailing 
+				 * /1 and /2 from the ID */
 				e->fqid = in_buffer2[i-3];
 				e->seq = in_buffer2[i-2];
 				e->qual = in_buffer2[i];
