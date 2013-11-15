@@ -94,7 +94,7 @@ ngs_pair(ngsParams *p)
 		/* fill up the buffer */
 		while (in_buffer_count < BUFFSIZE)
 		{
-			/* get line from the fastQ input stream */
+			/* get line from the second fastQ input stream */
 			if (gzgets(in_fastq2, in_buffer2[in_buffer_count], MAX_LINE_LENGTH)
 					== Z_NULL)
 				break;
@@ -113,6 +113,43 @@ ngs_pair(ngsParams *p)
 				e->seq = in_buffer2[i-2];
 				e->qual = in_buffer2[i];
 				HASH_ADD_KEYPTR(hh, hash_fastq2, e->fqid, strlen(e->fqid), e);
+			}
+		}
+
+		/* if we are at the end of the file */
+		if (in_buffer_count < BUFFSIZE)
+			break;
+	}
+
+	/* read through first fastQ input file 
+	 * and lookup IDs in hash table */
+	while (1)
+	{
+		/* initialize counter for the number of lines in the buffer */
+		in_buffer_count = 0;
+
+		/* fill up the buffer */
+		while (in_buffer_count < BUFFSIZE)
+		{
+			/* get line from the first fastQ input stream */
+			if (gzgets(in_fastq1, in_buffer1[in_buffer_count], MAX_LINE_LENGTH)
+					== Z_NULL)
+				break;
+
+			/* iterate the counter for the number of lines
+			 * currently in the buffer */
+			++in_buffer_count;
+		}
+
+		for (i = 0; i < in_buffer_count; ++i)
+		{
+			if (i % 4 == 3)
+			{
+				HASH_FIND_STR(hash_fastq2, in_buffer1[i-3], e);
+				if (e)
+				{
+					/* TODO: assignment and write out */
+				}
 			}
 		}
 
