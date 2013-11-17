@@ -102,12 +102,12 @@ ngs_trim(ngsParams *p)
                     }
                 }
                 in_buffer[i][max_length] = '\n';
-                in_buffer[i][max_length + 1] = '\0';
-                in_buffer[i - 2][max_length] = '\n';
-                in_buffer[i - 2][max_length + 1] = '\0';
-                gzputs(out_fastq, in_buffer[i - 3]);
-                gzputs(out_fastq, in_buffer[i - 2]);
-                gzputs(out_fastq, in_buffer[i - 1]);
+                in_buffer[i][max_length+1] = '\0';
+                in_buffer[i-2][max_length] = '\n';
+                in_buffer[i-2][max_length+1] = '\0';
+                gzputs(out_fastq, in_buffer[i-3]);
+                gzputs(out_fastq, in_buffer[i-2]);
+                gzputs(out_fastq, in_buffer[i-1]);
                 gzputs(out_fastq, in_buffer[i]);
             }
         }

@@ -157,24 +157,24 @@ ngs_filter(ngsParams *p)
                     if ((count_N1 <= p->num_ambig) &&
                             (count_N2 <= p->num_ambig))
                     {
-                        gzputs(out_fastq1, in_buffer1[i - 1]);
+                        gzputs(out_fastq1, in_buffer1[i-1]);
                         gzputs(out_fastq1, in_buffer1[i]);
-                        gzputs(out_fastq1, in_buffer1[i + 1]);
-                        gzputs(out_fastq1, in_buffer1[i + 2]);
-                        gzputs(out_fastq2, in_buffer2[i - 1]);
+                        gzputs(out_fastq1, in_buffer1[i+1]);
+                        gzputs(out_fastq1, in_buffer1[i+2]);
+                        gzputs(out_fastq2, in_buffer2[i-1]);
                         gzputs(out_fastq2, in_buffer2[i]);
-                        gzputs(out_fastq2, in_buffer2[i + 1]);
-                        gzputs(out_fastq2, in_buffer2[i + 2]);
+                        gzputs(out_fastq2, in_buffer2[i+1]);
+                        gzputs(out_fastq2, in_buffer2[i+2]);
                     }
                 }
                 else
                 {
                     if (count_N1 <= p->num_ambig)
                     {
-                        gzputs(out_fastq1, in_buffer1[i - 1]);
+                        gzputs(out_fastq1, in_buffer1[i-1]);
                         gzputs(out_fastq1, in_buffer1[i]);
-                        gzputs(out_fastq1, in_buffer1[i + 1]);
-                        gzputs(out_fastq1, in_buffer1[i + 2]);
+                        gzputs(out_fastq1, in_buffer1[i+1]);
+                        gzputs(out_fastq1, in_buffer1[i+2]);
                     }
                 }
             }

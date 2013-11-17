@@ -112,7 +112,7 @@ ngs_rmdup(ngsParams *p)
         /* reverse complement bases and reverse quality scores */
         for (i = 0; i < in_buffer_count; ++i)
         {
-            /* TODO: Remove duplicates here */
+            /* TODO: Remove duplicates here-- use B-tree? */
         }
 
         /* if we are at the end of the file */

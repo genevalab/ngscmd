@@ -109,8 +109,8 @@ ngs_pair(ngsParams *p)
 			if (i % 4 == 3)
 			{
 				e = (entry*) malloc(sizeof(entry));
-				/* TODO: don't forget to chomp off the trailing 
-				 * /1 and /2 from the ID */
+				chomp(in_buffer2[i-3]);
+				in_buffer2[i-3][strlen(in_buffer2[i-3]) - 1] = '\0';
 				e->fqid = in_buffer2[i-3];
 				e->seq = in_buffer2[i-2];
 				e->qual = in_buffer2[i];
@@ -147,10 +147,21 @@ ngs_pair(ngsParams *p)
 		{
 			if (i % 4 == 3)
 			{
+				chomp(in_buffer1[i-3]);
+				in_buffer1[i-3][strlen(in_buffer1[i-3]) - 1] = '\0';
 				HASH_FIND_STR(hash_fastq2, in_buffer1[i-3], e);
 				if (e)
 				{
-					/* TODO: assignment and write out */
+					gzputs(out_fastq1, in_buffer1[i-3]);
+					gzputs(out_fastq1, "1\n");
+					gzputs(out_fastq1, in_buffer1[i-2]);
+					gzputs(out_fastq1, "+\n");
+					gzputs(out_fastq1, in_buffer1[i]);
+					gzputs(out_fastq2, e->fqid);
+					gzputs(out_fastq2, "2\n");
+					gzputs(out_fastq2, e->seq);
+					gzputs(out_fastq2, "+\n");
+					gzputs(out_fastq2, e->qual);
 				}
 			}
 		}

@@ -62,7 +62,9 @@ typedef struct _ngsParams
 } ngsParams;
 
 
-    /* inline functions */
+/* inline functions */
+
+/* remove the trailing newline character from a string */
 #define chomp(s)                          \
 {                                         \
     char *ptr = s + strlen(s) - 1;        \
@@ -71,6 +73,7 @@ typedef struct _ngsParams
     ptr[1] = '\0';                        \
 }
 
+/* reverse a string */
 #define strrev(s)                         \
 {                                         \
     char *p1 = s;                         \
