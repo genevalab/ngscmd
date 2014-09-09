@@ -1,25 +1,20 @@
-/* Copyright (c) 2013 Daniel Garrigan
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
- * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- *
- * Daniel Garrigan    dgarriga@bio.rochester.edu
- */
+/* ngscmd - A collection of utilites for processing next-generation sequence files
+   Copyright (C) 2014 Laboratory for Comparative Population Genomics
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+
+/* Written by Daniel Garrigan, dgarriga@lcpg.org */
 
 #ifndef NGSUTILS_H
 #define NGSUTILS_H
@@ -33,10 +28,11 @@
 #include <zlib.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-    /* constants */
+/* Define constants */
 #ifndef MAX_LINE_LENGTH
 #define MAX_LINE_LENGTH 400
 #endif
@@ -46,25 +42,26 @@ extern "C" {
 #define SCORE_ASCII 0x10
 #define SCORE_ILLUMINA 0x20
 
-typedef struct _ngsParams
-{
+  typedef struct _ngs_params
+  {
     int flag;
     int func;
     int num_ambig;
     int min_read_length;
     int trim_quality;
     int kmer_size;
-    char outFilePrefix[FILENAME_MAX - 5];
-    char seqFile1[FILENAME_MAX];
-    char seqFile2[FILENAME_MAX];
-    char outFile1[FILENAME_MAX];
-    char outFile2[FILENAME_MAX];
-} ngsParams;
+    int gap_size;
+    char outfile_prefix[FILENAME_MAX-5];
+    char seqfile_name1[FILENAME_MAX];
+    char seqfile_name2[FILENAME_MAX];
+    char outfile_name1[FILENAME_MAX];
+    char outfile_name2[FILENAME_MAX];
+  } ngs_params;
 
 
-/* inline functions */
+/* Inline functions */
 
-/* remove the trailing newline character from a string */
+/* Remove the trailing newline character from a string */
 #define chomp(s)                          \
 {                                         \
     char *ptr = s + strlen(s) - 1;        \
@@ -73,7 +70,7 @@ typedef struct _ngsParams
     ptr[1] = '\0';                        \
 }
 
-/* reverse a string */
+/* Reverse a string */
 #define strrev(s)                         \
 {                                         \
     char *p1 = s;                         \
@@ -88,17 +85,21 @@ typedef struct _ngsParams
     }                                     \
 }
 
-/* function prototypes */
-extern int ngs_filter(ngsParams*);
-extern int ngs_trim(ngsParams*);
-extern int ngs_pair(ngsParams*);
-extern int ngs_score(ngsParams*);
-extern int ngs_rmdup(ngsParams*);
-extern int ngs_kmer(ngsParams*);
-extern void INThandler(int);
+
+
+/* Function prototypes */
+  extern int ngs_filter (ngs_params *);
+  extern int ngs_trim (ngs_params *);
+  extern int ngs_pair (ngs_params *);
+  extern int ngs_score (ngs_params *);
+  extern int ngs_rmdup (ngs_params *);
+  extern int ngs_kmer (ngs_params *);
+  extern int ngs_score (ngs_params *);
+  extern int ngs_join (ngs_params *);
+  extern void INThandler (int);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* NGSUTILS_H */
+#endif          /* NGSUTILS_H */

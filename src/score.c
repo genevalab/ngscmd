@@ -1,170 +1,163 @@
-/* Copyright (c) 2013 Daniel Garrigan
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
- * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- *
- * Daniel Garrigan    dgarriga@bio.rochester.edu
- */
+/* score - Transform Phred-scaled quality scores in a fastQ input file
+   Copyright (C) 2014 Laboratory for Comparative Population Genomics
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+
+/* Written by Daniel Garrigan, dgarriga@lcpg.org */
 
 #include "ngscmd.h"
 
-/* transform Phred-scaled quality scores in a fastQ input file */
-
 int
-ngs_score(ngsParams *p)
+ngs_score (ngs_params * p)
 {
-    int i = 0;
-    size_t j = 0;
-    size_t length = 0;
-    int in_buffer_count = 0;
-    char in_buffer[BUFFSIZE][MAX_LINE_LENGTH];
-    gzFile in_fastq;
-    gzFile out_fastq;
+  int i = 0;
+  size_t j = 0;
+  size_t length = 0;
+  int input_buffer_count = 0;
+  char input_buffer[BUFFSIZE][MAX_LINE_LENGTH];
+  gzFile input_fastq;
+  gzFile output_fastq;
 
-    /* open the fastQ input stream */
-    if ((in_fastq = gzopen(p->seqFile1, "rb")) == Z_NULL)
+  /* Open the fastQ input stream */
+  if ((input_fastq = gzopen (p->seqfile_name1, "rb")) == Z_NULL)
     {
-        fprintf(stderr, "\n\nError: cannot open the input fastQ file: "
-                "%s.\n\n", p->seqFile1);
-        exit(EXIT_FAILURE);
+      fprintf (stderr, "\n\nError: cannot open the input fastQ file: "
+	       "%s.\n\n", p->seqfile_name1);
+      abort ();
     }
 
-    /* open the fastQ output stream */
-    if ((out_fastq = gzopen(p->outFile1, "wb")) == Z_NULL)
+  /* Open the fastQ output stream */
+  if ((output_fastq = gzopen (p->outfile_name1, "wb")) == Z_NULL)
     {
-        fprintf(stderr, "\n\nError: cannot open the output fastQ file: "
-                "%s.\n", p->outFile1);
-        exit(EXIT_FAILURE);
+      fprintf (stderr, "\n\nError: cannot open the output fastQ file: "
+	       "%s.\n", p->outfile_name1);
+      abort ();
     }
 
-    /* set up interrupt trap */
-    signal(SIGINT, INThandler);
+  /* Set up interrupt trap */
+  signal (SIGINT, INThandler);
 
-    /* read through fastQ input sequence file */
-    while (1)
+  /* Read through fastQ input sequence file */
+  while (1)
     {
-        in_buffer_count = 0;
+      input_buffer_count = 0;
 
-        /* fill up the buffer */
-        while (in_buffer_count < BUFFSIZE)
-        {
-            if (gzgets(in_fastq, in_buffer[in_buffer_count],
-                       MAX_LINE_LENGTH) == Z_NULL)
-                break;
-            ++in_buffer_count;
-        }
+      /* Fill up the input buffer */
+      while (input_buffer_count < BUFFSIZE)
+	{
+	  if (gzgets (input_fastq, input_buffer[input_buffer_count],
+		      MAX_LINE_LENGTH) == Z_NULL)
+	    break;
+	  ++input_buffer_count;
+	}
 
-        /* dump the buffer to the output stream */
-        for (i = 0; i < in_buffer_count; ++i)
-        {
-            if (i % 4 == 3)
-            {
-                j = 0;
-                length = strlen(in_buffer[i]) - 1;
-                if (p->flag & SCORE_ILLUMINA)
-                {
-                    /* only do Sanger to Illumina conversion */
-                    while (j < length)
-                    {
-                        int score = in_buffer[i][j] + 31;
-                        if (score > SCHAR_MAX)
-                        {
-                            fputs("\n\nError: the original Phred scores are "
-                                    "not in standard Sanger format.\n\n",
-                                  stderr);
-                            exit(EXIT_FAILURE);
-                        }
-                        else
-                            gzputc(out_fastq, score);
-                        ++j;
-                    }
-                    gzputc(out_fastq, '\n');
+      /* Dump the buffer to the output stream */
+      for (i = 0; i < input_buffer_count; ++i)
+	{
+	  if (i % 4 == 3)
+	    {
+	      j = 0;
+	      length = strlen (input_buffer[i]) - 1;
+	      if (p->flag & SCORE_ILLUMINA)
+		{
+		  /* Only do Sanger to Illumina conversion */
+		  while (j < length)
+		    {
+		      int score = input_buffer[i][j] + 31;
+		      if (score > SCHAR_MAX)
+			{
+			  fputs ("\n\nError: the original Phred scores are "
+				 "not in standard Sanger format.\n\n",
+				 stderr);
+			  exit (EXIT_FAILURE);
+			}
+		      else
+			gzputc (output_fastq, score);
+		      ++j;
+		    }
+		  gzputc (output_fastq, '\n');
 
-                    if (p->flag & SCORE_ASCII)
-                    {
-                        /* do both numerical and Sanger to Illumina
-                         * conversion here */
-                        const char delim = ' ';
-                        char *tok;
-                        int score;
-                        tok = strtok(in_buffer[i], &delim);
-                        score = atoi(tok);
-                        gzputc(out_fastq, score);
-                        while (tok != NULL)
-                        {
-                            tok = strtok(NULL, &delim);
-                            score = atoi(tok);
-                            gzputc(out_fastq, score + 31);
-                        }
-                        gzputc(out_fastq, '\n');
-                    }
-                }
-                else
-                {
-                    /* only do Illumina to Sanger conversion */
-                    while (j < length)
-                    {
-                        int score;
-                        score = in_buffer[i][j] - 31;
-                        if ((score > SCHAR_MAX) || (score < 33))
-                        {
-                            fputs("\n\nError: the original Phred scores are "
-                                    "not in Illumina format.\n\n", stderr);
-                            exit(EXIT_FAILURE);
-                        }
-                        else
-                            gzputc(out_fastq, in_buffer[i][j] - 31);
-                        ++j;
-                    }
-                    gzputc(out_fastq, '\n');
+		  if (p->flag & SCORE_ASCII)
+		    {
+		      /* Do both numerical and Sanger to Illumina
+		         conversion here */
+		      const char delim = ' ';
+		      char *tok = NULL;
+		      int score = 0;
+		      tok = strtok (input_buffer[i], &delim);
+		      score = atoi (tok);
+		      gzputc (output_fastq, score);
+		      while (tok != NULL)
+			{
+			  tok = strtok (NULL, &delim);
+			  score = atoi (tok);
+			  gzputc (output_fastq, score + 31);
+			}
+		      gzputc (output_fastq, '\n');
+		    }
+		}
+	      else
+		{
+		  /* Only do Illumina to Sanger conversion */
+		  while (j < length)
+		    {
+		      int score = 0;
+		      score = input_buffer[i][j] - 31;
+		      if ((score > SCHAR_MAX) || (score < 33))
+			{
+			  fputs ("\n\nError: the original Phred scores are "
+				 "not in Illumina format.\n\n", stderr);
+			  abort ();
+			}
+		      else
+			gzputc (output_fastq, input_buffer[i][j] - 31);
+		      ++j;
+		    }
+		  gzputc (output_fastq, '\n');
 
-                    if (p->flag & SCORE_ASCII)
-                    {
-                        /* do both numerical and Illumina to Sanger
-                         * conversion here */
-                        const char delim = ' ';
-                        char *tok;
-                        int score;
-                        tok = strtok(in_buffer[i], &delim);
-                        score = atoi(tok);
-                        gzputc(out_fastq, score);
-                        while (tok != NULL)
-                        {
-                            tok = strtok(NULL, &delim);
-                            score = atoi(tok);
-                            gzputc(out_fastq, score - 31);
-                        }
-                        gzputc(out_fastq, '\n');
-                    }
-                }
-            }
-            else
-                gzputs(out_fastq, in_buffer[i]);
-        }
+		  if (p->flag & SCORE_ASCII)
+		    {
+		      /* Do both numerical and Illumina to Sanger
+		         conversion here */
+		      const char delim = ' ';
+		      char *tok = NULL;
+		      int score = 0;
+		      tok = strtok (input_buffer[i], &delim);
+		      score = atoi (tok);
+		      gzputc (output_fastq, score);
+		      while (tok != NULL)
+			{
+			  tok = strtok (NULL, &delim);
+			  score = atoi (tok);
+			  gzputc (output_fastq, score - 31);
+			}
+		      gzputc (output_fastq, '\n');
+		    }
+		}
+	    }
+	  else
+	    gzputs (output_fastq, input_buffer[i]);
+	}
 
-        /* if we are at the end of the file */
-        if (in_buffer_count < BUFFSIZE)
-            break;
+      /* If we are at the end of the file */
+      if (input_buffer_count < BUFFSIZE)
+	break;
     }
 
-    /* close the fastQ input and output streams */
-    gzclose(in_fastq);
-    gzclose(out_fastq);
+  /* Close the fastQ input and output streams */
+  gzclose (input_fastq);
+  gzclose (output_fastq);
 
-    return 0;
+  return 0;
 }

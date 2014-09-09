@@ -1,84 +1,76 @@
-/* Copyright (c) 2013 Daniel Garrigan
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
- * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- *
- * Daniel Garrigan    dgarriga@bio.rochester.edu
- */
+/* kmer - Counts the number of unique k-mers in a single fastQ file
+   Copyright (C) 2014 Laboratory for Comparative Population Genomics
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+
+/* Written by Daniel Garrigan, dgarriga@lcpg.org */
 
 #include "ngscmd.h"
 
-/* counts the number of unique k-mers in a single fastQ input file
- * writes output of kmer counts to STDOUT
- */
-
 int
-ngs_kmer(ngsParams *p)
+ngs_kmer (ngs_params * p)
 {
-    int i = 0;
-    int in_buffer_count = 0;
-    char io_buffer[BUFFSIZE][MAX_LINE_LENGTH];
-    gzFile in_fastq;
+  int i = 0;
+  int input_buffer_count = 0;
+  char io_buffer[BUFFSIZE][MAX_LINE_LENGTH];
+  gzFile input_fastq;
 
 
-    /* open the first fastQ input stream */
-    if ((in_fastq = gzopen(p->seqFile1, "rb")) == Z_NULL)
+  /* Open the first fastQ input stream */
+  if ((input_fastq = gzopen (p->seqfile_name1, "rb")) == Z_NULL)
     {
-        fprintf(stderr, "\n\nError: cannot open the input fastQ file: "
-                "%s.\n\n", p->seqFile1);
-        exit(EXIT_FAILURE);
+      fprintf (stderr, "\n\nError: cannot open the input fastQ file: "
+	       "%s.\n\n", p->seqfile_name1);
+      abort ();
     }
 
-    /* set up interrupt trap */
-    signal(SIGINT, INThandler);
+  /* Set up interrupt trap */
+  signal (SIGINT, INThandler);
 
-    /* read through input sequence file */
-    while (1)
+  /* Read through input sequence file */
+  while (1)
     {
-        /* initialize counter for the number of lines in the buffer */
-        in_buffer_count = 0;
+      /* Initialize counter for the number of lines in the buffer */
+      input_buffer_count = 0;
 
-        /* fill up the buffer */
-        while (in_buffer_count < BUFFSIZE)
-        {
-            /* get line from the fastQ input stream */
-            if (gzgets(in_fastq, io_buffer[in_buffer_count], MAX_LINE_LENGTH)
-                    == Z_NULL)
-                break;
+      /* Fill up the buffer */
+      while (input_buffer_count < BUFFSIZE)
+	{
+	  /* Get line from the fastQ input stream */
+	  if (gzgets
+	      (input_fastq, io_buffer[input_buffer_count],
+	       MAX_LINE_LENGTH) == Z_NULL)
+	    break;
 
-            /* iterate the counter for the number of lines currently
-             * in the buffer */
-            ++in_buffer_count;
-        }
+	  /* Iterate the counter for the number of lines currently
+	     in the buffer */
+	  ++input_buffer_count;
+	}
 
-        /* tally scores along each position in the sequence */
-        for (i = 0; i < in_buffer_count; ++i)
-        {
-            /* TODO: implement kmer counting algorithm */
-        }
+      /* Tally scores along each position in the sequence */
+      for (i = 0; i < input_buffer_count; ++i)
+	{
+	  /* TODO: implement kmer counting algorithm */
+	}
 
-        /* if we are at the end of the file */
-        if (in_buffer_count < BUFFSIZE)
-            break;
+      /* If we are at the end of the file */
+      if (input_buffer_count < BUFFSIZE)
+	break;
     }
 
-    /* close the fastQ input stream */
-    gzclose(in_fastq);
+  /* Close the fastQ input stream */
+  gzclose (input_fastq);
 
-    return 0;
+  return 0;
 }
