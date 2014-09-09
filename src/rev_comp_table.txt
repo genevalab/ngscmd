@@ -1,0 +1,72 @@
+Function ReverseComplement (Const aSourceString : String; Var ReverseComplement : String) : Longint;
+// The function ReverseComplement computes the reverse complement of a DNA
+// strand. It handles all IUPAC codes for nucleic acids and maintains
+// upper- and lowercase coding. Functions returns 0 when successful, -1
+// when aSourceString is empty and a positive value of the first non
+// IUPAC symbol in aSourceString, if any found.
+// (c) Dr. Jan Schulz, 20. November 2007; www.code10.info
+Var aPos    : Integer;
+//    aChar   : Char;
+Begin
+  // initialise returned sequence
+  ReverseComplement := '';
+
+  // terminate when no characters are available to create a reverse complement
+  If Length (aSourceString) = 0 THen
+  Begin
+    Result := -1;
+    Exit;
+  end;
+
+  // we hope to find valid IUPAC DNA codes only
+  Result := 0;
+
+  // travelling along the source string from the rear end to the beginning
+  For aPos := Length (aSourceString) downto 1 do
+  Begin
+    // try to find the complement of every char of the source string
+    Case aSourceString [aPos] of
+     // nucleic bases
+     'A' : ReverseComplement := ReverseComplement + 'T';
+     'T' : ReverseComplement := ReverseComplement + 'A';
+     'G' : ReverseComplement := ReverseComplement + 'C';
+     'C' : ReverseComplement := ReverseComplement + 'G';
+     'a' : ReverseComplement := ReverseComplement + 't';
+     't' : ReverseComplement := ReverseComplement + 'a';
+     'g' : ReverseComplement := ReverseComplement + 'c';
+     'c' : ReverseComplement := ReverseComplement + 'g';
+     // one of two possible nucleic bases
+     'R' : ReverseComplement := ReverseComplement + 'Y';
+     'Y' : ReverseComplement := ReverseComplement + 'R';
+     'S' : ReverseComplement := ReverseComplement + 'S';
+     'W' : ReverseComplement := ReverseComplement + 'W';
+     'K' : ReverseComplement := ReverseComplement + 'M';
+     'M' : ReverseComplement := ReverseComplement + 'K';
+     'r' : ReverseComplement := ReverseComplement + 'y';
+     'y' : ReverseComplement := ReverseComplement + 'r';
+     's' : ReverseComplement := ReverseComplement + 's';
+     'w' : ReverseComplement := ReverseComplement + 'w';
+     'k' : ReverseComplement := ReverseComplement + 'm';
+     'm' : ReverseComplement := ReverseComplement + 'k';
+     // one of three possible nucleic bases
+     'B' : ReverseComplement := ReverseComplement + 'V';
+     'D' : ReverseComplement := ReverseComplement + 'H';
+     'H' : ReverseComplement := ReverseComplement + 'D';
+     'V' : ReverseComplement := ReverseComplement + 'B';
+     'b' : ReverseComplement := ReverseComplement + 'v';
+     'd' : ReverseComplement := ReverseComplement + 'h';
+     'h' : ReverseComplement := ReverseComplement + 'd';
+     'v' : ReverseComplement := ReverseComplement + 'b';
+     // special characters
+     'N' : ReverseComplement := ReverseComplement + 'N';
+     'n' : ReverseComplement := ReverseComplement + 'n';
+     '.' : ReverseComplement := ReverseComplement + '.';
+     '-' : ReverseComplement := ReverseComplement + '-';
+     '?' : ReverseComplement := ReverseComplement + '?';
+    Else
+     // if an unknown symbol occures: return position and attach unchanged
+     Result := aPos;
+     ReverseComplement := ReverseComplement + aSourceString [aPos];
+    end;
+  end;
+end;
