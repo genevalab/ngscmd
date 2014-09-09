@@ -27,6 +27,7 @@ pair    |   align mated pairs in two fastQ files
 score   |   convert Phred-scaled quality scores
 rmdup   |   remove duplicate reads
 kmer    |   count number of unique k-mers in fastQ file
+join    |   join aligned mated pairs into single file
 
 Although their are many programs with functionality that is
 similar to `ngscmd`, the motivation for developing this program
