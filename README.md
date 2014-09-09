@@ -17,7 +17,7 @@ The `ngscmd` program can work on a single fastQ input file, as well
 as mate pair files. The fastQ files can be input into the `ngscmd` 
 program in either compressed or uncompressed form. 
 
-All six commands of the `ngscmd` program are
+All seven commands of the `ngscmd` program are
 
 Command | Description
 ------- | -----------
